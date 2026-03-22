@@ -1,0 +1,69 @@
+class Hello {
+    // Inline expression in print
+    print(1 + 1);
+    print(10 * 3 + 2);
+
+    // Variables with this
+    let name = "VDX";
+    print(this.name);
+
+    // if / elif / else
+    let x = 10;
+
+    if (x > 5) {
+        print("x is greater than 5");
+    }
+
+    if (x == 20) {
+        print("x is 20");
+    } elif (x == 10) {
+        print("x is 10");
+    } else {
+        print("x is something else");
+    }
+
+    // Function with if
+    fn max(a, b) {
+        if (a > b) {
+            return a;
+        } else {
+            return b;
+        }
+    }
+
+    print("max(3, 7) =", max(3, 7));
+
+    // String comparison
+    let lang = "VDX";
+    if (this.lang == "VDX") {
+        print("Welcome to", this.lang);
+    }
+
+    // while loop with countdown (uses wait to stay above 2s safety threshold)
+    fn countdown(n) {
+        while (n > 0) {
+            print("countdown:", n);
+            n = n - 1;
+            wait(2100);
+        }
+        print("done!");
+    }
+
+    countdown(3);
+
+    // @unsafe while loop (bypasses loop speed protection)
+    fn fastCount(n) {
+        @unsafe while (n > 0) {
+            print("fast:", n);
+            n = n - 1;
+        }
+        print("fast done!");
+    }
+
+    fastCount(3);
+
+    // wait (pause execution)
+    print("waiting 100ms...");
+    wait(100);
+    print("done waiting!");
+}

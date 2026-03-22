@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+:root {
+  --vdx-purple: #6C2BD9;
+  --vdx-dark: #0A0118;
+  --vdx-light: #E0CCFF;
+  --vdx-accent: #A78BFA;
+}
+
+body {
+  background: var(--vdx-dark);
+  color: #e2e8f0;
+}
+
+::selection {
+  background: var(--vdx-purple);
+  color: white;
+}
+
+code {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}

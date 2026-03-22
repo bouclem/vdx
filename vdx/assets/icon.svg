@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6C2BD9"/>
+      <stop offset="100%" stop-color="#3B0764"/>
+    </linearGradient>
+    <linearGradient id="vGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E0CCFF"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square background -->
+  <rect width="512" height="512" rx="96" ry="96" fill="url(#bg)"/>
+  <!-- V shape -->
+  <path d="M152 128 L256 384 L360 128" stroke="url(#vGrad)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Dot accent -->
+  <circle cx="256" cy="416" r="16" fill="#A78BFA"/>
+</svg>

@@ -1,0 +1,22 @@
+# Node (website/)
+website/node_modules/
+website/.next/
+website/out/
+
+# VDX build
+vdx/build/
+**/build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Env
+.env
+.env.local

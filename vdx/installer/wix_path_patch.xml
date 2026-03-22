@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <DirectoryRef Id="INSTALL_ROOT">
+      <Component Id="AddToPath" Guid="B2C3D4E5-F6A7-8901-BCDE-F12345678901">
+        <Environment Id="PATH" Name="PATH" Value="[INSTALL_ROOT]bin"
+                     Permanent="no" Part="last" Action="set" System="yes" />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+</Wix>
