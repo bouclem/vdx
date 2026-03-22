@@ -1,8 +1,18 @@
 const versions = [
   {
-    version: "0.0.6",
+    version: "0.0.7",
     date: "2026-03-22",
     latest: true,
+    notes: [
+      "Arrays: let arr = [1, 2, 3]; with index access, assignment, len(), push()",
+      "Improved error reporting with file name, line numbers, and source context",
+      "String indexing: str[0]",
+    ],
+  },
+  {
+    version: "0.0.6",
+    date: "2026-03-22",
+    latest: false,
     notes: [
       "Loop safety protection (blocks fast loops by default)",
       "@unsafe annotation to bypass loop protection",

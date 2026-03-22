@@ -28,8 +28,10 @@ Program Parser::parse() {
 }
 
 NodePtr Parser::parseClassDecl() {
+    int ln = cur().line;
     expect(TokenType::KW_CLASS, "Expected 'class'");
     auto cls = std::make_shared<ClassDecl>();
+    cls->line = ln;
     cls->name = expect(TokenType::IDENTIFIER, "Expected class name").value;
     expect(TokenType::LBRACE, "Expected '{'");
     while (!check(TokenType::RBRACE) && !check(TokenType::EOF_TOKEN)) {
@@ -58,13 +60,11 @@ NodePtr Parser::parseStatement() {
         return node;
     }
     if (check(TokenType::KW_WAIT)) return parseWaitStmt();
-    // assignment or index assignment: identifier = expr; or identifier[expr] = expr;
+    // assignment or index assignment
     if (check(TokenType::IDENTIFIER) && pos + 1 < tokens.size()) {
         if (tokens[pos + 1].type == TokenType::LBRACKET) {
-            // Could be index assignment: arr[i] = expr;
-            // Or could be index expression used as statement: arr[i];
-            // Peek ahead to check for ] followed by =
             size_t saved = pos;
+            int ln = cur().line;
             std::string name = advance().value;
             advance(); // skip '['
             auto idx = parseExpr();
@@ -74,15 +74,17 @@ NodePtr Parser::parseStatement() {
                 auto val = parseExpr();
                 expect(TokenType::SEMICOLON, "Expected ';'");
                 auto stmt = std::make_shared<IndexAssignStmt>();
+                stmt->line = ln;
                 stmt->name = name;
                 stmt->index = idx;
                 stmt->value = val;
                 return stmt;
             }
-            // Not an assignment, backtrack and fall through to expression statement
             pos = saved;
         } else if (tokens[pos + 1].type == TokenType::EQUALS) {
+            int ln = cur().line;
             auto stmt = std::make_shared<AssignStmt>();
+            stmt->line = ln;
             stmt->name = advance().value;
             advance(); // skip '='
             stmt->value = parseExpr();
@@ -90,13 +92,14 @@ NodePtr Parser::parseStatement() {
             return stmt;
         }
     }
-    // expression statement (e.g., function call)
     return parseExprStmt();
 }
 
 NodePtr Parser::parseFnDecl() {
+    int ln = cur().line;
     expect(TokenType::KW_FN, "Expected 'fn'");
     auto fn = std::make_shared<FnDecl>();
+    fn->line = ln;
     fn->name = expect(TokenType::IDENTIFIER, "Expected function name").value;
     expect(TokenType::LPAREN, "Expected '('");
     if (!check(TokenType::RPAREN)) {
@@ -116,8 +119,10 @@ NodePtr Parser::parseFnDecl() {
 }
 
 NodePtr Parser::parseLetStmt() {
+    int ln = cur().line;
     expect(TokenType::KW_LET, "Expected 'let'");
     auto stmt = std::make_shared<LetStmt>();
+    stmt->line = ln;
     stmt->name = expect(TokenType::IDENTIFIER, "Expected variable name").value;
     expect(TokenType::EQUALS, "Expected '='");
     stmt->value = parseExpr();
@@ -126,9 +131,11 @@ NodePtr Parser::parseLetStmt() {
 }
 
 NodePtr Parser::parsePrintStmt() {
+    int ln = cur().line;
     expect(TokenType::KW_PRINT, "Expected 'print'");
     expect(TokenType::LPAREN, "Expected '('");
     auto stmt = std::make_shared<PrintStmt>();
+    stmt->line = ln;
     if (!check(TokenType::RPAREN)) {
         stmt->args.push_back(parseExpr());
         while (check(TokenType::COMMA)) {
@@ -142,8 +149,10 @@ NodePtr Parser::parsePrintStmt() {
 }
 
 NodePtr Parser::parseReturnStmt() {
+    int ln = cur().line;
     expect(TokenType::KW_RETURN, "Expected 'return'");
     auto stmt = std::make_shared<ReturnStmt>();
+    stmt->line = ln;
     if (!check(TokenType::SEMICOLON)) {
         stmt->value = parseExpr();
     }
@@ -152,8 +161,10 @@ NodePtr Parser::parseReturnStmt() {
 }
 
 NodePtr Parser::parseIfStmt() {
+    int ln = cur().line;
     expect(TokenType::KW_IF, "Expected 'if'");
     auto stmt = std::make_shared<IfStmt>();
+    stmt->line = ln;
     expect(TokenType::LPAREN, "Expected '('");
     stmt->condition = parseExpr();
     expect(TokenType::RPAREN, "Expected ')'");
@@ -190,8 +201,10 @@ NodePtr Parser::parseIfStmt() {
 }
 
 NodePtr Parser::parseWhileStmt() {
+    int ln = cur().line;
     expect(TokenType::KW_WHILE, "Expected 'while'");
     auto stmt = std::make_shared<WhileStmt>();
+    stmt->line = ln;
     expect(TokenType::LPAREN, "Expected '('");
     stmt->condition = parseExpr();
     expect(TokenType::RPAREN, "Expected ')'");
@@ -204,8 +217,10 @@ NodePtr Parser::parseWhileStmt() {
 }
 
 NodePtr Parser::parseWaitStmt() {
+    int ln = cur().line;
     expect(TokenType::KW_WAIT, "Expected 'wait'");
     auto stmt = std::make_shared<WaitStmt>();
+    stmt->line = ln;
     expect(TokenType::LPAREN, "Expected '('");
     stmt->duration = parseExpr();
     expect(TokenType::RPAREN, "Expected ')'");
@@ -214,7 +229,9 @@ NodePtr Parser::parseWaitStmt() {
 }
 
 NodePtr Parser::parseExprStmt() {
+    int ln = cur().line;
     auto stmt = std::make_shared<ExprStmt>();
+    stmt->line = ln;
     stmt->expr = parseExpr();
     expect(TokenType::SEMICOLON, "Expected ';'");
     return stmt;
@@ -229,9 +246,11 @@ ExprPtr Parser::parseExpr() {
 ExprPtr Parser::parseEquality() {
     auto left = parseComparison();
     while (check(TokenType::EQEQ) || check(TokenType::BANGEQ)) {
+        int ln = cur().line;
         std::string op = advance().value;
         auto right = parseComparison();
         auto bin = std::make_shared<BinaryExpr>();
+        bin->line = ln;
         bin->left = left;
         bin->op = op;
         bin->right = right;
@@ -244,9 +263,11 @@ ExprPtr Parser::parseComparison() {
     auto left = parseAddSub();
     while (check(TokenType::LT) || check(TokenType::GT) ||
            check(TokenType::LTEQ) || check(TokenType::GTEQ)) {
+        int ln = cur().line;
         std::string op = advance().value;
         auto right = parseAddSub();
         auto bin = std::make_shared<BinaryExpr>();
+        bin->line = ln;
         bin->left = left;
         bin->op = op;
         bin->right = right;
@@ -258,9 +279,11 @@ ExprPtr Parser::parseComparison() {
 ExprPtr Parser::parseAddSub() {
     auto left = parseMulDiv();
     while (check(TokenType::PLUS) || check(TokenType::MINUS)) {
+        int ln = cur().line;
         std::string op = advance().value;
         auto right = parseMulDiv();
         auto bin = std::make_shared<BinaryExpr>();
+        bin->line = ln;
         bin->left = left;
         bin->op = op;
         bin->right = right;
@@ -272,9 +295,11 @@ ExprPtr Parser::parseAddSub() {
 ExprPtr Parser::parseMulDiv() {
     auto left = parsePrimary();
     while (check(TokenType::STAR) || check(TokenType::SLASH)) {
+        int ln = cur().line;
         std::string op = advance().value;
         auto right = parsePrimary();
         auto bin = std::make_shared<BinaryExpr>();
+        bin->line = ln;
         bin->left = left;
         bin->op = op;
         bin->right = right;
@@ -285,19 +310,25 @@ ExprPtr Parser::parseMulDiv() {
 
 ExprPtr Parser::parsePrimary() {
     if (check(TokenType::STRING)) {
+        int ln = cur().line;
         auto lit = std::make_shared<StringLiteral>();
+        lit->line = ln;
         lit->value = advance().value;
         return lit;
     }
     if (check(TokenType::INTEGER)) {
+        int ln = cur().line;
         auto lit = std::make_shared<IntLiteral>();
+        lit->line = ln;
         lit->value = std::stoi(advance().value);
         return lit;
     }
     // Array literal: [expr, expr, ...]
     if (check(TokenType::LBRACKET)) {
+        int ln = cur().line;
         advance(); // skip '['
         auto arr = std::make_shared<ArrayLiteral>();
+        arr->line = ln;
         if (!check(TokenType::RBRACKET)) {
             arr->elements.push_back(parseExpr());
             while (check(TokenType::COMMA)) {
@@ -309,11 +340,13 @@ ExprPtr Parser::parsePrimary() {
         return arr;
     }
     if (check(TokenType::IDENTIFIER)) {
+        int ln = cur().line;
         std::string name = advance().value;
         // Function call: identifier(...)
         if (check(TokenType::LPAREN)) {
             advance(); // skip '('
             auto call = std::make_shared<CallExpr>();
+            call->line = ln;
             call->name = name;
             if (!check(TokenType::RPAREN)) {
                 call->args.push_back(parseExpr());
@@ -329,7 +362,9 @@ ExprPtr Parser::parsePrimary() {
         if (check(TokenType::LBRACKET)) {
             advance(); // skip '['
             auto idx = std::make_shared<IndexExpr>();
+            idx->line = ln;
             auto id = std::make_shared<IdentifierExpr>();
+            id->line = ln;
             id->name = name;
             idx->object = id;
             idx->index = parseExpr();
@@ -337,6 +372,7 @@ ExprPtr Parser::parsePrimary() {
             return idx;
         }
         auto id = std::make_shared<IdentifierExpr>();
+        id->line = ln;
         id->name = name;
         return id;
     }
@@ -347,9 +383,11 @@ ExprPtr Parser::parsePrimary() {
         return expr;
     }
     if (check(TokenType::KW_THIS)) {
+        int ln = cur().line;
         advance();
         expect(TokenType::DOT, "Expected '.' after 'this'");
         auto te = std::make_shared<ThisExpr>();
+        te->line = ln;
         te->field = expect(TokenType::IDENTIFIER, "Expected field name after 'this.'").value;
         return te;
     }

@@ -48,6 +48,7 @@ struct ReturnException {
 class Interpreter {
 public:
     void run(const Program& program);
+    int currentLine = 0; // track current executing line for error reporting
 
 private:
     // Scope stack: each scope is a map of variable names to values

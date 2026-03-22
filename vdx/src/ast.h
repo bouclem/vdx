@@ -6,6 +6,7 @@
 // ── AST Nodes (v0.0.5: class + print + let + fn + operators + if + while + wait) ──
 
 struct Node {
+    int line = 0;
     virtual ~Node() = default;
 };
 
