@@ -34,6 +34,15 @@
 - [x] Installer adds `vdx` to system PATH
 - [x] Website v0.1.0 (main page, download page, docs)
 
+## v0.0.7 (current)
+- [x] Arrays / lists (`let arr = [1, 2, 3];`)
+- [x] Array index access (`arr[0]`)
+- [x] Array index assignment (`arr[0] = 5;`)
+- [x] String index access (`str[0]`)
+- [x] Built-in `len()` for arrays and strings
+- [x] Built-in `push()` to append to arrays
+- [x] Improved error reporting (source context, line numbers, file name)
+
 ## Future
 - [ ] Types (int, float, string, bool)
 - [ ] `new` / object instantiation

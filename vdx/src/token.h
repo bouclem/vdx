@@ -35,6 +35,8 @@ enum class TokenType {
     LTEQ,
     GTEQ,
     DOT,
+    LBRACKET,
+    RBRACKET,
     EOF_TOKEN,
     UNKNOWN
 };

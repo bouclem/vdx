@@ -6,17 +6,19 @@
 #include <stdexcept>
 
 struct Value {
-    enum Type { STRING, INT, BOOL, VOID };
+    enum Type { STRING, INT, BOOL, VOID, ARRAY };
     Type type;
     std::string strVal;
     int intVal;
     bool boolVal;
+    std::vector<Value> arrVal;
 
     Value() : type(VOID), intVal(0), boolVal(false) {}
     static Value makeString(const std::string& s) { Value v; v.type = STRING; v.strVal = s; return v; }
     static Value makeInt(int i) { Value v; v.type = INT; v.intVal = i; return v; }
     static Value makeBool(bool b) { Value v; v.type = BOOL; v.boolVal = b; return v; }
     static Value makeVoid() { return Value(); }
+    static Value makeArray(const std::vector<Value>& elems) { Value v; v.type = ARRAY; v.arrVal = elems; return v; }
 
     std::string toString() const {
         switch (type) {
@@ -24,6 +26,16 @@ struct Value {
             case INT: return std::to_string(intVal);
             case BOOL: return boolVal ? "true" : "false";
             case VOID: return "void";
+            case ARRAY: {
+                std::string s = "[";
+                for (size_t i = 0; i < arrVal.size(); i++) {
+                    if (i > 0) s += ", ";
+                    if (arrVal[i].type == STRING) s += "\"" + arrVal[i].toString() + "\"";
+                    else s += arrVal[i].toString();
+                }
+                s += "]";
+                return s;
+            }
         }
         return "";
     }

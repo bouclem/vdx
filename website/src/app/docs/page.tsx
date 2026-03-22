@@ -14,6 +14,7 @@ const docSections = [
       { name: "Variables (let)", href: "/docs/variables" },
       { name: "Functions (fn)", href: "/docs/functions" },
       { name: "Operators", href: "/docs/operators" },
+      { name: "Arrays", href: "/docs/arrays" },
       { name: "Print", href: "/docs/print" },
     ],
   },
@@ -30,6 +31,7 @@ const docSections = [
     items: [
       { name: "Loop Protection", href: "/docs/loop-protection" },
       { name: "@unsafe", href: "/docs/unsafe" },
+      { name: "Error Reporting", href: "/docs/error-reporting" },
     ],
   },
   {

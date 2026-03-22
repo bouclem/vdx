@@ -70,6 +70,23 @@ void Interpreter::execStatement(const NodePtr& node) {
             throw std::runtime_error("[VDX] Undefined variable '" + assign->name + "' (use 'let' to declare)");
         }
         *v = evalExpr(assign->value.get());
+    } else if (auto idxAssign = dynamic_cast<IndexAssignStmt*>(node.get())) {
+        Value* v = lookupVar(idxAssign->name);
+        if (!v) {
+            throw std::runtime_error("[VDX] Undefined variable '" + idxAssign->name + "'");
+        }
+        if (v->type != Value::ARRAY) {
+            throw std::runtime_error("[VDX] Cannot index into non-array variable '" + idxAssign->name + "'");
+        }
+        Value idx = evalExpr(idxAssign->index.get());
+        if (idx.type != Value::INT) {
+            throw std::runtime_error("[VDX] Array index must be an integer");
+        }
+        if (idx.intVal < 0 || idx.intVal >= (int)v->arrVal.size()) {
+            throw std::runtime_error("[VDX] Array index " + std::to_string(idx.intVal) +
+                " out of bounds (size " + std::to_string(v->arrVal.size()) + ")");
+        }
+        v->arrVal[idx.intVal] = evalExpr(idxAssign->value.get());
     } else if (auto es = dynamic_cast<ExprStmt*>(node.get())) {
         evalExpr(es->expr.get());
     }
@@ -158,11 +175,42 @@ bool Interpreter::isTruthy(const Value& v) {
         case Value::INT: return v.intVal != 0;
         case Value::STRING: return !v.strVal.empty();
         case Value::VOID: return false;
+        case Value::ARRAY: return !v.arrVal.empty();
     }
     return false;
 }
 
 Value Interpreter::execCall(const CallExpr* call) {
+    // Built-in: len(array)
+    if (call->name == "len") {
+        if (call->args.size() != 1) {
+            throw std::runtime_error("[VDX] len() expects 1 argument, got " +
+                std::to_string(call->args.size()));
+        }
+        Value arg = evalExpr(call->args[0].get());
+        if (arg.type == Value::ARRAY) return Value::makeInt((int)arg.arrVal.size());
+        if (arg.type == Value::STRING) return Value::makeInt((int)arg.strVal.size());
+        throw std::runtime_error("[VDX] len() expects an array or string");
+    }
+    // Built-in: push(array, value)
+    if (call->name == "push") {
+        if (call->args.size() != 2) {
+            throw std::runtime_error("[VDX] push() expects 2 arguments, got " +
+                std::to_string(call->args.size()));
+        }
+        // First arg must be an identifier so we can modify the variable
+        auto id = dynamic_cast<const IdentifierExpr*>(call->args[0].get());
+        if (!id) {
+            throw std::runtime_error("[VDX] push() first argument must be a variable");
+        }
+        Value* arr = lookupVar(id->name);
+        if (!arr || arr->type != Value::ARRAY) {
+            throw std::runtime_error("[VDX] push() first argument must be an array variable");
+        }
+        arr->arrVal.push_back(evalExpr(call->args[1].get()));
+        return Value::makeVoid();
+    }
+
     auto it = functions.find(call->name);
     if (it == functions.end()) {
         throw std::runtime_error("[VDX] Undefined function '" + call->name + "'");
@@ -225,6 +273,38 @@ Value Interpreter::evalExpr(const Expr* expr) {
             throw std::runtime_error("[VDX] Undefined field 'this." + te->field + "'");
         }
         return *v;
+    }
+    if (auto arr = dynamic_cast<const ArrayLiteral*>(expr)) {
+        std::vector<Value> elems;
+        for (auto& e : arr->elements) {
+            elems.push_back(evalExpr(e.get()));
+        }
+        return Value::makeArray(elems);
+    }
+    if (auto idx = dynamic_cast<const IndexExpr*>(expr)) {
+        Value obj = evalExpr(idx->object.get());
+        Value index = evalExpr(idx->index.get());
+        if (obj.type == Value::ARRAY) {
+            if (index.type != Value::INT) {
+                throw std::runtime_error("[VDX] Array index must be an integer");
+            }
+            if (index.intVal < 0 || index.intVal >= (int)obj.arrVal.size()) {
+                throw std::runtime_error("[VDX] Array index " + std::to_string(index.intVal) +
+                    " out of bounds (size " + std::to_string(obj.arrVal.size()) + ")");
+            }
+            return obj.arrVal[index.intVal];
+        }
+        if (obj.type == Value::STRING) {
+            if (index.type != Value::INT) {
+                throw std::runtime_error("[VDX] String index must be an integer");
+            }
+            if (index.intVal < 0 || index.intVal >= (int)obj.strVal.size()) {
+                throw std::runtime_error("[VDX] String index " + std::to_string(index.intVal) +
+                    " out of bounds (length " + std::to_string(obj.strVal.size()) + ")");
+            }
+            return Value::makeString(std::string(1, obj.strVal[index.intVal]));
+        }
+        throw std::runtime_error("[VDX] Cannot index into this type");
     }
     throw std::runtime_error("[VDX] Unknown expression type");
 }

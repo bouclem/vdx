@@ -1,0 +1,8 @@
+// demo-error-index.vdx — Tests array out-of-bounds error
+// Run this to see the index error with source context.
+
+class ErrorIndexDemo {
+    let arr = [1, 2, 3];
+    print(arr[0]);
+    print(arr[5]);
+}

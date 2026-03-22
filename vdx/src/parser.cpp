@@ -58,14 +58,37 @@ NodePtr Parser::parseStatement() {
         return node;
     }
     if (check(TokenType::KW_WAIT)) return parseWaitStmt();
-    // assignment: identifier = expr;
-    if (check(TokenType::IDENTIFIER) && pos + 1 < tokens.size() && tokens[pos + 1].type == TokenType::EQUALS) {
-        auto stmt = std::make_shared<AssignStmt>();
-        stmt->name = advance().value;
-        advance(); // skip '='
-        stmt->value = parseExpr();
-        expect(TokenType::SEMICOLON, "Expected ';'");
-        return stmt;
+    // assignment or index assignment: identifier = expr; or identifier[expr] = expr;
+    if (check(TokenType::IDENTIFIER) && pos + 1 < tokens.size()) {
+        if (tokens[pos + 1].type == TokenType::LBRACKET) {
+            // Could be index assignment: arr[i] = expr;
+            // Or could be index expression used as statement: arr[i];
+            // Peek ahead to check for ] followed by =
+            size_t saved = pos;
+            std::string name = advance().value;
+            advance(); // skip '['
+            auto idx = parseExpr();
+            expect(TokenType::RBRACKET, "Expected ']'");
+            if (check(TokenType::EQUALS)) {
+                advance(); // skip '='
+                auto val = parseExpr();
+                expect(TokenType::SEMICOLON, "Expected ';'");
+                auto stmt = std::make_shared<IndexAssignStmt>();
+                stmt->name = name;
+                stmt->index = idx;
+                stmt->value = val;
+                return stmt;
+            }
+            // Not an assignment, backtrack and fall through to expression statement
+            pos = saved;
+        } else if (tokens[pos + 1].type == TokenType::EQUALS) {
+            auto stmt = std::make_shared<AssignStmt>();
+            stmt->name = advance().value;
+            advance(); // skip '='
+            stmt->value = parseExpr();
+            expect(TokenType::SEMICOLON, "Expected ';'");
+            return stmt;
+        }
     }
     // expression statement (e.g., function call)
     return parseExprStmt();
@@ -271,9 +294,23 @@ ExprPtr Parser::parsePrimary() {
         lit->value = std::stoi(advance().value);
         return lit;
     }
+    // Array literal: [expr, expr, ...]
+    if (check(TokenType::LBRACKET)) {
+        advance(); // skip '['
+        auto arr = std::make_shared<ArrayLiteral>();
+        if (!check(TokenType::RBRACKET)) {
+            arr->elements.push_back(parseExpr());
+            while (check(TokenType::COMMA)) {
+                advance();
+                arr->elements.push_back(parseExpr());
+            }
+        }
+        expect(TokenType::RBRACKET, "Expected ']'");
+        return arr;
+    }
     if (check(TokenType::IDENTIFIER)) {
         std::string name = advance().value;
-        // Check for function call: identifier followed by '('
+        // Function call: identifier(...)
         if (check(TokenType::LPAREN)) {
             advance(); // skip '('
             auto call = std::make_shared<CallExpr>();
@@ -287,6 +324,17 @@ ExprPtr Parser::parsePrimary() {
             }
             expect(TokenType::RPAREN, "Expected ')'");
             return call;
+        }
+        // Index access: identifier[expr]
+        if (check(TokenType::LBRACKET)) {
+            advance(); // skip '['
+            auto idx = std::make_shared<IndexExpr>();
+            auto id = std::make_shared<IdentifierExpr>();
+            id->name = name;
+            idx->object = id;
+            idx->index = parseExpr();
+            expect(TokenType::RBRACKET, "Expected ']'");
+            return idx;
         }
         auto id = std::make_shared<IdentifierExpr>();
         id->name = name;

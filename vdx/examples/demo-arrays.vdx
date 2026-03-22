@@ -1,0 +1,51 @@
+// demo-arrays.vdx — Tests array features (v0.0.7)
+
+class ArrayDemo {
+    // Create arrays
+    let numbers = [10, 20, 30];
+    let names = ["Alice", "Bob", "Charlie"];
+    let empty = [];
+
+    // Print arrays
+    print("numbers:", numbers);
+    print("names:", names);
+    print("empty:", empty);
+
+    // Index access
+    print("numbers[0]:", numbers[0]);
+    print("numbers[2]:", numbers[2]);
+    print("names[1]:", names[1]);
+
+    // Index assignment
+    numbers[1] = 99;
+    print("after numbers[1] = 99:", numbers);
+
+    // len()
+    print("len(numbers):", len(numbers));
+    print("len(names):", len(names));
+    print("len(empty):", len(empty));
+    print("len(hello):", len("hello"));
+
+    // push()
+    push(empty, 42);
+    push(empty, 43);
+    print("after push:", empty);
+    print("len after push:", len(empty));
+
+    // Array truthiness
+    if (numbers) {
+        print("numbers is truthy");
+    }
+
+    let blank = [];
+    if (blank) {
+        print("this should not print");
+    } else {
+        print("blank is falsy");
+    }
+
+    // String indexing
+    let word = "VDX";
+    print("word[0]:", word[0]);
+    print("word[2]:", word[2]);
+}

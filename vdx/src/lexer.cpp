@@ -125,6 +125,8 @@ std::vector<Token> Lexer::tokenize() {
             case '<': tokens.push_back(Token(TokenType::LT, "<", sl, sc)); break;
             case '>': tokens.push_back(Token(TokenType::GT, ">", sl, sc)); break;
             case '.': tokens.push_back(Token(TokenType::DOT, ".", sl, sc)); break;
+            case '[': tokens.push_back(Token(TokenType::LBRACKET, "[", sl, sc)); break;
+            case ']': tokens.push_back(Token(TokenType::RBRACKET, "]", sl, sc)); break;
             default:
                 throw std::runtime_error(std::string("Unexpected character '") + c +
                     "' at line " + std::to_string(sl) + ":" + std::to_string(sc));

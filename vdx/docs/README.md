@@ -4,7 +4,7 @@ The programming language of **Voidware** ([voidware.xyz](https://voidware.xyz)).
 
 Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future focus on AI and games.
 
-## Version: 0.0.6
+## Version: 0.0.7
 
 ### Supported Features
 - `class` declarations
@@ -22,6 +22,10 @@ Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future fo
 - `wait(ms)` to pause execution
 - **Loop safety protection** — `while` loops that iterate in under 2 seconds are blocked by default
 - **`@unsafe` annotation** — place before `while` to disable loop protection
+- **Arrays** — `let arr = [1, 2, 3];`, index access `arr[0]`, index assignment `arr[0] = 5;`
+- **Built-in `len()`** — returns length of arrays and strings
+- **Built-in `push()`** — appends a value to an array: `push(arr, 4);`
+- **Improved error reporting** — errors now show source file, line number, and surrounding code context
 
 ### Loop Safety
 By default, if a `while` loop iteration completes in less than 2000ms, VDX halts it with an error. This prevents infinite loops and runaway CPU usage.

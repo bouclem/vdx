@@ -1,0 +1,9 @@
+// demo-error.vdx — Tests error reporting (v0.0.7)
+// Run this file to see the improved error output.
+// It will crash on purpose to show the error format.
+
+class ErrorDemo {
+    let x = 10;
+    let y = 20;
+    print(z);
+}

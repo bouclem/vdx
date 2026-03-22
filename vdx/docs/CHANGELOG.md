@@ -1,5 +1,16 @@
 # VDX Changelog
 
+## v0.0.7 — 2026-03-22
+- Added arrays / lists: `let arr = [1, 2, 3];`
+- Array index access: `arr[0]`
+- Array index assignment: `arr[0] = 5;`
+- String index access: `str[0]` returns single character
+- Built-in `len()`: returns length of arrays and strings
+- Built-in `push(arr, value)`: appends a value to an array
+- Array printing: `print(arr)` outputs `[1, 2, 3]`
+- Array truthiness: non-empty arrays are truthy, empty arrays are falsy
+- Improved error reporting: errors now display file name, line number, and surrounding source lines with an arrow pointing to the error line
+
 ## v0.0.6 — 2026-03-22
 - Added loop safety protection: `while` loops that iterate faster than 2 seconds are blocked by default
 - Added `@unsafe` annotation: place before `while` to bypass loop speed protection

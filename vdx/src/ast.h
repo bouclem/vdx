@@ -43,6 +43,15 @@ struct ThisExpr : Expr {
     std::string field;
 };
 
+struct ArrayLiteral : Expr {
+    std::vector<ExprPtr> elements;
+};
+
+struct IndexExpr : Expr {
+    ExprPtr object;
+    ExprPtr index;
+};
+
 // ── Statements ──
 
 // let x = expr;
@@ -91,6 +100,13 @@ struct WaitStmt : Node {
 // name = expr; (variable reassignment)
 struct AssignStmt : Node {
     std::string name;
+    ExprPtr value;
+};
+
+// arr[index] = expr; (index assignment)
+struct IndexAssignStmt : Node {
+    std::string name;
+    ExprPtr index;
     ExprPtr value;
 };
 
