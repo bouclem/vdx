@@ -8,12 +8,8 @@ vdx/build/
 **/build/
 
 # Installer artifacts
-*.msi
 *.wixpdb
 .wix/
-
-# Allow .msi in website releases (served by Vercel)
-!website/public/releases/*.msi
 
 # OS
 .DS_Store
