@@ -7,6 +7,11 @@ website/out/
 vdx/build/
 **/build/
 
+# Installer artifacts
+*.msi
+*.wixpdb
+.wix/
+
 # OS
 .DS_Store
 Thumbs.db

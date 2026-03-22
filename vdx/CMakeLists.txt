@@ -26,16 +26,16 @@ set(CPACK_PACKAGE_VERSION_PATCH "6")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "VDX")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.txt")
 
-# WiX-specific settings
+# WiX 4 settings
 set(CPACK_GENERATOR "WIX")
+set(CPACK_WIX_VERSION "4")
 set(CPACK_WIX_UPGRADE_GUID "A1B2C3D4-E5F6-7890-ABCD-EF1234567890")
-set(CPACK_WIX_PRODUCT_ICON "${CMAKE_SOURCE_DIR}/assets/icon.svg")
 set(CPACK_WIX_PROGRAM_MENU_FOLDER "VDX")
 
 # Add vdx to system PATH so users can run: vdx file.vdx
 set(CPACK_WIX_PATCH_FILE "${CMAKE_SOURCE_DIR}/installer/wix_path_patch.xml")
 
-# .vdx file association
-set(CPACK_WIX_EXTENSIONS "WixUtilExtension")
+# WiX extensions (WiX 4 naming)
+set(CPACK_WIX_BUILD_EXTENSIONS "WixToolset.Util.wixext")
 
 include(CPack)

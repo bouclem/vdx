@@ -1,18 +1,54 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#6C2BD9"/>
-      <stop offset="100%" stop-color="#3B0764"/>
+    <!-- Background gradient: deep purple to near-black -->
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="50%" stop-color="#4C1D95"/>
+      <stop offset="100%" stop-color="#1E0A3C"/>
     </linearGradient>
-    <linearGradient id="vGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#E0CCFF"/>
-      <stop offset="100%" stop-color="#FFFFFF"/>
+    <!-- V letter gradient: bright white to soft lavender -->
+    <linearGradient id="vGrad" x1="256" y1="100" x2="256" y2="380" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#C4B5FD"/>
     </linearGradient>
+    <!-- Subtle shadow for depth -->
+    <linearGradient id="vShadow" x1="256" y1="100" x2="256" y2="380" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7C3AED" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#7C3AED" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Glow filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <!-- Inner shadow on background -->
+    <radialGradient id="shine" cx="0.3" cy="0.2" r="0.8">
+      <stop offset="0%" stop-color="#A78BFA" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <!-- Rounded square background -->
-  <rect width="512" height="512" rx="96" ry="96" fill="url(#bg)"/>
-  <!-- V shape -->
-  <path d="M152 128 L256 384 L360 128" stroke="url(#vGrad)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <!-- Dot accent -->
-  <circle cx="256" cy="416" r="16" fill="#A78BFA"/>
+
+  <!-- Background rounded square -->
+  <rect width="512" height="512" rx="108" ry="108" fill="url(#bg)"/>
+  <!-- Subtle shine overlay -->
+  <rect width="512" height="512" rx="108" ry="108" fill="url(#shine)"/>
+
+  <!-- Shadow V (offset for depth) -->
+  <path d="M148 130 L256 374 L364 130"
+        stroke="url(#vShadow)" stroke-width="52" stroke-linecap="round" stroke-linejoin="round" fill="none"
+        transform="translate(4, 6)"/>
+
+  <!-- Main V letterform -->
+  <path d="M148 130 L256 374 L364 130"
+        stroke="url(#vGrad)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" fill="none"
+        filter="url(#glow)"/>
+
+  <!-- Code brackets < > as subtle accent -->
+  <path d="M120 420 L96 440 L120 460"
+        stroke="#A78BFA" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.5"/>
+  <path d="M392 420 L416 440 L392 460"
+        stroke="#A78BFA" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.5"/>
+
+  <!-- Dot between brackets -->
+  <circle cx="256" cy="440" r="10" fill="#A78BFA" opacity="0.6"/>
 </svg>
