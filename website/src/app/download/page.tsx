@@ -1,8 +1,19 @@
 const versions = [
   {
+    version: "0.0.8",
+    date: "2026-03-23",
+    latest: true,
+    notes: [
+      "Types: float literals, true/false booleans, optional type annotations (let x: int = 5;)",
+      "new / object instantiation: let obj = new ClassName(); with dot access and methods",
+      "for loop: C-style for (let i = 0; i < n; i = i + 1) and for-in over arrays",
+      "Mixed int/float arithmetic with auto-promotion",
+    ],
+  },
+  {
     version: "0.0.7",
     date: "2026-03-22",
-    latest: true,
+    latest: false,
     notes: [
       "Arrays: let arr = [1, 2, 3]; with index access, assignment, len(), push()",
       "Improved error reporting with file name, line numbers, and source context",

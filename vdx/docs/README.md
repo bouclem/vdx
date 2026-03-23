@@ -4,12 +4,13 @@ The programming language of **Voidware** ([voidware.xyz](https://voidware.xyz)).
 
 Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future focus on AI and games.
 
-## Version: 0.0.7
+## Version: 0.0.8
 
 ### Supported Features
 - `class` declarations
 - `print()` with any expression arguments (e.g., `print(1 + 1)` outputs `2`)
-- `let` variable declarations (string, integer)
+- `let` variable declarations (string, integer, float, bool)
+- Optional type annotations: `let x: int = 5;`, `let pi: float = 3.14;`
 - Variable reassignment (`name = expr;`)
 - `fn` function declarations with parameters and `return`
 - Operators: `+`, `-`, `*`, `/`, `==`, `!=`, `<`, `>`, `<=`, `>=`
@@ -18,10 +19,16 @@ Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future fo
 - `this` keyword for class-scope variable access
 - `if` / `elif` / `else` control flow
 - `while` loop
+- `for` loop (C-style): `for (let i = 0; i < n; i = i + 1) { ... }`
+- `for-in` loop over arrays: `for (item in arr) { ... }`
 - Block scoping (variables in `{ }` blocks are local)
 - `wait(ms)` to pause execution
-- **Loop safety protection** — `while` loops that iterate in under 2 seconds are blocked by default
-- **`@unsafe` annotation** — place before `while` to disable loop protection
+- **Loop safety protection** — `while` and `for` loops that iterate in under 2 seconds are blocked by default
+- **`@unsafe` annotation** — place before `while` or `for` to disable loop protection
+- **Types** — `float` literals (`3.14`), `true`/`false` booleans, type annotations with runtime checking
+- **Mixed arithmetic** — int/float operations auto-promote to float
+- **`new` / object instantiation** — `let obj = new ClassName();`
+- **Dot access** — `obj.field`, `obj.method(args)`, `obj.field = value;`
 - **Arrays** — `let arr = [1, 2, 3];`, index access `arr[0]`, index assignment `arr[0] = 5;`
 - **Built-in `len()`** — returns length of arrays and strings
 - **Built-in `push()`** — appends a value to an array: `push(arr, 4);`
@@ -68,20 +75,45 @@ class Hello {
 
     print("max(3, 7) =", max(3, 7));
 
-    // while loop
-    fn countdown(n) {
-        while (n > 0) {
-            print("countdown:", n);
-            n = n - 1;
-        }
-        print("done!");
+    // for loop
+    @unsafe for (let i = 0; i < 3; i = i + 1) {
+        print("i:", i);
     }
 
-    countdown(3);
+    // for-in
+    let fruits = ["apple", "banana"];
+    for (fruit in fruits) {
+        print("fruit:", fruit);
+    }
 
-    // wait
-    wait(100);
-    print("done waiting!");
+    // types
+    let pi: float = 3.14;
+    let active: bool = true;
+    print("pi:", pi, "active:", active);
+}
+```
+
+### Object Instantiation
+```vdx
+class Point {
+    let x: int = 0;
+    let y: int = 0;
+
+    fn setXY(nx, ny) {
+        x = nx;
+        y = ny;
+    }
+
+    fn describe() {
+        print("Point:", x, y);
+    }
+}
+
+class Main {
+    let p = new Point();
+    p.x = 10;
+    p.y = 20;
+    p.describe();
 }
 ```
 

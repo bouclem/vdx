@@ -12,9 +12,11 @@ const docSections = [
     items: [
       { name: "Classes", href: "/docs/classes" },
       { name: "Variables (let)", href: "/docs/variables" },
+      { name: "Types", href: "/docs/types" },
       { name: "Functions (fn)", href: "/docs/functions" },
       { name: "Operators", href: "/docs/operators" },
       { name: "Arrays", href: "/docs/arrays" },
+      { name: "Objects (new)", href: "/docs/objects" },
       { name: "Print", href: "/docs/print" },
     ],
   },
@@ -23,6 +25,7 @@ const docSections = [
     items: [
       { name: "if / elif / else", href: "/docs/if-elif-else" },
       { name: "while Loops", href: "/docs/while" },
+      { name: "for Loops", href: "/docs/for" },
       { name: "wait(ms)", href: "/docs/wait" },
     ],
   },

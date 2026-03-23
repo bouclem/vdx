@@ -1,5 +1,22 @@
 # VDX Changelog
 
+## v0.0.8 — 2026-03-23
+- Added `float` type: float literals with decimal point (e.g., `3.14`, `5.0`)
+- Added `true` / `false` boolean literals
+- Added optional type annotations on `let`: `let x: int = 5;`, `let pi: float = 3.14;`, `let name: string = "hi";`, `let ok: bool = true;`
+- Runtime type checking: annotated variables are validated at assignment
+- Mixed int/float arithmetic: operations auto-promote to float when either operand is float
+- Added `new` keyword for object instantiation: `let obj = new ClassName();`
+- Dot field access: `obj.field` reads a field from an object
+- Dot field assignment: `obj.field = value;` sets a field on an object
+- Dot method calls: `obj.method(args)` calls a method with access to object fields
+- Objects print as `<ClassName object>`
+- Added C-style `for` loop: `for (let i = 0; i < n; i = i + 1) { ... }`
+- Added `for-in` loop over arrays: `for (item in arr) { ... }`
+- `@unsafe` now also works with `for` loops
+- Float truthiness: `0.0` is falsy, non-zero is truthy
+- Object truthiness: objects are truthy
+
 ## v0.0.7 — 2026-03-22
 - Added arrays / lists: `let arr = [1, 2, 3];`
 - Array index access: `arr[0]`

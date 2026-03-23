@@ -25,6 +25,7 @@ private:
     NodePtr parseReturnStmt();
     NodePtr parseIfStmt();
     NodePtr parseWhileStmt();
+    NodePtr parseForStmt();
     NodePtr parseWaitStmt();
     NodePtr parseExprStmt();
 
@@ -33,5 +34,7 @@ private:
     ExprPtr parseComparison();
     ExprPtr parseAddSub();
     ExprPtr parseMulDiv();
+    ExprPtr parseUnary();
+    ExprPtr parsePostfix(ExprPtr left);
     ExprPtr parsePrimary();
 };

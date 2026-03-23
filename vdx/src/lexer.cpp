@@ -49,6 +49,12 @@ Token Lexer::readNumber() {
     int sl = line, sc = col;
     std::string val;
     while (pos < src.size() && isdigit(cur())) { val += cur(); advance(); }
+    // Check for float: digits followed by '.' and more digits
+    if (pos < src.size() && cur() == '.' && (pos + 1) < src.size() && isdigit(peek())) {
+        val += cur(); advance(); // consume '.'
+        while (pos < src.size() && isdigit(cur())) { val += cur(); advance(); }
+        return Token(TokenType::FLOAT, val, sl, sc);
+    }
     return Token(TokenType::INTEGER, val, sl, sc);
 }
 
@@ -67,6 +73,11 @@ Token Lexer::readWord() {
     if (val == "this") return Token(TokenType::KW_THIS, val, sl, sc);
     if (val == "while") return Token(TokenType::KW_WHILE, val, sl, sc);
     if (val == "wait") return Token(TokenType::KW_WAIT, val, sl, sc);
+    if (val == "new") return Token(TokenType::KW_NEW, val, sl, sc);
+    if (val == "for") return Token(TokenType::KW_FOR, val, sl, sc);
+    if (val == "in") return Token(TokenType::KW_IN, val, sl, sc);
+    if (val == "true") return Token(TokenType::KW_TRUE, val, sl, sc);
+    if (val == "false") return Token(TokenType::KW_FALSE, val, sl, sc);
     return Token(TokenType::IDENTIFIER, val, sl, sc);
 }
 
@@ -117,6 +128,7 @@ std::vector<Token> Lexer::tokenize() {
             case ')': tokens.push_back(Token(TokenType::RPAREN, ")", sl, sc)); break;
             case ';': tokens.push_back(Token(TokenType::SEMICOLON, ";", sl, sc)); break;
             case ',': tokens.push_back(Token(TokenType::COMMA, ",", sl, sc)); break;
+            case ':': tokens.push_back(Token(TokenType::COLON, ":", sl, sc)); break;
             case '=': tokens.push_back(Token(TokenType::EQUALS, "=", sl, sc)); break;
             case '+': tokens.push_back(Token(TokenType::PLUS, "+", sl, sc)); break;
             case '-': tokens.push_back(Token(TokenType::MINUS, "-", sl, sc)); break;

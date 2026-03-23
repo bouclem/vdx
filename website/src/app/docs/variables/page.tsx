@@ -5,7 +5,7 @@ export default function VariablesDoc() {
     <DocPage title="Variables (let)">
       <p>
         Variables are declared with <code className="text-[#A78BFA]">let</code> and can hold
-        strings or integers.
+        strings, integers, floats, booleans, arrays, or objects.
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Declaration</h2>
@@ -47,8 +47,20 @@ print(x);      // 20`}</code></pre>
             <td className="p-3">Integer</td>
             <td className="p-3"><code className="text-[#A78BFA]">42</code></td>
           </tr>
+          <tr className="border-t border-white/10">
+            <td className="p-3">Float</td>
+            <td className="p-3"><code className="text-[#A78BFA]">3.14</code></td>
+          </tr>
+          <tr className="border-t border-white/10">
+            <td className="p-3">Boolean</td>
+            <td className="p-3"><code className="text-[#A78BFA]">true</code> / <code className="text-[#A78BFA]">false</code></td>
+          </tr>
         </tbody>
       </table>
+      <p className="text-sm text-gray-400 mt-3">
+        You can add optional type annotations for runtime checking. See{" "}
+        <a href="/docs/types" className="text-[#A78BFA] hover:underline">Types</a>.
+      </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Using variables in print</h2>
       <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">

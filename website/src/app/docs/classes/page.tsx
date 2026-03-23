@@ -53,6 +53,25 @@ class Second {
     print("I run second");
 }`}</code></pre>
       </div>
+
+      <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Classes as blueprints</h2>
+      <p>
+        Classes can also be used as blueprints for object instantiation with{" "}
+        <code className="text-[#A78BFA]">new</code>. See{" "}
+        <a href="/docs/objects" className="text-[#A78BFA] hover:underline">Objects (new)</a>.
+      </p>
+      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+        <pre className="text-sm"><code>{`class Point {
+    let x: int = 0;
+    let y: int = 0;
+}
+
+class Main {
+    let p = new Point();
+    p.x = 10;
+    print(p.x);   // 10
+}`}</code></pre>
+      </div>
     </DocPage>
   );
 }

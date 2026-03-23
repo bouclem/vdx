@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 
-// ── AST Nodes (v0.0.5: class + print + let + fn + operators + if + while + wait) ──
+// ── AST Nodes (v0.0.8: types + new/objects + for loop) ──
 
 struct Node {
     int line = 0;
@@ -23,6 +23,14 @@ struct StringLiteral : Expr {
 
 struct IntLiteral : Expr {
     int value;
+};
+
+struct FloatLiteral : Expr {
+    double value;
+};
+
+struct BoolLiteral : Expr {
+    bool value;
 };
 
 struct IdentifierExpr : Expr {
@@ -53,11 +61,30 @@ struct IndexExpr : Expr {
     ExprPtr index;
 };
 
+// new ClassName()
+struct NewExpr : Expr {
+    std::string className;
+};
+
+// obj.field (read)
+struct DotExpr : Expr {
+    ExprPtr object;
+    std::string field;
+};
+
+// obj.method(args)
+struct DotCallExpr : Expr {
+    ExprPtr object;
+    std::string method;
+    std::vector<ExprPtr> args;
+};
+
 // ── Statements ──
 
-// let x = expr;
+// let x = expr;  OR  let x: type = expr;
 struct LetStmt : Node {
     std::string name;
+    std::string typeAnnotation; // "" if no annotation
     ExprPtr value;
 };
 
@@ -86,32 +113,54 @@ struct IfStmt : Node {
 };
 
 // while (cond) { body }
-// @unsafe while (cond) { body } — disables loop speed protection
 struct WhileStmt : Node {
     ExprPtr condition;
     std::vector<NodePtr> body;
     bool isUnsafe = false;
 };
 
-// wait(expr);
-struct WaitStmt : Node {
-    ExprPtr duration; // milliseconds
+// for (init; cond; update) { body }
+struct ForStmt : Node {
+    NodePtr init;       // LetStmt or AssignStmt
+    ExprPtr condition;
+    NodePtr update;     // AssignStmt
+    std::vector<NodePtr> body;
+    bool isUnsafe = false;
 };
 
-// name = expr; (variable reassignment)
+// for (name in expr) { body }
+struct ForInStmt : Node {
+    std::string varName;
+    ExprPtr iterable;
+    std::vector<NodePtr> body;
+};
+
+// wait(expr);
+struct WaitStmt : Node {
+    ExprPtr duration;
+};
+
+// name = expr;
 struct AssignStmt : Node {
     std::string name;
     ExprPtr value;
 };
 
-// arr[index] = expr; (index assignment)
+// arr[index] = expr;
 struct IndexAssignStmt : Node {
     std::string name;
     ExprPtr index;
     ExprPtr value;
 };
 
-// expression as statement (e.g., myFunc();)
+// obj.field = expr;
+struct DotAssignStmt : Node {
+    ExprPtr object;
+    std::string field;
+    ExprPtr value;
+};
+
+// expression as statement
 struct ExprStmt : Node {
     ExprPtr expr;
 };

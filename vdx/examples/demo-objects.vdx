@@ -1,0 +1,55 @@
+// demo-objects.vdx — Tests new/object instantiation (v0.0.8)
+
+class Point {
+    let x: int = 0;
+    let y: int = 0;
+
+    fn setXY(nx, ny) {
+        x = nx;
+        y = ny;
+    }
+
+    fn getX() {
+        return x;
+    }
+
+    fn getY() {
+        return y;
+    }
+
+    fn describe() {
+        print("Point:", x, y);
+    }
+}
+
+class Main {
+    // Create objects
+    let p1 = new Point();
+    let p2 = new Point();
+
+    // Access fields
+    print("p1.x:", p1.x);
+    print("p1.y:", p1.y);
+
+    // Set fields via dot assignment
+    p1.x = 10;
+    p1.y = 20;
+    print("after set p1.x:", p1.x);
+    print("after set p1.y:", p1.y);
+
+    // Call methods
+    p2.setXY(5, 15);
+    print("p2.x:", p2.getX());
+    print("p2.y:", p2.getY());
+
+    // Method that uses fields
+    p1.describe();
+    p2.describe();
+
+    // Objects are independent
+    print("p1 != p2:", p1.x, "vs", p2.x);
+
+    // Print object
+    print("p1:", p1);
+    print("p2:", p2);
+}

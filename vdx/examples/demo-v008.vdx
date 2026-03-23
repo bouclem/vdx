@@ -1,0 +1,49 @@
+// demo-v008.vdx — Tests v0.0.8 features: types, new/objects, for loop
+
+class Demo {
+    // ── Types ──
+
+    // Float literals
+    let pi: float = 3.14;
+    let radius: float = 5.0;
+    print("pi:", pi);
+    print("radius:", radius);
+    print("area:", pi * radius * radius);
+
+    // Boolean literals
+    let active: bool = true;
+    let done: bool = false;
+    print("active:", active);
+    print("done:", done);
+
+    // Type annotations
+    let count: int = 42;
+    let name: string = "VDX";
+    print("count:", count);
+    print("name:", name);
+
+    // Mixed int/float arithmetic
+    print("10 + 3.5 =", 10 + 3.5);
+    print("2 * 3.14 =", 2 * 3.14);
+
+    // ── For loop (C-style) ──
+    print("--- for loop ---");
+    @unsafe for (let i = 0; i < 5; i = i + 1) {
+        print("i:", i);
+    }
+
+    // ── For-in loop ──
+    print("--- for-in loop ---");
+    let fruits = ["apple", "banana", "cherry"];
+    for (fruit in fruits) {
+        print("fruit:", fruit);
+    }
+
+    // ── For loop with float ──
+    print("--- float sum ---");
+    let sum: float = 0.0;
+    @unsafe for (let i = 1; i < 4; i = i + 1) {
+        sum = sum + 1.5;
+    }
+    print("sum:", sum);
+}
