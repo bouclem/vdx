@@ -49,22 +49,22 @@ const docSections = [
 
 export default function DocsPage() {
   return (
-    <div className="max-w-4xl mx-auto px-6 py-16">
-      <h1 className="text-4xl font-bold text-white mb-4">Documentation</h1>
-      <p className="text-gray-400 mb-12 text-lg">
-        Everything you need to know about VDX.
+    <div className="max-w-5xl mx-auto px-6 py-16">
+      <h1 className="text-3xl font-bold text-white mb-2">Documentation</h1>
+      <p className="text-[--vdx-muted] mb-12">
+        Language reference for VDX v0.0.8.
       </p>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-2 gap-x-16 gap-y-10">
         {docSections.map((section) => (
-          <div key={section.title} className="bg-[#110827] border border-white/10 rounded-xl p-6">
-            <h2 className="text-lg font-semibold text-white mb-4">{section.title}</h2>
-            <ul className="space-y-2">
+          <div key={section.title}>
+            <h2 className="text-xs font-mono text-[--vdx-muted] uppercase tracking-wider mb-3">{section.title}</h2>
+            <ul className="space-y-1.5">
               {section.items.map((item) => (
                 <li key={item.href}>
                   <a
                     href={item.href}
-                    className="text-gray-400 hover:text-[#A78BFA] transition-colors text-sm"
+                    className="text-sm text-zinc-300 hover:text-white transition-colors"
                   >
                     {item.name}
                   </a>

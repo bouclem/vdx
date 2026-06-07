@@ -1,49 +1,43 @@
 export default function Home() {
   return (
-    <>
+    <div className="max-w-5xl mx-auto px-6">
       {/* Hero */}
-      <section className="flex flex-col items-center justify-center text-center px-6 py-32">
-        <div className="mb-6">
-          <svg width="80" height="80" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="512" height="512" rx="96" fill="#6C2BD9" />
-            <path d="M152 128L256 384L360 128" stroke="white" strokeWidth="48" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="256" cy="416" r="16" fill="#A78BFA" />
-          </svg>
-        </div>
-        <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 tracking-tight">
-          VDX
+      <section className="pt-24 pb-20">
+        <p className="text-[--vdx-muted] text-sm font-mono mb-4">v0.0.8 — by Voidware</p>
+        <h1 className="text-4xl md:text-5xl font-bold text-white mb-5 tracking-tight leading-tight">
+          The VDX Programming Language
         </h1>
-        <p className="text-xl md:text-2xl text-gray-400 max-w-2xl mb-8">
-          A fast, safe programming language built for AI and games.
+        <p className="text-lg text-[--vdx-muted] max-w-xl mb-8 leading-relaxed">
+          A fast, safe language built for AI and games. Class-based, interpreted,
+          with built-in safety and a familiar syntax.
         </p>
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           <a
             href="/download"
-            className="bg-[#6C2BD9] hover:bg-[#5B21B6] text-white px-8 py-3 rounded-xl text-lg font-medium transition-colors"
+            className="bg-white text-[--vdx-dark] px-5 py-2.5 rounded-md text-sm font-medium hover:bg-zinc-200 transition-colors"
           >
             Download
           </a>
           <a
             href="/docs"
-            className="border border-white/20 hover:border-white/40 text-white px-8 py-3 rounded-xl text-lg font-medium transition-colors"
+            className="border border-[--vdx-border] text-white px-5 py-2.5 rounded-md text-sm font-medium hover:border-zinc-500 transition-colors"
           >
-            Documentation
+            Read the docs
           </a>
         </div>
       </section>
 
       {/* Code preview */}
-      <section className="max-w-3xl mx-auto px-6 pb-24">
-        <div className="bg-[#110827] border border-white/10 rounded-2xl overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-            <span className="w-3 h-3 rounded-full bg-red-500/80" />
-            <span className="w-3 h-3 rounded-full bg-yellow-500/80" />
-            <span className="w-3 h-3 rounded-full bg-green-500/80" />
-            <span className="ml-3 text-xs text-gray-500">hello.vdx</span>
+      <section className="pb-24">
+        <div className="border border-[--vdx-border] rounded-lg overflow-hidden bg-[--vdx-surface]">
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-[--vdx-border]">
+            <span className="text-xs text-[--vdx-muted] font-mono">hello.vdx</span>
+            <span className="text-xs text-[--vdx-muted]">VDX 0.0.8</span>
           </div>
-          <pre className="p-6 text-sm leading-relaxed overflow-x-auto">
+          <pre className="p-5 text-[13px] leading-relaxed overflow-x-auto text-zinc-300">
             <code>{`class Hello {
-    let name = "VDX";
+    let name: string = "VDX";
+    let version: float = 0.8;
     print("Welcome to", this.name);
 
     fn max(a, b) {
@@ -52,38 +46,58 @@ export default function Home() {
     }
 
     print("max(3, 7) =", max(3, 7));
+
+    let langs = ["Java", "C++", "Rust"];
+    for (lang in langs) {
+        print("Inspired by:", lang);
+    }
 }`}</code>
           </pre>
         </div>
       </section>
 
       {/* Features */}
-      <section className="max-w-5xl mx-auto px-6 pb-24">
-        <h2 className="text-3xl font-bold text-white text-center mb-12">Why VDX?</h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="bg-[#110827] border border-white/10 rounded-xl p-6">
-            <div className="text-2xl mb-3">🛡️</div>
-            <h3 className="text-lg font-semibold text-white mb-2">Safe by Default</h3>
-            <p className="text-gray-400 text-sm">
-              Built-in loop protection prevents infinite loops. Use <code className="text-[#A78BFA]">@unsafe</code> when you need full control.
+      <section className="pb-24">
+        <h2 className="text-sm font-mono text-[--vdx-muted] uppercase tracking-wider mb-8">Features</h2>
+        <div className="grid md:grid-cols-2 gap-x-16 gap-y-8">
+          <div>
+            <h3 className="text-white font-medium mb-1.5">Safe by default</h3>
+            <p className="text-[--vdx-muted] text-sm leading-relaxed">
+              Loop protection prevents infinite loops at runtime. Opt out with <code className="text-[--vdx-accent]">@unsafe</code> when you need control.
             </p>
           </div>
-          <div className="bg-[#110827] border border-white/10 rounded-xl p-6">
-            <div className="text-2xl mb-3">⚡</div>
-            <h3 className="text-lg font-semibold text-white mb-2">Fast</h3>
-            <p className="text-gray-400 text-sm">
-              Compiled with C++17. Designed for performance-critical applications like games and AI.
+          <div>
+            <h3 className="text-white font-medium mb-1.5">C++17 interpreter</h3>
+            <p className="text-[--vdx-muted] text-sm leading-relaxed">
+              Tree-walking interpreter written in modern C++. Fast startup, minimal footprint.
             </p>
           </div>
-          <div className="bg-[#110827] border border-white/10 rounded-xl p-6">
-            <div className="text-2xl mb-3">🎮</div>
-            <h3 className="text-lg font-semibold text-white mb-2">Built for Games &amp; AI</h3>
-            <p className="text-gray-400 text-sm">
-              From the ground up, VDX is designed with game development and artificial intelligence in mind.
+          <div>
+            <h3 className="text-white font-medium mb-1.5">Type system</h3>
+            <p className="text-[--vdx-muted] text-sm leading-relaxed">
+              Optional type annotations with runtime checking. Supports int, float, string, bool, arrays, and objects.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-white font-medium mb-1.5">Object-oriented</h3>
+            <p className="text-[--vdx-muted] text-sm leading-relaxed">
+              Classes, object instantiation with <code className="text-[--vdx-accent]">new</code>, dot access, and methods.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-white font-medium mb-1.5">Familiar syntax</h3>
+            <p className="text-[--vdx-muted] text-sm leading-relaxed">
+              If you know Java, C++, or Python, you already know VDX. Minimal learning curve.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-white font-medium mb-1.5">One-click install</h3>
+            <p className="text-[--vdx-muted] text-sm leading-relaxed">
+              Windows MSI installer adds <code className="text-[--vdx-accent]">vdx</code> to your PATH. Run from any terminal.
             </p>
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }

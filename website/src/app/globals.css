@@ -1,15 +1,25 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
   --vdx-purple: #6C2BD9;
-  --vdx-dark: #0A0118;
-  --vdx-light: #E0CCFF;
-  --vdx-accent: #A78BFA;
+  --vdx-dark: #09090b;
+  --vdx-surface: #111113;
+  --vdx-border: #27272a;
+  --vdx-text: #e4e4e7;
+  --vdx-muted: #71717a;
+  --vdx-accent: #8b5cf6;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--vdx-dark);
-  color: #e2e8f0;
+  color: var(--vdx-text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
@@ -17,6 +27,10 @@ body {
   color: white;
 }
 
-code {
+code, pre {
   font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+
+a {
+  transition: color 0.15s ease;
 }

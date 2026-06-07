@@ -7,11 +7,13 @@ export default function DocPage({
 }) {
   return (
     <div className="max-w-3xl mx-auto px-6 py-16">
-      <a href="/docs" className="text-[#A78BFA] text-sm mb-6 inline-block hover:underline">
-        ← Back to Docs
-      </a>
-      <h1 className="text-4xl font-bold text-white mb-6">{title}</h1>
-      <div className="prose prose-invert max-w-none space-y-6 text-gray-300 leading-relaxed">
+      <nav className="text-sm text-[--vdx-muted] mb-8 font-mono">
+        <a href="/docs" className="hover:text-white">docs</a>
+        <span className="mx-2">/</span>
+        <span className="text-zinc-300">{title.toLowerCase()}</span>
+      </nav>
+      <h1 className="text-2xl font-bold text-white mb-8">{title}</h1>
+      <div className="space-y-5 text-sm text-zinc-300 leading-relaxed [&_code]:text-[--vdx-accent] [&_code]:text-[13px] [&_pre]:bg-[--vdx-surface] [&_pre]:border [&_pre]:border-[--vdx-border] [&_pre]:rounded-lg [&_pre]:p-4 [&_pre]:overflow-x-auto [&_pre]:text-[13px] [&_h2]:text-white [&_h2]:font-semibold [&_h2]:text-base [&_h2]:mt-8 [&_h2]:mb-3 [&_h3]:text-white [&_h3]:font-medium [&_h3]:text-sm [&_h3]:mt-6 [&_h3]:mb-2">
         {children}
       </div>
     </div>
