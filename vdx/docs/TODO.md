@@ -26,7 +26,7 @@
 - [x] `wait(ms)`
 - [x] Variable reassignment (`name = expr;`)
 
-## v0.0.6 (current)
+## v0.0.6
 - [x] Loop safety protection (blocks while loops iterating < 2s)
 - [x] `@unsafe` annotation to bypass loop protection
 - [x] SVG icon (`assets/icon.svg`)

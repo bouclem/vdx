@@ -15,11 +15,12 @@ This monorepo contains two projects:
 
 VDX is a class-based, interpreted language inspired by Java, C++, Rust, Python, and C#.
 
-**Current version: 0.0.6**
+**Current version: 0.0.8**
 
 ### Features
 - `class` declarations — all code lives inside classes
-- `let` variables (string, integer) with reassignment
+- `let` variables (string, integer, float, bool) with reassignment
+- Optional type annotations: `let x: int = 5;`, `let pi: float = 3.14;`
 - `fn` functions with parameters and `return`
 - `print()` with expression evaluation
 - Operators: `+` `-` `*` `/` `==` `!=` `<` `>` `<=` `>=`
@@ -27,9 +28,16 @@ VDX is a class-based, interpreted language inspired by Java, C++, Rust, Python, 
 - `this` keyword for class-scope access
 - `if` / `elif` / `else` control flow
 - `while` loops with built-in safety protection
+- `for` loops (C-style): `for (let i = 0; i < n; i = i + 1) { ... }`
+- `for-in` loops over arrays: `for (item in arr) { ... }`
+- Arrays: `[1, 2, 3]`, index access/assignment, `len()`, `push()`
+- Objects: `new ClassName()`, dot access (`obj.field`), dot methods (`obj.method()`)
+- Types: `float` literals, `true`/`false` booleans, runtime type checking
+- Mixed int/float arithmetic with auto-promotion
 - `wait(ms)` to pause execution
 - `@unsafe` annotation to bypass loop protection
 - Block scoping
+- Improved error reporting with source context
 
 ### Quick start
 
@@ -52,8 +60,9 @@ vdx myfile.vdx
 
 ```
 class Hello {
-    let name = "VDX";
-    print("Welcome to", this.name);
+    let name: string = "VDX";
+    let version: float = 0.8;
+    print("Welcome to", this.name, "v", version);
 
     fn max(a, b) {
         if (a > b) { return a; }
@@ -62,15 +71,16 @@ class Hello {
 
     print("max(3, 7) =", max(3, 7));
 
-    // Fast loop — requires @unsafe
-    fn countdown(n) {
-        @unsafe while (n > 0) {
-            print(n);
-            n = n - 1;
-        }
+    // Arrays and for-in
+    let langs = ["Java", "C++", "Rust"];
+    for (lang in langs) {
+        print("Inspired by:", lang);
     }
 
-    countdown(5);
+    // C-style for loop
+    @unsafe for (let i = 0; i < 3; i = i + 1) {
+        print("i:", i);
+    }
 }
 ```
 
