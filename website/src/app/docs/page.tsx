@@ -51,14 +51,14 @@ export default function DocsPage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-16">
       <h1 className="text-3xl font-bold text-white mb-2">Documentation</h1>
-      <p className="text-[--vdx-muted] mb-12">
+      <p className="text-[var(--vdx-muted)] mb-12">
         Language reference for VDX v0.0.8.
       </p>
 
       <div className="grid md:grid-cols-2 gap-x-16 gap-y-10">
         {docSections.map((section) => (
           <div key={section.title}>
-            <h2 className="text-xs font-mono text-[--vdx-muted] uppercase tracking-wider mb-3">{section.title}</h2>
+            <h2 className="text-xs font-mono text-[var(--vdx-muted)] uppercase tracking-wider mb-3">{section.title}</h2>
             <ul className="space-y-1.5">
               {section.items.map((item) => (
                 <li key={item.href}>

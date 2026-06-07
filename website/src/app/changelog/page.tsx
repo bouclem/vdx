@@ -112,7 +112,7 @@ export default function ChangelogPage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-16">
       <h1 className="text-3xl font-bold text-white mb-2">Changelog</h1>
-      <p className="text-[--vdx-muted] mb-12">
+      <p className="text-[var(--vdx-muted)] mb-12">
         All notable changes to VDX, by version.
       </p>
 
@@ -121,14 +121,14 @@ export default function ChangelogPage() {
           <section key={release.version} id={`v${release.version.replace(/\./g, "")}`}>
             <div className="flex items-baseline gap-4 mb-4">
               <h2 className="text-lg font-mono font-medium text-white">v{release.version}</h2>
-              <span className="text-sm text-[--vdx-muted]">{release.date}</span>
+              <span className="text-sm text-[var(--vdx-muted)]">{release.date}</span>
             </div>
             <ul className="space-y-1.5 text-sm text-zinc-300">
               {release.changes.map((change, i) => (
                 <li key={i} className="flex gap-2 leading-relaxed">
-                  <span className="text-[--vdx-border] shrink-0">—</span>
+                  <span className="text-[var(--vdx-border)] shrink-0">—</span>
                   <span dangerouslySetInnerHTML={{
-                    __html: change.replace(/`([^`]+)`/g, '<code class="text-[--vdx-accent] text-[13px]">$1</code>')
+                    __html: change.replace(/`([^`]+)`/g, '<code class="text-[var(--vdx-accent)] text-[13px]">$1</code>')
                   }} />
                 </li>
               ))}

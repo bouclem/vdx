@@ -14,7 +14,7 @@ const statusLabel: Record<VersionStatus, string> = {
 
 const statusClass: Record<VersionStatus, string> = {
   current: "text-emerald-400",
-  old: "text-[--vdx-muted]",
+  old: "text-[var(--vdx-muted)]",
   deprecated: "text-red-400",
 };
 
@@ -63,26 +63,26 @@ export default function DownloadPage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-16">
       <h1 className="text-3xl font-bold text-white mb-2">Download</h1>
-      <p className="text-[--vdx-muted] mb-12">
+      <p className="text-[var(--vdx-muted)] mb-12">
         Install VDX on Windows. After installation, run{" "}
-        <code className="text-[--vdx-accent]">vdx yourfile.vdx</code> from any terminal.
+        <code className="text-[var(--vdx-accent)]">vdx yourfile.vdx</code> from any terminal.
       </p>
 
       {/* Current release */}
       {current !== null && (
         <section className="mb-16">
-          <div className="border border-[--vdx-border] rounded-lg p-6 bg-[--vdx-surface]">
+          <div className="border border-[var(--vdx-border)] rounded-lg p-6 bg-[var(--vdx-surface)]">
             <div className="flex items-baseline justify-between mb-4">
               <div className="flex items-baseline gap-3">
                 <span className="text-xl font-mono font-medium text-white">v{current.version}</span>
                 <span className="text-xs font-mono text-emerald-400">current</span>
               </div>
-              <span className="text-sm text-[--vdx-muted]">{current.date}</span>
+              <span className="text-sm text-[var(--vdx-muted)]">{current.date}</span>
             </div>
-            <ul className="text-sm text-[--vdx-muted] mb-6 space-y-1">
+            <ul className="text-sm text-[var(--vdx-muted)] mb-6 space-y-1">
               {current.notes.map((note, i) => (
                 <li key={i} className="flex gap-2">
-                  <span className="text-[--vdx-border]">—</span>
+                  <span className="text-[var(--vdx-border)]">—</span>
                   {note}
                 </li>
               ))}
@@ -104,8 +104,8 @@ export default function DownloadPage() {
 
       {/* Version history */}
       <section>
-        <h2 className="text-sm font-mono text-[--vdx-muted] uppercase tracking-wider mb-6">All releases</h2>
-        <div className="border border-[--vdx-border] rounded-lg divide-y divide-[--vdx-border]">
+        <h2 className="text-sm font-mono text-[var(--vdx-muted)] uppercase tracking-wider mb-6">All releases</h2>
+        <div className="border border-[var(--vdx-border)] rounded-lg divide-y divide-[var(--vdx-border)]">
           {versions.map((v) => {
             const isDownloadable = v.status !== "deprecated";
 
@@ -123,19 +123,19 @@ export default function DownloadPage() {
                   <span className={`text-xs font-mono ${statusClass[v.status]}`}>
                     {statusLabel[v.status]}
                   </span>
-                  <span className="text-xs text-[--vdx-muted]">{v.date}</span>
+                  <span className="text-xs text-[var(--vdx-muted)]">{v.date}</span>
                 </div>
                 {isDownloadable ? (
                   <a
                     href={getDownloadUrl(v.version)}
-                    className="text-[--vdx-accent] hover:text-white text-sm font-mono"
+                    className="text-[var(--vdx-accent)] hover:text-white text-sm font-mono"
                   >
                     .msi
                   </a>
                 ) : (
                   <a
                     href={`/changelog#v${v.version.replace(/\./g, "")}`}
-                    className="text-[--vdx-muted] hover:text-white text-sm font-mono"
+                    className="text-[var(--vdx-muted)] hover:text-white text-sm font-mono"
                   >
                     changelog
                   </a>
@@ -144,9 +144,9 @@ export default function DownloadPage() {
             );
           })}
         </div>
-        <p className="text-xs text-[--vdx-muted] mt-4">
+        <p className="text-xs text-[var(--vdx-muted)] mt-4">
           Deprecated versions link to their changelog entry. Downloads are served from{" "}
-          <a href={`https://github.com/${GITHUB_REPO}/releases`} className="text-[--vdx-accent] hover:text-white">
+          <a href={`https://github.com/${GITHUB_REPO}/releases`} className="text-[var(--vdx-accent)] hover:text-white">
             GitHub Releases
           </a>.
         </p>
