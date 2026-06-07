@@ -14,7 +14,7 @@ export default function Home() {
         <div className="flex gap-3">
           <a
             href="/download"
-            className="bg-white text-[--vdx-dark] px-5 py-2.5 rounded-md text-sm font-medium hover:bg-zinc-200 transition-colors"
+            className="bg-white text-black px-5 py-2.5 rounded-md text-sm font-semibold hover:bg-zinc-200 transition-colors"
           >
             Download
           </a>
