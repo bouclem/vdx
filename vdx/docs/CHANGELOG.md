@@ -1,5 +1,27 @@
 # VDX Changelog
 
+## v0.0.9 — 2026-06-08
+- Added `break` statement: exit loops early with `break;`
+- Added `continue` statement: skip to next loop iteration with `continue;`
+- Added `const` keyword: declare constants that cannot be reassigned
+- Constants support type annotations: `const PI: float = 3.14;`
+- Added `math` module with functions:
+  - `math.sqrt(x)` — square root
+  - `math.pow(base, exp)` — power
+  - `math.abs(x)` — absolute value
+  - `math.sin(x)`, `math.cos(x)`, `math.tan(x)` — trigonometry (radians)
+  - `math.floor(x)`, `math.ceil(x)`, `math.round(x)` — rounding
+  - `math.min(a, b, ...)` — minimum value
+  - `math.max(a, b, ...)` — maximum value
+  - `math.random()` — random float 0-1
+  - `math.random(max)` — random int 0 to max-1
+  - `math.random(min, max)` — random int min to max
+  - `math.pi` — constant PI value
+- Created `vdx/src/modules/` directory for built-in modules
+- Interpreter tracks const variables to prevent reassignment
+- Loop control statements work with `while`, `for`, and `for-in` loops
+- Break/continue exceptions properly propagate through function calls
+
 ## v0.0.8 — 2026-03-23
 - Added `float` type: float literals with decimal point (e.g., `3.14`, `5.0`)
 - Added `true` / `false` boolean literals

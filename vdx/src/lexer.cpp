@@ -78,6 +78,9 @@ Token Lexer::readWord() {
     if (val == "in") return Token(TokenType::KW_IN, val, sl, sc);
     if (val == "true") return Token(TokenType::KW_TRUE, val, sl, sc);
     if (val == "false") return Token(TokenType::KW_FALSE, val, sl, sc);
+    if (val == "break") return Token(TokenType::KW_BREAK, val, sl, sc);
+    if (val == "continue") return Token(TokenType::KW_CONTINUE, val, sl, sc);
+    if (val == "const") return Token(TokenType::KW_CONST, val, sl, sc);
     return Token(TokenType::IDENTIFIER, val, sl, sc);
 }
 

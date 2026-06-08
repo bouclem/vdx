@@ -44,6 +44,9 @@ NodePtr Parser::parseClassDecl() {
 NodePtr Parser::parseStatement() {
     if (check(TokenType::KW_FN)) return parseFnDecl();
     if (check(TokenType::KW_LET)) return parseLetStmt();
+    if (check(TokenType::KW_CONST)) return parseConstStmt();
+    if (check(TokenType::KW_BREAK)) return parseBreakStmt();
+    if (check(TokenType::KW_CONTINUE)) return parseContinueStmt();
     if (check(TokenType::KW_PRINT)) return parsePrintStmt();
     if (check(TokenType::KW_RETURN)) return parseReturnStmt();
     if (check(TokenType::KW_IF)) return parseIfStmt();
@@ -171,6 +174,42 @@ NodePtr Parser::parseLetStmt() {
     }
     expect(TokenType::EQUALS, "Expected '='");
     stmt->value = parseExpr();
+    expect(TokenType::SEMICOLON, "Expected ';'");
+    return stmt;
+}
+
+NodePtr Parser::parseConstStmt() {
+    int ln = cur().line;
+    expect(TokenType::KW_CONST, "Expected 'const'");
+    auto stmt = std::make_shared<LetStmt>();
+    stmt->line = ln;
+    stmt->isConst = true;
+    stmt->name = expect(TokenType::IDENTIFIER, "Expected variable name").value;
+    // Optional type annotation: const x: int = ...
+    if (check(TokenType::COLON)) {
+        advance(); // skip ':'
+        stmt->typeAnnotation = expect(TokenType::IDENTIFIER, "Expected type name after ':'").value;
+    }
+    expect(TokenType::EQUALS, "Expected '='");
+    stmt->value = parseExpr();
+    expect(TokenType::SEMICOLON, "Expected ';'");
+    return stmt;
+}
+
+NodePtr Parser::parseBreakStmt() {
+    int ln = cur().line;
+    expect(TokenType::KW_BREAK, "Expected 'break'");
+    auto stmt = std::make_shared<BreakStmt>();
+    stmt->line = ln;
+    expect(TokenType::SEMICOLON, "Expected ';'");
+    return stmt;
+}
+
+NodePtr Parser::parseContinueStmt() {
+    int ln = cur().line;
+    expect(TokenType::KW_CONTINUE, "Expected 'continue'");
+    auto stmt = std::make_shared<ContinueStmt>();
+    stmt->line = ln;
     expect(TokenType::SEMICOLON, "Expected ';'");
     return stmt;
 }

@@ -43,7 +43,7 @@
 - [x] Built-in `push()` to append to arrays
 - [x] Improved error reporting (source context, line numbers, file name)
 
-## v0.0.8 (current)
+## v0.0.8
 - [x] Types: `float` literals (`3.14`), `true`/`false` boolean literals
 - [x] Optional type annotations: `let x: int = 5;`, `let pi: float = 3.14;`, `let name: string = "hi";`, `let ok: bool = true;`
 - [x] Runtime type checking on annotated variables
@@ -55,6 +55,15 @@
 - [x] C-style `for` loop: `for (let i = 0; i < n; i = i + 1) { ... }`
 - [x] `for-in` loop over arrays: `for (item in arr) { ... }`
 - [x] `@unsafe` support for `for` loops
+
+## v0.0.9 (current)
+- [x] `break` statement for exiting loops early
+- [x] `continue` statement for skipping loop iterations
+- [x] `const` keyword for immutable variables
+- [x] Const type annotations: `const PI: float = 3.14;`
+- [x] `math` module with: sqrt, pow, abs, sin, cos, tan, floor, ceil, round, min, max, random, pi
+- [x] `vdx/src/modules/` directory structure
+- [x] Loop control exception handling
 
 ## Future
 - [ ] Self-hosting (rewrite compiler in VDX)

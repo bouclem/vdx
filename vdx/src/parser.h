@@ -21,6 +21,9 @@ private:
     NodePtr parseStatement();
     NodePtr parseFnDecl();
     NodePtr parseLetStmt();
+    NodePtr parseConstStmt();
+    NodePtr parseBreakStmt();
+    NodePtr parseContinueStmt();
     NodePtr parsePrintStmt();
     NodePtr parseReturnStmt();
     NodePtr parseIfStmt();

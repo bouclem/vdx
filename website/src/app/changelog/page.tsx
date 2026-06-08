@@ -1,4 +1,56 @@
+// Mapping of code terms to documentation links
+const codeLinks: Record<string, string> = {
+  "break": "/docs/break",
+  "continue": "/docs/continue",
+  "const": "/docs/const",
+  "math": "/docs/math",
+  "let": "/docs/variables",
+  "fn": "/docs/functions",
+  "if": "/docs/if-elif-else",
+  "elif": "/docs/if-elif-else",
+  "else": "/docs/if-elif-else",
+  "while": "/docs/while",
+  "for": "/docs/for",
+  "return": "/docs/return",
+  "this": "/docs/this",
+  "print": "/docs/print",
+  "wait": "/docs/wait",
+  "@unsafe": "/docs/unsafe",
+  "new": "/docs/objects",
+  "true": "/docs/types",
+  "false": "/docs/types",
+  "int": "/docs/types",
+  "float": "/docs/types",
+  "string": "/docs/types",
+  "bool": "/docs/types",
+};
+
+// Replace code ticks with linked versions
+function linkifyCode(text: string): string {
+  return text.replace(/`([^`]+)`/g, (match, code) => {
+    const link = codeLinks[code];
+    if (link) {
+      return `<a href="${link}" class="text-[var(--vdx-accent)] text-[13px] hover:underline">${code}</a>`;
+    }
+    return `<code class="text-[var(--vdx-accent)] text-[13px]">${code}</code>`;
+  });
+}
+
 const changelog = [
+  {
+    version: "0.0.9",
+    date: "2026-06-08",
+    changes: [
+      "Added `break` statement for exiting loops early",
+      "Added `continue` statement for skipping to next loop iteration",
+      "Added `const` keyword for declaring immutable constants",
+      "Constants support type annotations: `const PI: float = 3.14;`",
+      "Added `math` module with 12+ functions: `sqrt`, `pow`, `abs`, `sin`, `cos`, `tan`, `floor`, `ceil`, `round`, `min`, `max`, `random`, `pi`",
+      "Interpreter tracks const variables to prevent reassignment",
+      "Loop control statements work with `while`, `for`, and `for-in` loops",
+      "Break/continue exceptions properly propagate through function calls",
+    ],
+  },
   {
     version: "0.0.8",
     date: "2026-03-23",
@@ -128,7 +180,7 @@ export default function ChangelogPage() {
                 <li key={i} className="flex gap-2 leading-relaxed">
                   <span className="text-[var(--vdx-border)] shrink-0">—</span>
                   <span dangerouslySetInnerHTML={{
-                    __html: change.replace(/`([^`]+)`/g, '<code class="text-[var(--vdx-accent)] text-[13px]">$1</code>')
+                    __html: linkifyCode(change)
                   }} />
                 </li>
               ))}

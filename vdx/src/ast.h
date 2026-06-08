@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 
-// ── AST Nodes (v0.0.8: types + new/objects + for loop) ──
+// ── AST Nodes (v0.0.9: break/continue + const + modules) ──
 
 struct Node {
     int line = 0;
@@ -81,11 +81,12 @@ struct DotCallExpr : Expr {
 
 // ── Statements ──
 
-// let x = expr;  OR  let x: type = expr;
+// let x = expr;  OR  let x: type = expr;  OR  const x = expr;
 struct LetStmt : Node {
     std::string name;
     std::string typeAnnotation; // "" if no annotation
     ExprPtr value;
+    bool isConst = false;
 };
 
 // print(expr, expr);
@@ -164,6 +165,12 @@ struct DotAssignStmt : Node {
 struct ExprStmt : Node {
     ExprPtr expr;
 };
+
+// break;
+struct BreakStmt : Node {};
+
+// continue;
+struct ContinueStmt : Node {};
 
 // fn name(params) { body }
 struct FnDecl : Node {

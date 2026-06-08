@@ -49,24 +49,34 @@ struct ReturnException {
     Value value;
 };
 
+struct BreakException {};
+struct ContinueException {};
+
 class Interpreter {
 public:
     void run(const Program& program);
     int currentLine = 0;
 
 private:
-    std::vector<std::unordered_map<std::string, Value>> scopes;
+    struct ScopeEntry {
+        Value value;
+        bool isConst = false;
+    };
+    std::vector<std::unordered_map<std::string, ScopeEntry>> scopes;
     std::unordered_map<std::string, const FnDecl*> functions;
     std::unordered_map<std::string, const ClassDecl*> classDecls;
 
     void pushScope();
     void popScope();
     Value* lookupVar(const std::string& name);
-    void declareVar(const std::string& name, const Value& val);
+    bool isVarConst(const std::string& name);
+    void declareVar(const std::string& name, const Value& val, bool isConst = false);
 
     void execClass(const ClassDecl* cls);
     void execStatement(const NodePtr& node);
     void execLet(const LetStmt* stmt);
+    void execBreak(const BreakStmt* stmt);
+    void execContinue(const ContinueStmt* stmt);
     void execPrint(const PrintStmt* stmt);
     void execReturn(const ReturnStmt* stmt);
     void execIf(const IfStmt* stmt);

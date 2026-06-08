@@ -52,13 +52,24 @@ void Interpreter::popScope() {
 Value* Interpreter::lookupVar(const std::string& name) {
     for (int i = (int)scopes.size() - 1; i >= 0; i--) {
         auto it = scopes[i].find(name);
-        if (it != scopes[i].end()) return &it->second;
+        if (it != scopes[i].end()) return &it->second.value;
     }
     return nullptr;
 }
 
-void Interpreter::declareVar(const std::string& name, const Value& val) {
-    scopes.back()[name] = val;
+bool Interpreter::isVarConst(const std::string& name) {
+    for (int i = (int)scopes.size() - 1; i >= 0; i--) {
+        auto it = scopes[i].find(name);
+        if (it != scopes[i].end()) return it->second.isConst;
+    }
+    return false;
+}
+
+void Interpreter::declareVar(const std::string& name, const Value& val, bool isConst) {
+    ScopeEntry entry;
+    entry.value = val;
+    entry.isConst = isConst;
+    scopes.back()[name] = entry;
 }
 
 // ── Type checking ──
@@ -140,6 +151,9 @@ void Interpreter::execStatement(const NodePtr& node) {
     } else if (auto wt = dynamic_cast<WaitStmt*>(node.get())) {
         execWait(wt);
     } else if (auto assign = dynamic_cast<AssignStmt*>(node.get())) {
+        if (isVarConst(assign->name)) {
+            throw std::runtime_error("[VDX] Cannot assign to const variable '" + assign->name + "' at line " + std::to_string(currentLine));
+        }
         Value* v = lookupVar(assign->name);
         if (!v) {
             throw std::runtime_error("[VDX] Undefined variable '" + assign->name + "' (use 'let' to declare) at line " + std::to_string(currentLine));
@@ -170,13 +184,25 @@ void Interpreter::execStatement(const NodePtr& node) {
         obj.objVal->fields[dotAssign->field] = evalExpr(dotAssign->value.get());
     } else if (auto es = dynamic_cast<ExprStmt*>(node.get())) {
         evalExpr(es->expr.get());
+    } else if (auto brk = dynamic_cast<BreakStmt*>(node.get())) {
+        execBreak(brk);
+    } else if (auto cont = dynamic_cast<ContinueStmt*>(node.get())) {
+        execContinue(cont);
     }
 }
 
 void Interpreter::execLet(const LetStmt* stmt) {
     Value val = evalExpr(stmt->value.get());
     checkType(stmt->typeAnnotation, val, stmt->line);
-    declareVar(stmt->name, val);
+    declareVar(stmt->name, val, stmt->isConst);
+}
+
+void Interpreter::execBreak(const BreakStmt* stmt) {
+    throw BreakException();
+}
+
+void Interpreter::execContinue(const ContinueStmt* stmt) {
+    throw ContinueException();
 }
 
 void Interpreter::execPrint(const PrintStmt* stmt) {
@@ -198,21 +224,45 @@ void Interpreter::execReturn(const ReturnStmt* stmt) {
 void Interpreter::execIf(const IfStmt* stmt) {
     if (isTruthy(evalExpr(stmt->condition.get()))) {
         pushScope();
-        for (auto& s : stmt->thenBody) execStatement(s);
+        try {
+            for (auto& s : stmt->thenBody) execStatement(s);
+        } catch (BreakException&) {
+            popScope();
+            throw;
+        } catch (ContinueException&) {
+            popScope();
+            throw;
+        }
         popScope();
         return;
     }
     for (auto& elif : stmt->elifs) {
         if (isTruthy(evalExpr(elif.condition.get()))) {
             pushScope();
-            for (auto& s : elif.body) execStatement(s);
+            try {
+                for (auto& s : elif.body) execStatement(s);
+            } catch (BreakException&) {
+                popScope();
+                throw;
+            } catch (ContinueException&) {
+                popScope();
+                throw;
+            }
             popScope();
             return;
         }
     }
     if (!stmt->elseBody.empty()) {
         pushScope();
-        for (auto& s : stmt->elseBody) execStatement(s);
+        try {
+            for (auto& s : stmt->elseBody) execStatement(s);
+        } catch (BreakException&) {
+            popScope();
+            throw;
+        } catch (ContinueException&) {
+            popScope();
+            throw;
+        }
         popScope();
     }
 }
@@ -222,7 +272,15 @@ void Interpreter::execWhile(const WhileStmt* stmt) {
         auto iterStart = std::chrono::steady_clock::now();
 
         pushScope();
-        for (auto& s : stmt->body) execStatement(s);
+        try {
+            for (auto& s : stmt->body) execStatement(s);
+        } catch (BreakException&) {
+            popScope();
+            break;
+        } catch (ContinueException&) {
+            popScope();
+            // continue to next iteration
+        }
         popScope();
 
         if (!stmt->isUnsafe) {
@@ -250,7 +308,16 @@ void Interpreter::execFor(const ForStmt* stmt) {
         auto iterStart = std::chrono::steady_clock::now();
 
         pushScope(); // body scope
-        for (auto& s : stmt->body) execStatement(s);
+        try {
+            for (auto& s : stmt->body) execStatement(s);
+        } catch (BreakException&) {
+            popScope();
+            popScope(); // pop init scope too
+            return;
+        } catch (ContinueException&) {
+            popScope();
+            // continue to update
+        }
         popScope();
 
         // Execute update
@@ -280,8 +347,16 @@ void Interpreter::execForIn(const ForInStmt* stmt) {
     }
     for (size_t i = 0; i < iterable.arrVal.size(); i++) {
         pushScope();
-        declareVar(stmt->varName, iterable.arrVal[i]);
-        for (auto& s : stmt->body) execStatement(s);
+        declareVar(stmt->varName, iterable.arrVal[i], false);
+        try {
+            for (auto& s : stmt->body) execStatement(s);
+        } catch (BreakException&) {
+            popScope();
+            break;
+        } catch (ContinueException&) {
+            popScope();
+            continue;
+        }
         popScope();
     }
 }
@@ -339,7 +414,7 @@ Value Interpreter::execNew(const NewExpr* expr) {
     // Capture all variables from the current scope as fields
     if (!scopes.empty()) {
         for (auto& pair : scopes.back()) {
-            obj->fields[pair.first] = pair.second;
+            obj->fields[pair.first] = pair.second.value;
         }
     }
 
@@ -396,7 +471,7 @@ Value Interpreter::execCall(const CallExpr* call) {
 
     pushScope();
     for (size_t i = 0; i < fn->params.size(); i++) {
-        declareVar(fn->params[i], argVals[i]);
+        declareVar(fn->params[i], argVals[i], false);
     }
 
     Value result = Value::makeVoid();
@@ -406,6 +481,12 @@ Value Interpreter::execCall(const CallExpr* call) {
         }
     } catch (ReturnException& e) {
         result = e.value;
+    } catch (BreakException&) {
+        popScope();
+        throw;
+    } catch (ContinueException&) {
+        popScope();
+        throw;
     }
 
     popScope();
@@ -517,11 +598,11 @@ Value Interpreter::evalExpr(const Expr* expr) {
         // Push object fields as scope, then function params
         pushScope();
         for (auto& pair : obj.objVal->fields) {
-            declareVar(pair.first, pair.second);
+            declareVar(pair.first, pair.second, false);
         }
         pushScope();
         for (size_t i = 0; i < fn->params.size(); i++) {
-            declareVar(fn->params[i], argVals[i]);
+            declareVar(fn->params[i], argVals[i], false);
         }
 
         Value result = Value::makeVoid();
@@ -531,6 +612,14 @@ Value Interpreter::evalExpr(const Expr* expr) {
             }
         } catch (ReturnException& e) {
             result = e.value;
+        } catch (BreakException&) {
+            popScope(); // param scope
+            popScope(); // object fields scope
+            throw;
+        } catch (ContinueException&) {
+            popScope(); // param scope
+            popScope(); // object fields scope
+            throw;
         }
 
         // Update object fields from the object scope (methods may modify fields)
@@ -538,7 +627,7 @@ Value Interpreter::evalExpr(const Expr* expr) {
         if (scopes.size() >= 2) {
             auto& objScope = scopes[scopes.size() - 2];
             for (auto& pair : objScope) {
-                obj.objVal->fields[pair.first] = pair.second;
+                obj.objVal->fields[pair.first] = pair.second.value;
             }
         }
 
