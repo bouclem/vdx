@@ -25,9 +25,20 @@ const versions: {
   notes: string[];
 }[] = [
   {
+    version: "0.0.9",
+    date: "2026-06-08",
+    status: "current",
+    notes: [
+      "break and continue statements for loop control",
+      "const keyword for immutable constants",
+      "math module with 12+ functions (sqrt, pow, sin, cos, etc.)",
+      "Constants support type annotations",
+    ],
+  },
+  {
     version: "0.0.8",
     date: "2026-03-23",
-    status: "current",
+    status: "old",
     notes: [
       "Types: float literals, true/false booleans, optional type annotations",
       "Object instantiation with new, dot access, and methods",
