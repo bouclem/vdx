@@ -1,5 +1,12 @@
 # VDX Changelog
 
+## v0.0.10 — 2026-06-08
+- Added modulo operator `%`: calculate remainder (e.g., `10 % 3` = 1)
+- Added increment `++` and decrement `--` operators
+- Prefix form: `++x` and `--x` (returns value after operation)
+- Postfix form: `x++` and `x--` (returns value before operation)
+- MSI installer now asks to add vdx to system PATH (optional checkbox)
+
 ## v0.0.9 — 2026-06-08
 - Added `break` statement: exit loops early with `break;`
 - Added `continue` statement: skip to next loop iteration with `continue;`

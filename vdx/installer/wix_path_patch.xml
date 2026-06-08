@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CPackWiXPatch>
-  <CPackWiXFragment Id="CM_CP_bin.vdx.exe">
-    <Environment xmlns="http://wixtoolset.org/schemas/v4/wxs"
-                 Id="PATH" Name="PATH" Value="[INSTALL_ROOT]bin"
-                 Permanent="no" Part="last" Action="set" System="yes" />
+  <!-- Add the PATH component reference to the main feature -->
+  <CPackWiXFragment Id="#PRODUCTFEATURE">
+    <ComponentRef xmlns="http://wixtoolset.org/schemas/v4/wxs" Id="VDX_PATH_Component" />
   </CPackWiXFragment>
 </CPackWiXPatch>

@@ -15,7 +15,7 @@ This monorepo contains two projects:
 
 VDX is a class-based, interpreted language inspired by Java, C++, Rust, Python, and C#.
 
-**Current version: 0.0.9**
+**Current version: 0.0.10**
 
 ### Features
 - `class` declarations — all code lives inside classes
@@ -24,7 +24,7 @@ VDX is a class-based, interpreted language inspired by Java, C++, Rust, Python, 
 - Optional type annotations: `let x: int = 5;`, `let pi: float = 3.14;`, `const PI: float = 3.14;`
 - `fn` functions with parameters and `return`
 - `print()` with expression evaluation
-- Operators: `+` `-` `*` `/` `==` `!=` `<` `>` `<=` `>=`
+- Operators: `+` `-` `*` `/` `%` `==` `!=` `<` `>` `<=` `>=` `++` `--`
 - String concatenation with `+`
 - `this` keyword for class-scope access
 - `if` / `elif` / `else` control flow
@@ -40,6 +40,8 @@ VDX is a class-based, interpreted language inspired by Java, C++, Rust, Python, 
 - `break` statement for exiting loops early
 - `continue` statement for skipping to next loop iteration
 - `math` module with functions: `sqrt`, `pow`, `abs`, `sin`, `cos`, `tan`, `floor`, `ceil`, `round`, `min`, `max`, `random`, `pi`
+- Modulo operator `%` for remainder calculations
+- Increment `++` and decrement `--` operators (prefix and postfix)
 - Block scoping
 - Improved error reporting with source context
 

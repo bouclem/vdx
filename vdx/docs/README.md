@@ -4,7 +4,7 @@ The programming language of **Voidware** ([voidware.xyz](https://voidware.xyz)).
 
 Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future focus on AI and games.
 
-## Version: 0.0.8
+## Version: 0.0.10
 
 ### Supported Features
 - `class` declarations
@@ -13,7 +13,7 @@ Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future fo
 - Optional type annotations: `let x: int = 5;`, `let pi: float = 3.14;`
 - Variable reassignment (`name = expr;`)
 - `fn` function declarations with parameters and `return`
-- Operators: `+`, `-`, `*`, `/`, `==`, `!=`, `<`, `>`, `<=`, `>=`
+- Operators: `+`, `-`, `*`, `/`, `%`, `==`, `!=`, `<`, `>`, `<=`, `>=`, `++`, `--`
 - String concatenation with `+`
 - Parenthesized expressions
 - `this` keyword for class-scope variable access
@@ -32,6 +32,10 @@ Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future fo
 - **Arrays** — `let arr = [1, 2, 3];`, index access `arr[0]`, index assignment `arr[0] = 5;`
 - **Built-in `len()`** — returns length of arrays and strings
 - **Built-in `push()`** — appends a value to an array: `push(arr, 4);`
+- **`break`** — exit loops early
+- **`continue`** — skip to next loop iteration
+- **`const`** — declare immutable constants: `const PI = 3.14;`
+- **`math` module** — math functions: `sqrt`, `pow`, `abs`, `sin`, `cos`, `tan`, `floor`, `ceil`, `round`, `min`, `max`, `random`, `pi`
 - **Improved error reporting** — errors now show source file, line number, and surrounding code context
 
 ### Loop Safety

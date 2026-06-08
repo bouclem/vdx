@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  wix_path_dialog.wxs
+  Custom UI based on WixUI_InstallDir with VDX_PathDlg inserted between
+  InstallDirDlg and VerifyReadyDlg to show the "Add to PATH" checkbox.
+  Referenced via CPACK_WIX_UI_REF = "VDX_InstallDir" in CMakeLists.txt.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+
+  <!-- ── PATH component (conditional on ADD_TO_PATH checkbox) ── -->
+  <Fragment>
+    <DirectoryRef Id="CM_DP_bin">
+      <Component Id="VDX_PATH_Component" Guid="B3C4D5E6-F7A8-9012-BCDE-F01234567891"
+                 Condition="ADD_TO_PATH = 1">
+        <Environment Id="VDX_PATH" Name="PATH" Value="[INSTALL_ROOT]bin"
+                     Action="set" Part="last" Permanent="no" System="yes" />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+
+  <!-- ── Custom UI (copy of WixUI_InstallDir_X64 with VDX_PathDlg inserted) ── -->
+  <Fragment>
+    <UI Id="VDX_InstallDir_X64">
+
+      <!-- Path validation publish (same as built-in WixUI_InstallDir_X64) -->
+      <Publish Dialog="BrowseDlg" Control="OK"
+               Event="CheckTargetPath" Value="[WIXUI_INSTALLDIR]" Order="1" />
+      <Publish Dialog="InstallDirDlg" Control="Next"
+               Event="CheckTargetPath" Value="[WIXUI_INSTALLDIR]" Order="1" />
+
+      <!-- InstallDirDlg Next → VDX_PathDlg (Order=5 with same condition as built-in, beats Order=4 VerifyReadyDlg route) -->
+      <Publish Dialog="InstallDirDlg" Control="Next"
+               Event="NewDialog" Value="VDX_PathDlg" Order="5"
+               Condition="WIXUI_DONTVALIDATEPATH OR WIXUI_INSTALLDIR_VALID=&quot;1&quot;" />
+
+      <!-- VerifyReadyDlg Back → VDX_PathDlg (Order=3, beats built-in Order=1 for NOT Installed) -->
+      <Publish Dialog="VerifyReadyDlg" Control="Back"
+               Event="NewDialog" Value="VDX_PathDlg" Order="3" Condition="NOT Installed" />
+
+      <!-- Include all common WixUI_InstallDir dialogs -->
+      <ui:WixUI Id="WixUI_InstallDir" />
+
+    </UI>
+
+    <!-- Default: checkbox ticked -->
+    <Property Id="ADD_TO_PATH" Value="1" />
+
+  </Fragment>
+
+  <!-- ── VDX_PathDlg dialog definition ── -->
+  <Fragment>
+    <UI Id="VDX_PathDlg_UI">
+      <Dialog Id="VDX_PathDlg" Width="370" Height="270" Title="[ProductName] Setup">
+
+        <Control Id="BannerBitmap" Type="Bitmap"
+                 X="0" Y="0" Width="370" Height="44" TabSkip="yes"
+                 Text="WixUI_Bmp_Banner" />
+        <Control Id="BannerLine" Type="Line"
+                 X="0" Y="44" Width="370" Height="0" />
+        <Control Id="BottomLine" Type="Line"
+                 X="0" Y="234" Width="370" Height="0" />
+
+        <Control Id="Title" Type="Text"
+                 X="15" Y="6" Width="200" Height="15"
+                 Transparent="yes" NoPrefix="yes"
+                 Text="{\WixUI_Font_Title}Additional Options" />
+        <Control Id="Description" Type="Text"
+                 X="25" Y="23" Width="280" Height="15"
+                 Transparent="yes" NoPrefix="yes"
+                 Text="Choose additional installation options." />
+
+        <Control Id="AddToPathCheckbox" Type="CheckBox"
+                 X="20" Y="80" Width="290" Height="17"
+                 Property="ADD_TO_PATH" CheckBoxValue="1"
+                 Text="&amp;Add vdx to the system PATH (recommended)" />
+        <Control Id="AddToPathNote" Type="Text"
+                 X="34" Y="99" Width="276" Height="18"
+                 Text="Allows running vdx from any command prompt or terminal." />
+
+        <Control Id="Back" Type="PushButton"
+                 X="180" Y="243" Width="56" Height="17"
+                 Text="&amp;Back">
+          <Publish Event="NewDialog" Value="InstallDirDlg" Condition="1" />
+        </Control>
+        <Control Id="Next" Type="PushButton"
+                 X="236" Y="243" Width="56" Height="17"
+                 Default="yes" Text="&amp;Install">
+          <Publish Event="NewDialog" Value="VerifyReadyDlg" Condition="1" />
+        </Control>
+        <Control Id="Cancel" Type="PushButton"
+                 X="304" Y="243" Width="56" Height="17"
+                 Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg" Condition="1" />
+        </Control>
+
+      </Dialog>
+    </UI>
+
+  </Fragment>
+
+</Wix>
