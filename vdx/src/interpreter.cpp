@@ -635,6 +635,58 @@ Value Interpreter::evalExpr(const Expr* expr) {
         popScope(); // object fields scope
         return result;
     }
+    // Modulo: a % b
+    if (auto mod = dynamic_cast<const ModuloExpr*>(expr)) {
+        Value left = evalExpr(mod->left.get());
+        Value right = evalExpr(mod->right.get());
+        if (!left.isNumeric() || !right.isNumeric()) {
+            throw std::runtime_error("[VDX] Modulo operands must be numeric at line " + std::to_string(currentLine));
+        }
+        // Use fmod for floats to allow both int and float modulo
+        double l = left.toDouble();
+        double r = right.toDouble();
+        if (r == 0) {
+            throw std::runtime_error("[VDX] Division by zero in modulo at line " + std::to_string(currentLine));
+        }
+        double result = std::fmod(l, r);
+        // Return int if both operands were int, otherwise float
+        if (left.type == Value::INT && right.type == Value::INT) {
+            return Value::makeInt(static_cast<int64_t>(result));
+        }
+        return Value::makeFloat(result);
+    }
+    // Increment/decrement: ++x, x++, --x, x--
+    if (auto incDec = dynamic_cast<const IncDecExpr*>(expr)) {
+        Value* var = lookupVar(incDec->name);
+        if (!var) {
+            throw std::runtime_error("[VDX] Undefined variable '" + incDec->name + "' at line " + std::to_string(currentLine));
+        }
+        if (!var->isNumeric()) {
+            throw std::runtime_error("[VDX] Cannot increment/decrement non-numeric value at line " + std::to_string(currentLine));
+        }
+
+        // Get original value
+        Value original = *var;
+        double origVal = original.toDouble();
+
+        // Calculate new value
+        double delta = incDec->isIncrement ? 1.0 : -1.0;
+        double newVal = origVal + delta;
+
+        // Update the variable
+        if (original.type == Value::INT) {
+            *var = Value::makeInt(static_cast<int64_t>(newVal));
+        } else {
+            *var = Value::makeFloat(newVal);
+        }
+
+        // Return original value for postfix, new value for prefix
+        if (incDec->isPrefix) {
+            return (original.type == Value::INT) ? Value::makeInt(static_cast<int64_t>(newVal)) : Value::makeFloat(newVal);
+        } else {
+            return original;
+        }
+    }
     throw std::runtime_error("[VDX] Unknown expression type at line " + std::to_string(currentLine));
 }
 

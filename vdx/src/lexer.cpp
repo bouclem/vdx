@@ -123,6 +123,8 @@ std::vector<Token> Lexer::tokenize() {
         if (c == '!' && cur() == '=') { advance(); tokens.push_back(Token(TokenType::BANGEQ, "!=", sl, sc)); continue; }
         if (c == '<' && cur() == '=') { advance(); tokens.push_back(Token(TokenType::LTEQ, "<=", sl, sc)); continue; }
         if (c == '>' && cur() == '=') { advance(); tokens.push_back(Token(TokenType::GTEQ, ">=", sl, sc)); continue; }
+        if (c == '+' && cur() == '+') { advance(); tokens.push_back(Token(TokenType::PLUS_PLUS, "++", sl, sc)); continue; }
+        if (c == '-' && cur() == '-') { advance(); tokens.push_back(Token(TokenType::MINUS_MINUS, "--", sl, sc)); continue; }
 
         switch (c) {
             case '{': tokens.push_back(Token(TokenType::LBRACE, "{", sl, sc)); break;
@@ -137,6 +139,7 @@ std::vector<Token> Lexer::tokenize() {
             case '-': tokens.push_back(Token(TokenType::MINUS, "-", sl, sc)); break;
             case '*': tokens.push_back(Token(TokenType::STAR, "*", sl, sc)); break;
             case '/': tokens.push_back(Token(TokenType::SLASH, "/", sl, sc)); break;
+            case '%': tokens.push_back(Token(TokenType::PERCENT, "%", sl, sc)); break;
             case '<': tokens.push_back(Token(TokenType::LT, "<", sl, sc)); break;
             case '>': tokens.push_back(Token(TokenType::GT, ">", sl, sc)); break;
             case '.': tokens.push_back(Token(TokenType::DOT, ".", sl, sc)); break;

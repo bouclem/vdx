@@ -23,6 +23,9 @@ const codeLinks: Record<string, string> = {
   "float": "/docs/types",
   "string": "/docs/types",
   "bool": "/docs/types",
+  "%": "/docs/modulo",
+  "++": "/docs/increment-decrement",
+  "--": "/docs/increment-decrement",
 };
 
 // Replace code ticks with linked versions
@@ -37,6 +40,17 @@ function linkifyCode(text: string): string {
 }
 
 const changelog = [
+  {
+    version: "0.0.10",
+    date: "2026-06-08",
+    changes: [
+      "Added modulo operator `%` for game calculations (e.g., `x % 2`, `playerIndex % teamSize`)",
+      "Added increment `++` and decrement `--` operators",
+      "Prefix form: `++x` and `--x` (returns new value)",
+      "Postfix form: `x++` and `x--` (returns old value)",
+      "MSI installer now properly adds vdx to system PATH",
+    ],
+  },
   {
     version: "0.0.9",
     date: "2026-06-08",

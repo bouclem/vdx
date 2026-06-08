@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 
-// ── AST Nodes (v0.0.9: break/continue + const + modules) ──
+// ── AST Nodes (v0.0.10: modulo + increment/decrement) ──
 
 struct Node {
     int line = 0;
@@ -41,6 +41,19 @@ struct BinaryExpr : Expr {
     ExprPtr left;
     std::string op;
     ExprPtr right;
+};
+
+// a % b (modulo operator)
+struct ModuloExpr : Expr {
+    ExprPtr left;
+    ExprPtr right;
+};
+
+// ++x, x++, --x, x-- (increment/decrement)
+struct IncDecExpr : Expr {
+    std::string name;      // variable name
+    bool isIncrement;      // true for ++, false for --
+    bool isPrefix;         // true for ++x, false for x++
 };
 
 struct CallExpr : Expr {

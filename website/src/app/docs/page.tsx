@@ -16,6 +16,8 @@ const docSections = [
       { name: "Types", href: "/docs/types" },
       { name: "Functions (fn)", href: "/docs/functions" },
       { name: "Operators", href: "/docs/operators" },
+      { name: "Modulo (%)", href: "/docs/modulo" },
+      { name: "Increment/Decrement (++/--)", href: "/docs/increment-decrement" },
       { name: "Arrays", href: "/docs/arrays" },
       { name: "Objects (new)", href: "/docs/objects" },
       { name: "Print", href: "/docs/print" },
@@ -61,7 +63,7 @@ export default function DocsPage() {
     <div className="max-w-5xl mx-auto px-6 py-16">
       <h1 className="text-3xl font-bold text-white mb-2">Documentation</h1>
       <p className="text-[var(--vdx-muted)] mb-12">
-        Language reference for VDX v0.0.9.
+        Language reference for VDX v0.0.10.
       </p>
 
       <div className="grid md:grid-cols-2 gap-x-16 gap-y-10">

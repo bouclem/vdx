@@ -441,21 +441,45 @@ ExprPtr Parser::parseAddSub() {
 
 ExprPtr Parser::parseMulDiv() {
     auto left = parseUnary();
-    while (check(TokenType::STAR) || check(TokenType::SLASH)) {
+    while (check(TokenType::STAR) || check(TokenType::SLASH) || check(TokenType::PERCENT)) {
         int ln = cur().line;
-        std::string op = advance().value;
+        TokenType tt = cur().type;
+        advance();
         auto right = parseUnary();
-        auto bin = std::make_shared<BinaryExpr>();
-        bin->line = ln;
-        bin->left = left;
-        bin->op = op;
-        bin->right = right;
-        left = bin;
+        if (tt == TokenType::PERCENT) {
+            auto mod = std::make_shared<ModuloExpr>();
+            mod->line = ln;
+            mod->left = left;
+            mod->right = right;
+            left = mod;
+        } else {
+            std::string op = (tt == TokenType::STAR) ? "*" : "/";
+            auto bin = std::make_shared<BinaryExpr>();
+            bin->line = ln;
+            bin->left = left;
+            bin->op = op;
+            bin->right = right;
+            left = bin;
+        }
     }
     return left;
 }
 
 ExprPtr Parser::parseUnary() {
+    // Prefix ++ and --
+    if (check(TokenType::PLUS_PLUS) || check(TokenType::MINUS_MINUS)) {
+        int ln = cur().line;
+        bool isIncrement = check(TokenType::PLUS_PLUS);
+        advance();
+        // Expect an identifier after prefix ++/--
+        std::string name = expect(TokenType::IDENTIFIER, "Expected variable name after " + std::string(isIncrement ? "++" : "--")).value;
+        auto incDec = std::make_shared<IncDecExpr>();
+        incDec->line = ln;
+        incDec->name = name;
+        incDec->isIncrement = isIncrement;
+        incDec->isPrefix = true;
+        return incDec;
+    }
     auto expr = parsePrimary();
     return parsePostfix(expr);
 }
@@ -498,6 +522,22 @@ ExprPtr Parser::parsePostfix(ExprPtr left) {
             idx->index = parseExpr();
             expect(TokenType::RBRACKET, "Expected ']'");
             left = idx;
+        } else if (check(TokenType::PLUS_PLUS) || check(TokenType::MINUS_MINUS)) {
+            // Postfix ++ and -- (e.g., x++ or x--)
+            int ln = cur().line;
+            bool isIncrement = check(TokenType::PLUS_PLUS);
+            advance();
+            // Get identifier from the left expression
+            auto idExpr = std::dynamic_pointer_cast<IdentifierExpr>(left);
+            if (!idExpr) {
+                throw std::runtime_error("[VDX] Expected variable name before " + std::string(isIncrement ? "++" : "--") + " at line " + std::to_string(ln));
+            }
+            auto incDec = std::make_shared<IncDecExpr>();
+            incDec->line = ln;
+            incDec->name = idExpr->name;
+            incDec->isIncrement = isIncrement;
+            incDec->isPrefix = false;
+            left = incDec;
         } else {
             break;
         }

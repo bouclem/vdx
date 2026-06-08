@@ -25,9 +25,19 @@ const versions: {
   notes: string[];
 }[] = [
   {
-    version: "0.0.9",
+    version: "0.0.10",
     date: "2026-06-08",
     status: "current",
+    notes: [
+      "Modulo operator `%` for game calculations",
+      "Increment `++` and decrement `--` operators (prefix and postfix)",
+      "MSI installer now properly adds vdx to PATH",
+    ],
+  },
+  {
+    version: "0.0.9",
+    date: "2026-06-08",
+    status: "old",
     notes: [
       "break and continue statements for loop control",
       "const keyword for immutable constants",
