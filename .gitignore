@@ -6,6 +6,7 @@ website/out/
 # VDX build
 vdx/build/
 **/build/
+/releases/
 
 # Installer artifacts
 *.wixpdb
