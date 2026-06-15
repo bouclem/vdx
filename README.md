@@ -15,7 +15,7 @@ This monorepo contains two projects:
 
 VDX is a class-based, interpreted language inspired by Java, C++, Rust, Python, and C#.
 
-**Current version: 0.0.10**
+**Current version: 0.0.11**
 
 ### Features
 - `class` declarations — all code lives inside classes
@@ -40,6 +40,11 @@ VDX is a class-based, interpreted language inspired by Java, C++, Rust, Python, 
 - `break` statement for exiting loops early
 - `continue` statement for skipping to next loop iteration
 - `math` module with functions: `sqrt`, `pow`, `abs`, `sin`, `cos`, `tan`, `floor`, `ceil`, `round`, `min`, `max`, `random`, `pi`
+- `import` statement — import other VDX files: `import "utils.vdx";`
+- `type()` — get type name as string: `type(42)` returns `"int"`
+- `input()` — read user input: `let name = input("Name: ");`
+- `pop()` — remove and return last array element: `let last = pop(arr);`
+- `len()` — now works with objects too (returns field count)
 - Modulo operator `%` for remainder calculations
 - Increment `++` and decrement `--` operators (prefix and postfix)
 - Block scoping

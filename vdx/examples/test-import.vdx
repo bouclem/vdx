@@ -1,0 +1,15 @@
+import "test-utils.vdx";
+
+class Main {
+    print("=== Testing import ===");
+    
+    // Use the imported add function
+    let result = add(5, 3);
+    print("add(5, 3):", result);
+    
+    // Use the imported greet function
+    let msg = greet("VDX");
+    print(msg);
+    
+    print("\nImport feature working!");
+}

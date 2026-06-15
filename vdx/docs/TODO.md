@@ -56,7 +56,21 @@
 - [x] `for-in` loop over arrays: `for (item in arr) { ... }`
 - [x] `@unsafe` support for `for` loops
 
-## v0.0.9 (current)
+## v0.0.11 (current)
+- [x] `import` statement: import other VDX files
+- [x] Circular import protection
+- [x] `type(value)` built-in: returns type as string
+- [x] `input()` built-in: read user input
+- [x] `input(prompt)` variant
+- [x] `pop(arr)` built-in: remove and return last element
+- [x] `len(obj)` extension for objects
+
+## v0.0.10
+- [x] Modulo operator `%`
+- [x] Increment `++` and decrement `--` operators
+- [x] MSI installer PATH option
+
+## v0.0.9
 - [x] `break` statement for exiting loops early
 - [x] `continue` statement for skipping loop iterations
 - [x] `const` keyword for immutable variables

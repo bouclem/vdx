@@ -11,14 +11,13 @@ $releasesDir = Join-Path $rootDir "releases"
 Write-Host "=== VDX Release Build Script ===" -ForegroundColor Cyan
 Write-Host ""
 
-# Step 1: Ensure build directory exists
+# Step 1: Clean and create build directory
 Write-Host "[1/5] Setting up build directory..." -ForegroundColor Yellow
-if (-not (Test-Path $buildDir)) {
-    New-Item -ItemType Directory -Path $buildDir -Force | Out-Null
-    Write-Host "      Created build directory" -ForegroundColor Green
-} else {
-    Write-Host "      Build directory exists" -ForegroundColor Green
+if (Test-Path $buildDir) {
+    Remove-Item -Path $buildDir -Recurse -Force
 }
+New-Item -ItemType Directory -Path $buildDir -Force | Out-Null
+Write-Host "      Build directory prepared" -ForegroundColor Green
 
 # Step 2: Configure with CMake
 Write-Host "[2/5] Configuring with CMake..." -ForegroundColor Yellow

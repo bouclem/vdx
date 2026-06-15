@@ -1,0 +1,35 @@
+class Point {
+    let x = 10;
+    let y = 20;
+}
+
+class TestV011 {
+    // Test type()
+    print("=== Testing type() ===");
+    let x = 42;
+    let y = 3.14;
+    let s = "hello";
+    let b = true;
+    let arr = [1, 2, 3];
+    
+    print("type(42):", type(x));
+    print("type(3.14):", type(y));
+    print("type('hello'):", type(s));
+    print("type(true):", type(b));
+    print("type([1,2,3]):", type(arr));
+    
+    // Test pop()
+    print("\n=== Testing pop() ===");
+    let nums = [10, 20, 30];
+    print("Original array:", nums);
+    let last = pop(nums);
+    print("Popped value:", last);
+    print("After pop:", nums);
+    
+    // Test len() on objects
+    print("\n=== Testing len() on objects ===");
+    let p = new Point();
+    print("Point fields (len):", len(p));
+    
+    print("\nv0.0.11 features working!");
+}

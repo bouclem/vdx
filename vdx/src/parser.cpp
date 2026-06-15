@@ -22,9 +22,30 @@ Token Parser::expect(TokenType t, const std::string& msg) {
 Program Parser::parse() {
     Program prog;
     while (!check(TokenType::EOF_TOKEN)) {
-        prog.declarations.push_back(parseClassDecl());
+        if (check(TokenType::KW_IMPORT)) {
+            auto importNode = parseImportStmt();
+            auto importStmt = std::dynamic_pointer_cast<ImportStmt>(importNode);
+            if (importStmt) {
+                prog.imports.push_back(importStmt->filename);
+            }
+            // Store import nodes as declarations too for potential future use
+            prog.declarations.push_back(importNode);
+        } else {
+            prog.declarations.push_back(parseClassDecl());
+        }
     }
     return prog;
+}
+
+NodePtr Parser::parseImportStmt() {
+    int ln = cur().line;
+    expect(TokenType::KW_IMPORT, "Expected 'import'");
+    auto stmt = std::make_shared<ImportStmt>();
+    stmt->line = ln;
+    Token filenameToken = expect(TokenType::STRING, "Expected filename string after 'import'");
+    stmt->filename = filenameToken.value;
+    expect(TokenType::SEMICOLON, "Expected ';' after import filename");
+    return stmt;
 }
 
 NodePtr Parser::parseClassDecl() {

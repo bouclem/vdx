@@ -41,6 +41,21 @@ function linkifyCode(text: string): string {
 
 const changelog = [
   {
+    version: "0.0.11",
+    date: "2026-06-15",
+    changes: [
+      "Added `import` statement: import other VDX files with `import \"filename.vdx\";`",
+      "Imported files provide access to their classes and functions",
+      "Circular import protection prevents infinite loops",
+      "Added `type(value)` built-in: returns type name as string (\"int\", \"float\", \"string\", \"bool\", \"array\", \"object\", \"void\")",
+      "Added `input()` built-in: read user input from stdin",
+      "Added `input(prompt)` variant: print prompt then read input",
+      "Added `pop(arr)` built-in: remove and return last element from array",
+      "Extended `len(obj)`: now works with objects, returning number of fields",
+      "`len()` now supports arrays, strings, and objects",
+    ],
+  },
+  {
     version: "0.0.10",
     date: "2026-06-08",
     changes: [

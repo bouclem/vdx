@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 
-// ── AST Nodes (v0.0.10: modulo + increment/decrement) ──
+// ── AST Nodes (v0.0.11: import + type + input + pop + len(obj)) ──
 
 struct Node {
     int line = 0;
@@ -192,6 +192,11 @@ struct FnDecl : Node {
     std::vector<NodePtr> body;
 };
 
+// import "filename.vdx";
+struct ImportStmt : Node {
+    std::string filename;
+};
+
 // class Foo { ... }
 struct ClassDecl : Node {
     std::string name;
@@ -201,4 +206,5 @@ struct ClassDecl : Node {
 // Top-level program
 struct Program {
     std::vector<NodePtr> declarations;
+    std::vector<std::string> imports;  // resolved import filenames
 };

@@ -4,7 +4,7 @@ The programming language of **Voidware** ([voidware.xyz](https://voidware.xyz)).
 
 Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future focus on AI and games.
 
-## Version: 0.0.10
+## Version: 0.0.11
 
 ### Supported Features
 - `class` declarations
@@ -36,6 +36,11 @@ Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future fo
 - **`continue`** — skip to next loop iteration
 - **`const`** — declare immutable constants: `const PI = 3.14;`
 - **`math` module** — math functions: `sqrt`, `pow`, `abs`, `sin`, `cos`, `tan`, `floor`, `ceil`, `round`, `min`, `max`, `random`, `pi`
+- **`import`** — import other VDX files: `import "utils.vdx";`
+- **`type()`** — get type name as string: `type(42)` returns `"int"`
+- **`input()`** — read user input: `let name = input("Name: ");`
+- **`pop()`** — remove and return last array element: `let last = pop(arr);`
+- **Extended `len()`** — now works with objects (returns field count)
 - **Improved error reporting** — errors now show source file, line number, and surrounding code context
 
 ### Loop Safety

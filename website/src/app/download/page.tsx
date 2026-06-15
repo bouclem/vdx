@@ -25,9 +25,21 @@ const versions: {
   notes: string[];
 }[] = [
   {
+    version: "0.0.11",
+    date: "2026-06-15",
+    status: "current",
+    notes: [
+      "import statement to import other VDX files",
+      "type() function to get value type as string",
+      "input() function to read user input from stdin",
+      "pop() function to remove and return last array element",
+      "len() now works with objects (returns field count)",
+    ],
+  },
+  {
     version: "0.0.10",
     date: "2026-06-08",
-    status: "current",
+    status: "old",
     notes: [
       "Modulo operator `%` for game calculations",
       "Increment `++` and decrement `--` operators (prefix and postfix)",

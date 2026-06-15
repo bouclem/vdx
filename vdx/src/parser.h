@@ -18,6 +18,7 @@ private:
     Token expect(TokenType t, const std::string& msg);
 
     NodePtr parseClassDecl();
+    NodePtr parseImportStmt();
     NodePtr parseStatement();
     NodePtr parseFnDecl();
     NodePtr parseLetStmt();

@@ -2,6 +2,7 @@
 #include "ast.h"
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <memory>
 #include <stdexcept>
@@ -54,7 +55,7 @@ struct ContinueException {};
 
 class Interpreter {
 public:
-    void run(const Program& program);
+    void run(const Program& program, const std::string& sourceDir = "");
     int currentLine = 0;
 
 private:
@@ -65,6 +66,9 @@ private:
     std::vector<std::unordered_map<std::string, ScopeEntry>> scopes;
     std::unordered_map<std::string, const FnDecl*> functions;
     std::unordered_map<std::string, const ClassDecl*> classDecls;
+    std::unordered_set<std::string> importedFiles;
+    std::string sourceDirectory;
+    std::vector<std::shared_ptr<Program>> importedPrograms;  // Keep imported AST alive
 
     void pushScope();
     void popScope();
@@ -73,6 +77,7 @@ private:
     void declareVar(const std::string& name, const Value& val, bool isConst = false);
 
     void execClass(const ClassDecl* cls);
+    void execImport(const ImportStmt* stmt);
     void execStatement(const NodePtr& node);
     void execLet(const LetStmt* stmt);
     void execBreak(const BreakStmt* stmt);

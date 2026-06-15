@@ -81,6 +81,7 @@ Token Lexer::readWord() {
     if (val == "break") return Token(TokenType::KW_BREAK, val, sl, sc);
     if (val == "continue") return Token(TokenType::KW_CONTINUE, val, sl, sc);
     if (val == "const") return Token(TokenType::KW_CONST, val, sl, sc);
+    if (val == "import") return Token(TokenType::KW_IMPORT, val, sl, sc);
     return Token(TokenType::IDENTIFIER, val, sl, sc);
 }
 

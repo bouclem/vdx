@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <filesystem>
 
 // Split source into lines for error display
 static std::vector<std::string> splitLines(const std::string& src) {
@@ -86,7 +87,8 @@ int main(int argc, char* argv[]) {
         auto program = parser.parse();
 
         Interpreter interp;
-        interp.run(program);
+        std::string sourceDir = std::filesystem::path(filename).parent_path().string();
+        interp.run(program, sourceDir);
     } catch (const std::runtime_error& e) {
         printError(source, filename, e.what());
         return 1;

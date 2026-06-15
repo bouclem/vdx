@@ -1,9 +1,13 @@
 #include "interpreter.h"
+#include "lexer.h"
+#include "parser.h"
 #include <iostream>
 #include <thread>
 #include <chrono>
 #include <sstream>
 #include <cmath>
+#include <fstream>
+#include <filesystem>
 
 // ── Value::toString ──
 
@@ -102,16 +106,88 @@ void Interpreter::checkType(const std::string& annotation, const Value& val, int
 
 // ── Execution ──
 
-void Interpreter::run(const Program& program) {
-    // First pass: register all class declarations for 'new'
+void Interpreter::run(const Program& program, const std::string& sourceDir) {
+    sourceDirectory = sourceDir;
+
+    // First pass: process imports
+    for (auto& decl : program.declarations) {
+        auto importStmt = dynamic_cast<ImportStmt*>(decl.get());
+        if (importStmt) {
+            execImport(importStmt);
+        }
+    }
+
+    // Second pass: register all class declarations for 'new'
     for (auto& decl : program.declarations) {
         auto cls = dynamic_cast<ClassDecl*>(decl.get());
         if (cls) classDecls[cls->name] = cls;
     }
-    // Second pass: execute top-level classes
+    // Third pass: execute top-level classes
     for (auto& decl : program.declarations) {
         auto cls = dynamic_cast<ClassDecl*>(decl.get());
         if (cls) execClass(cls);
+    }
+}
+
+void Interpreter::execImport(const ImportStmt* stmt) {
+    // Resolve the import path
+    std::filesystem::path importPath;
+    if (std::filesystem::path(stmt->filename).is_absolute()) {
+        importPath = stmt->filename;
+    } else {
+        importPath = std::filesystem::path(sourceDirectory) / stmt->filename;
+    }
+
+    // Normalize and check for circular imports
+    std::string canonicalPath = std::filesystem::canonical(importPath).string();
+    if (importedFiles.count(canonicalPath)) {
+        return; // Already imported
+    }
+    importedFiles.insert(canonicalPath);
+
+    // Read and parse the imported file
+    std::ifstream file(importPath);
+    if (!file.is_open()) {
+        throw std::runtime_error("[VDX] Cannot import file '" + stmt->filename + "' at line " + std::to_string(stmt->line));
+    }
+
+    std::stringstream buf;
+    buf << file.rdbuf();
+    std::string source = buf.str();
+
+    Lexer lexer(source);
+    auto tokens = lexer.tokenize();
+
+    Parser parser(tokens);
+    auto importedProgram = std::make_shared<Program>(parser.parse());
+    
+    // Store imported program to keep AST nodes alive
+    importedPrograms.push_back(importedProgram);
+
+    // Import classes and functions from the imported file
+    std::string importDir = importPath.parent_path().string();
+
+    // Register imported classes
+    for (auto& decl : importedProgram->declarations) {
+        auto cls = dynamic_cast<ClassDecl*>(decl.get());
+        if (cls) {
+            classDecls[cls->name] = cls;
+        }
+    }
+
+    // Execute imported file's classes to register their functions
+    for (auto& decl : importedProgram->declarations) {
+        auto cls = dynamic_cast<ClassDecl*>(decl.get());
+        if (cls) {
+            // Only register functions, don't execute body
+            pushScope();
+            for (auto& node : cls->body) {
+                if (auto fn = dynamic_cast<FnDecl*>(node.get())) {
+                    functions[fn->name] = fn;
+                }
+            }
+            popScope();
+        }
     }
 }
 
@@ -134,7 +210,9 @@ void Interpreter::execClass(const ClassDecl* cls) {
 void Interpreter::execStatement(const NodePtr& node) {
     if (node->line > 0) currentLine = node->line;
 
-    if (auto let = dynamic_cast<LetStmt*>(node.get())) {
+    if (auto importStmt = dynamic_cast<ImportStmt*>(node.get())) {
+        execImport(importStmt);
+    } else if (auto let = dynamic_cast<LetStmt*>(node.get())) {
         execLet(let);
     } else if (auto print = dynamic_cast<PrintStmt*>(node.get())) {
         execPrint(print);
@@ -424,7 +502,7 @@ Value Interpreter::execNew(const NewExpr* expr) {
 }
 
 Value Interpreter::execCall(const CallExpr* call) {
-    // Built-in: len(array_or_string)
+    // Built-in: len(array_or_string_or_object)
     if (call->name == "len") {
         if (call->args.size() != 1) {
             throw std::runtime_error("[VDX] len() expects 1 argument, got " +
@@ -433,7 +511,13 @@ Value Interpreter::execCall(const CallExpr* call) {
         Value arg = evalExpr(call->args[0].get());
         if (arg.type == Value::ARRAY) return Value::makeInt((int)arg.arrVal.size());
         if (arg.type == Value::STRING) return Value::makeInt((int)arg.strVal.size());
-        throw std::runtime_error("[VDX] len() expects an array or string at line " + std::to_string(currentLine));
+        if (arg.type == Value::OBJECT) {
+            if (arg.objVal) {
+                return Value::makeInt((int)arg.objVal->fields.size());
+            }
+            return Value::makeInt(0);
+        }
+        throw std::runtime_error("[VDX] len() expects an array, string, or object at line " + std::to_string(currentLine));
     }
     // Built-in: push(array, value)
     if (call->name == "push") {
@@ -451,6 +535,62 @@ Value Interpreter::execCall(const CallExpr* call) {
         }
         arr->arrVal.push_back(evalExpr(call->args[1].get()));
         return Value::makeVoid();
+    }
+    // Built-in: pop(array) - removes and returns last element
+    if (call->name == "pop") {
+        if (call->args.size() != 1) {
+            throw std::runtime_error("[VDX] pop() expects 1 argument, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        auto id = dynamic_cast<const IdentifierExpr*>(call->args[0].get());
+        if (!id) {
+            throw std::runtime_error("[VDX] pop() argument must be a variable at line " + std::to_string(currentLine));
+        }
+        Value* arr = lookupVar(id->name);
+        if (!arr || arr->type != Value::ARRAY) {
+            throw std::runtime_error("[VDX] pop() argument must be an array variable at line " + std::to_string(currentLine));
+        }
+        if (arr->arrVal.empty()) {
+            throw std::runtime_error("[VDX] pop() cannot pop from empty array at line " + std::to_string(currentLine));
+        }
+        Value last = arr->arrVal.back();
+        arr->arrVal.pop_back();
+        return last;
+    }
+    // Built-in: type(value) - returns type as string
+    if (call->name == "type") {
+        if (call->args.size() != 1) {
+            throw std::runtime_error("[VDX] type() expects 1 argument, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        Value arg = evalExpr(call->args[0].get());
+        std::string typeName;
+        switch (arg.type) {
+            case Value::INT: typeName = "int"; break;
+            case Value::FLOAT: typeName = "float"; break;
+            case Value::STRING: typeName = "string"; break;
+            case Value::BOOL: typeName = "bool"; break;
+            case Value::VOID: typeName = "void"; break;
+            case Value::ARRAY: typeName = "array"; break;
+            case Value::OBJECT: typeName = "object"; break;
+        }
+        return Value::makeString(typeName);
+    }
+    // Built-in: input() or input(prompt) - reads user input
+    if (call->name == "input") {
+        if (call->args.size() > 1) {
+            throw std::runtime_error("[VDX] input() expects 0 or 1 arguments, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        // Print prompt if provided
+        if (call->args.size() == 1) {
+            Value prompt = evalExpr(call->args[0].get());
+            std::cout << prompt.toString();
+        }
+        // Read input
+        std::string input;
+        std::getline(std::cin, input);
+        return Value::makeString(input);
     }
 
     auto it = functions.find(call->name);

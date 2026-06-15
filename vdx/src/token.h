@@ -25,6 +25,7 @@ enum class TokenType {
     KW_BREAK,
     KW_CONTINUE,
     KW_CONST,
+    KW_IMPORT,
     IDENTIFIER,
     LBRACE,
     RBRACE,
