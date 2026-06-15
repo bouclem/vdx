@@ -106,7 +106,7 @@ void Interpreter::checkType(const std::string& annotation, const Value& val, int
     else if (annotation == "string") ok = (val.type == Value::STRING);
     else if (annotation == "bool") ok = (val.type == Value::BOOL);
     else if (annotation == "dict") ok = (val.type == Value::DICT);
-    else if (annotation == "array" || annotation.ends_with("[]")) ok = (val.type == Value::ARRAY);
+    else if (annotation == "array" || (annotation.size() >= 2 && annotation.substr(annotation.size() - 2) == "[]")) ok = (val.type == Value::ARRAY);
     else {
         throw std::runtime_error("[VDX] Unknown type '" + annotation + "' at line " + std::to_string(line));
     }
