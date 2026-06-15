@@ -1,5 +1,16 @@
 # VDX Changelog
 
+## v0.0.12 — 2026-06-15
+- Added dictionary/map type: `let user = {"name": "Alice", "age": 30};`
+- Dictionary access: `user["name"]` returns `"Alice"`
+- Dictionary assignment: `user["city"] = "Paris";`
+- Dictionary length: `len(user)` returns number of key-value pairs
+- Added `fs` module with file I/O:
+  - `fs.readFile(path)` - reads file contents as string
+  - `fs.writeFile(path, content)` - writes string to file
+- Added array type annotations: `let nums: int[] = [1, 2, 3];`
+- Added `dict` type annotation: `let user: dict = {"name": "Bob"};`
+
 ## v0.0.11 — 2026-06-15
 - Added `import` statement: import other VDX files with `import "filename.vdx";`
 - Imported files provide access to their classes and functions

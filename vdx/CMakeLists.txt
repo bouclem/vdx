@@ -9,6 +9,7 @@ add_executable(vdx
     src/lexer.cpp
     src/parser.cpp
     src/interpreter.cpp
+    src/modules/fs.cpp
 )
 
 target_include_directories(vdx PRIVATE src)
@@ -19,10 +20,10 @@ install(TARGETS vdx RUNTIME DESTINATION bin)
 set(CPACK_PACKAGE_NAME "VDX")
 set(CPACK_PACKAGE_VENDOR "Voidware")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VDX Programming Language")
-set(CPACK_PACKAGE_VERSION "0.0.11")
+set(CPACK_PACKAGE_VERSION "0.0.12")
 set(CPACK_PACKAGE_VERSION_MAJOR "0")
 set(CPACK_PACKAGE_VERSION_MINOR "0")
-set(CPACK_PACKAGE_VERSION_PATCH "11")
+set(CPACK_PACKAGE_VERSION_PATCH "12")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "VDX")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.txt")
 

@@ -10,7 +10,7 @@
 struct ObjectData;
 
 struct Value {
-    enum Type { STRING, INT, FLOAT, BOOL, VOID, ARRAY, OBJECT };
+    enum Type { STRING, INT, FLOAT, BOOL, VOID, ARRAY, OBJECT, DICT };
     Type type;
     std::string strVal;
     int intVal;
@@ -18,6 +18,7 @@ struct Value {
     bool boolVal;
     std::vector<Value> arrVal;
     std::shared_ptr<ObjectData> objVal;
+    std::unordered_map<std::string, Value> dictVal;
 
     Value() : type(VOID), intVal(0), floatVal(0.0), boolVal(false) {}
     static Value makeString(const std::string& s) { Value v; v.type = STRING; v.strVal = s; return v; }
@@ -27,6 +28,7 @@ struct Value {
     static Value makeVoid() { return Value(); }
     static Value makeArray(const std::vector<Value>& elems) { Value v; v.type = ARRAY; v.arrVal = elems; return v; }
     static Value makeObject(std::shared_ptr<ObjectData> obj) { Value v; v.type = OBJECT; v.objVal = obj; return v; }
+    static Value makeDict(const std::unordered_map<std::string, Value>& entries) { Value v; v.type = DICT; v.dictVal = entries; return v; }
 
     // Get numeric value as double (for mixed int/float arithmetic)
     double toDouble() const {
@@ -57,6 +59,10 @@ class Interpreter {
 public:
     void run(const Program& program, const std::string& sourceDir = "");
     int currentLine = 0;
+    
+    // Module function registration
+    using ModuleFunc = Value(*)(const std::vector<Value>& args, int line);
+    void registerModuleFunc(const std::string& name, ModuleFunc func);
 
 private:
     struct ScopeEntry {
@@ -69,6 +75,7 @@ private:
     std::unordered_set<std::string> importedFiles;
     std::string sourceDirectory;
     std::vector<std::shared_ptr<Program>> importedPrograms;  // Keep imported AST alive
+    std::unordered_map<std::string, ModuleFunc> moduleFunctions;  // C++ module functions
 
     void pushScope();
     void popScope();

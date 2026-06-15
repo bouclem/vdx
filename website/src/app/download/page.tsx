@@ -25,9 +25,20 @@ const versions: {
   notes: string[];
 }[] = [
   {
-    version: "0.0.11",
+    version: "0.0.12",
     date: "2026-06-15",
     status: "current",
+    notes: [
+      "Dictionary/map type: {\"key\": value}",
+      "fs.readFile() and fs.writeFile() for file I/O",
+      "Array type annotations: int[], string[]",
+      "dict type annotation support",
+    ],
+  },
+  {
+    version: "0.0.11",
+    date: "2026-06-15",
+    status: "old",
     notes: [
       "import statement to import other VDX files",
       "type() function to get value type as string",

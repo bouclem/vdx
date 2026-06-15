@@ -15,7 +15,7 @@ This monorepo contains two projects:
 
 VDX is a class-based, interpreted language inspired by Java, C++, Rust, Python, and C#.
 
-**Current version: 0.0.11**
+**Current version: 0.0.12**
 
 ### Features
 - `class` declarations — all code lives inside classes

@@ -56,20 +56,6 @@
 - [x] `for-in` loop over arrays: `for (item in arr) { ... }`
 - [x] `@unsafe` support for `for` loops
 
-## v0.0.11 (current)
-- [x] `import` statement: import other VDX files
-- [x] Circular import protection
-- [x] `type(value)` built-in: returns type as string
-- [x] `input()` built-in: read user input
-- [x] `input(prompt)` variant
-- [x] `pop(arr)` built-in: remove and return last element
-- [x] `len(obj)` extension for objects
-
-## v0.0.10
-- [x] Modulo operator `%`
-- [x] Increment `++` and decrement `--` operators
-- [x] MSI installer PATH option
-
 ## v0.0.9
 - [x] `break` statement for exiting loops early
 - [x] `continue` statement for skipping loop iterations
@@ -78,6 +64,29 @@
 - [x] `math` module with: sqrt, pow, abs, sin, cos, tan, floor, ceil, round, min, max, random, pi
 - [x] `vdx/src/modules/` directory structure
 - [x] Loop control exception handling
+
+## v0.0.10
+- [x] Modulo operator `%`
+- [x] Increment `++` and decrement `--` operators
+- [x] MSI installer PATH option
+
+## v0.0.11
+- [x] `import` statement: import other VDX files
+- [x] Circular import protection
+- [x] `type(value)` built-in: returns type as string
+- [x] `input()` built-in: read user input
+- [x] `input(prompt)` variant
+- [x] `pop(arr)` built-in: remove and return last element
+- [x] `len(obj)` extension for objects
+
+## v0.0.12 (current)
+- [x] Dictionary/map type: `let user = {"name": "Alice"};`
+- [x] Dictionary access: `user["key"]`
+- [x] Dictionary assignment: `user["key"] = value;`
+- [x] `fs.readFile(path)` - read file as string
+- [x] `fs.writeFile(path, content)` - write string to file
+- [x] Array type annotations: `let arr: int[] = [1, 2, 3];`
+- [x] `dict` type annotation support
 
 ## Future
 - [ ] Self-hosting (rewrite compiler in VDX)

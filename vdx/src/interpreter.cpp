@@ -1,6 +1,7 @@
 #include "interpreter.h"
 #include "lexer.h"
 #include "parser.h"
+#include "modules/fs.h"
 #include <iostream>
 #include <thread>
 #include <chrono>
@@ -39,8 +40,27 @@ std::string Value::toString() const {
             if (objVal) return "<" + objVal->className + " object>";
             return "<object>";
         }
+        case DICT: {
+            std::string s = "{";
+            size_t i = 0;
+            for (const auto& pair : dictVal) {
+                if (i > 0) s += ", ";
+                s += "\"" + pair.first + "\": ";
+                if (pair.second.type == STRING) s += "\"" + pair.second.toString() + "\"";
+                else s += pair.second.toString();
+                i++;
+            }
+            s += "}";
+            return s;
+        }
     }
     return "";
+}
+
+// ── Module function registration ──
+
+void Interpreter::registerModuleFunc(const std::string& name, ModuleFunc func) {
+    moduleFunctions[name] = func;
 }
 
 // ── Scope management ──
@@ -85,6 +105,8 @@ void Interpreter::checkType(const std::string& annotation, const Value& val, int
     else if (annotation == "float") ok = (val.type == Value::FLOAT || val.type == Value::INT);
     else if (annotation == "string") ok = (val.type == Value::STRING);
     else if (annotation == "bool") ok = (val.type == Value::BOOL);
+    else if (annotation == "dict") ok = (val.type == Value::DICT);
+    else if (annotation == "array" || annotation.ends_with("[]")) ok = (val.type == Value::ARRAY);
     else {
         throw std::runtime_error("[VDX] Unknown type '" + annotation + "' at line " + std::to_string(line));
     }
@@ -98,6 +120,7 @@ void Interpreter::checkType(const std::string& annotation, const Value& val, int
             case Value::VOID: got = "void"; break;
             case Value::ARRAY: got = "array"; break;
             case Value::OBJECT: got = "object"; break;
+            case Value::DICT: got = "dict"; break;
         }
         throw std::runtime_error("[VDX] Type mismatch: expected '" + annotation +
             "', got '" + got + "' at line " + std::to_string(line));
@@ -108,6 +131,13 @@ void Interpreter::checkType(const std::string& annotation, const Value& val, int
 
 void Interpreter::run(const Program& program, const std::string& sourceDir) {
     sourceDirectory = sourceDir;
+
+    // Register built-in modules (only once)
+    static bool modulesRegistered = false;
+    if (!modulesRegistered) {
+        FSModule::registerFS(*this);
+        modulesRegistered = true;
+    }
 
     // First pass: process imports
     for (auto& decl : program.declarations) {
@@ -242,18 +272,25 @@ void Interpreter::execStatement(const NodePtr& node) {
         if (!v) {
             throw std::runtime_error("[VDX] Undefined variable '" + idxAssign->name + "' at line " + std::to_string(currentLine));
         }
-        if (v->type != Value::ARRAY) {
-            throw std::runtime_error("[VDX] Cannot index into non-array variable '" + idxAssign->name + "' at line " + std::to_string(currentLine));
+        if (v->type == Value::ARRAY) {
+            Value idx = evalExpr(idxAssign->index.get());
+            if (idx.type != Value::INT) {
+                throw std::runtime_error("[VDX] Array index must be an integer at line " + std::to_string(currentLine));
+            }
+            if (idx.intVal < 0 || idx.intVal >= (int)v->arrVal.size()) {
+                throw std::runtime_error("[VDX] Array index " + std::to_string(idx.intVal) +
+                    " out of bounds (size " + std::to_string(v->arrVal.size()) + ") at line " + std::to_string(currentLine));
+            }
+            v->arrVal[idx.intVal] = evalExpr(idxAssign->value.get());
+        } else if (v->type == Value::DICT) {
+            Value idx = evalExpr(idxAssign->index.get());
+            if (idx.type != Value::STRING) {
+                throw std::runtime_error("[VDX] Dictionary key must be a string at line " + std::to_string(currentLine));
+            }
+            v->dictVal[idx.strVal] = evalExpr(idxAssign->value.get());
+        } else {
+            throw std::runtime_error("[VDX] Cannot index into variable '" + idxAssign->name + "' at line " + std::to_string(currentLine));
         }
-        Value idx = evalExpr(idxAssign->index.get());
-        if (idx.type != Value::INT) {
-            throw std::runtime_error("[VDX] Array index must be an integer at line " + std::to_string(currentLine));
-        }
-        if (idx.intVal < 0 || idx.intVal >= (int)v->arrVal.size()) {
-            throw std::runtime_error("[VDX] Array index " + std::to_string(idx.intVal) +
-                " out of bounds (size " + std::to_string(v->arrVal.size()) + ") at line " + std::to_string(currentLine));
-        }
-        v->arrVal[idx.intVal] = evalExpr(idxAssign->value.get());
     } else if (auto dotAssign = dynamic_cast<DotAssignStmt*>(node.get())) {
         Value obj = evalExpr(dotAssign->object.get());
         if (obj.type != Value::OBJECT || !obj.objVal) {
@@ -459,6 +496,7 @@ bool Interpreter::isTruthy(const Value& v) {
         case Value::VOID: return false;
         case Value::ARRAY: return !v.arrVal.empty();
         case Value::OBJECT: return v.objVal != nullptr;
+        case Value::DICT: return !v.dictVal.empty();
     }
     return false;
 }
@@ -517,7 +555,8 @@ Value Interpreter::execCall(const CallExpr* call) {
             }
             return Value::makeInt(0);
         }
-        throw std::runtime_error("[VDX] len() expects an array, string, or object at line " + std::to_string(currentLine));
+        if (arg.type == Value::DICT) return Value::makeInt((int)arg.dictVal.size());
+        throw std::runtime_error("[VDX] len() expects an array, string, object, or dict at line " + std::to_string(currentLine));
     }
     // Built-in: push(array, value)
     if (call->name == "push") {
@@ -573,6 +612,7 @@ Value Interpreter::execCall(const CallExpr* call) {
             case Value::VOID: typeName = "void"; break;
             case Value::ARRAY: typeName = "array"; break;
             case Value::OBJECT: typeName = "object"; break;
+            case Value::DICT: typeName = "dict"; break;
         }
         return Value::makeString(typeName);
     }
@@ -591,6 +631,16 @@ Value Interpreter::execCall(const CallExpr* call) {
         std::string input;
         std::getline(std::cin, input);
         return Value::makeString(input);
+    }
+
+    // Check module functions (C++ built-ins like math.sqrt, fs.readFile)
+    auto modIt = moduleFunctions.find(call->name);
+    if (modIt != moduleFunctions.end()) {
+        std::vector<Value> argVals;
+        for (size_t i = 0; i < call->args.size(); i++) {
+            argVals.push_back(evalExpr(call->args[i].get()));
+        }
+        return modIt->second(argVals, currentLine);
     }
 
     auto it = functions.find(call->name);
@@ -675,6 +725,13 @@ Value Interpreter::evalExpr(const Expr* expr) {
         }
         return Value::makeArray(elems);
     }
+    if (auto dict = dynamic_cast<const DictLiteral*>(expr)) {
+        std::unordered_map<std::string, Value> entries;
+        for (auto& pair : dict->entries) {
+            entries[pair.first] = evalExpr(pair.second.get());
+        }
+        return Value::makeDict(entries);
+    }
     if (auto idx = dynamic_cast<const IndexExpr*>(expr)) {
         Value obj = evalExpr(idx->object.get());
         Value index = evalExpr(idx->index.get());
@@ -697,6 +754,16 @@ Value Interpreter::evalExpr(const Expr* expr) {
                     " out of bounds (length " + std::to_string(obj.strVal.size()) + ") at line " + std::to_string(currentLine));
             }
             return Value::makeString(std::string(1, obj.strVal[index.intVal]));
+        }
+        if (obj.type == Value::DICT) {
+            if (index.type != Value::STRING) {
+                throw std::runtime_error("[VDX] Dictionary key must be a string at line " + std::to_string(currentLine));
+            }
+            auto it = obj.dictVal.find(index.strVal);
+            if (it == obj.dictVal.end()) {
+                throw std::runtime_error("[VDX] Key '" + index.strVal + "' not found in dictionary at line " + std::to_string(currentLine));
+            }
+            return it->second;
         }
         throw std::runtime_error("[VDX] Cannot index into this type at line " + std::to_string(currentLine));
     }

@@ -620,6 +620,35 @@ ExprPtr Parser::parsePrimary() {
         expect(TokenType::RBRACKET, "Expected ']'");
         return arr;
     }
+    // Dictionary literal: {"key": expr, "key2": expr2, ...}
+    if (check(TokenType::LBRACE) && pos + 1 < tokens.size() && tokens[pos + 1].type == TokenType::STRING) {
+        int ln = cur().line;
+        advance(); // skip '{'
+        auto dict = std::make_shared<DictLiteral>();
+        dict->line = ln;
+        
+        // Parse at least one entry
+        do {
+            // Key must be a string literal
+            if (!check(TokenType::STRING)) {
+                throw std::runtime_error("[VDX] Dictionary keys must be string literals at line " + 
+                    std::to_string(cur().line));
+            }
+            std::string key = advance().value;
+            expect(TokenType::COLON, "Expected ':' after dictionary key");
+            ExprPtr value = parseExpr();
+            dict->entries.push_back({key, value});
+            
+            if (check(TokenType::COMMA)) {
+                advance();
+            } else {
+                break;
+            }
+        } while (!check(TokenType::RBRACE) && !check(TokenType::EOF_TOKEN));
+        
+        expect(TokenType::RBRACE, "Expected '}' to close dictionary literal");
+        return dict;
+    }
     // new ClassName()
     if (check(TokenType::KW_NEW)) {
         int ln = cur().line;

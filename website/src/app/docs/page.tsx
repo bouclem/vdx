@@ -20,6 +20,7 @@ const docSections = [
       { name: "Increment/Decrement (++/--)", href: "/docs/increment-decrement" },
       { name: "Arrays", href: "/docs/arrays" },
       { name: "Objects (new)", href: "/docs/objects" },
+      { name: "Dictionaries", href: "/docs/dictionaries" },
       { name: "Print", href: "/docs/print" },
       { name: "Import", href: "/docs/import" },
     ],
@@ -37,6 +38,7 @@ const docSections = [
     title: "Modules",
     items: [
       { name: "Math Module", href: "/docs/math" },
+      { name: "Filesystem Module", href: "/docs/fs" },
     ],
   },
   {

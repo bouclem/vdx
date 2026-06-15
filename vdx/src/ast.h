@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 
-// ── AST Nodes (v0.0.11: import + type + input + pop + len(obj)) ──
+// ── AST Nodes (v0.0.12: dict + fs module + array types) ──
 
 struct Node {
     int line = 0;
@@ -67,6 +67,11 @@ struct ThisExpr : Expr {
 
 struct ArrayLiteral : Expr {
     std::vector<ExprPtr> elements;
+};
+
+// {"key": value, ...}
+struct DictLiteral : Expr {
+    std::vector<std::pair<std::string, ExprPtr>> entries;
 };
 
 struct IndexExpr : Expr {

@@ -41,6 +41,19 @@ function linkifyCode(text: string): string {
 
 const changelog = [
   {
+    version: "0.0.12",
+    date: "2026-06-15",
+    changes: [
+      "Added dictionary/map type: `let user = {\"name\": \"Alice\", \"age\": 30};`",
+      "Dictionary access: `user[\"name\"]` returns the value for a key",
+      "Dictionary assignment: `user[\"city\"] = \"Paris\";` adds or updates keys",
+      "Dictionary length: `len(user)` returns number of key-value pairs",
+      "Added `fs` module with file I/O: `fs.readFile(path)` and `fs.writeFile(path, content)`",
+      "Added array type annotations: `let nums: int[] = [1, 2, 3];`",
+      "Added `dict` type annotation: `let user: dict = {\"name\": \"Bob\"};`",
+    ],
+  },
+  {
     version: "0.0.11",
     date: "2026-06-15",
     changes: [
