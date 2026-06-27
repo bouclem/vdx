@@ -1,0 +1,4 @@
+class vdx {
+    let name = "vdx";
+    print("hello from " + name);
+}

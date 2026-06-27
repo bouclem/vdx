@@ -1,162 +1,148 @@
-# VDX — The Voidware Programming Language
+# VDX Programming Language
 
-A fast, safe programming language built for AI and games. By [Voidware](https://voidware.xyz).
+The programming language of **Voidware** ([voidware.xyz](https://voidware.xyz)).
 
-## What's in this repo
+Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future focus on AI and games.
 
-This monorepo contains two projects:
+## Version: 0.0.13
 
-| Folder | What it is |
-|--------|------------|
-| `vdx/` | The VDX language — lexer, parser, and interpreter written in C++17 |
-| `website/` | The official website ([voidwarelang.xyz](https://voidwarelang.xyz)) — Next.js, deployed on Vercel |
-
-## VDX Language (`vdx/`)
-
-VDX is a class-based, interpreted language inspired by Java, C++, Rust, Python, and C#.
-
-**Current version: 0.0.12**
-
-### Features
-- `class` declarations — all code lives inside classes
-- `let` variables (string, integer, float, bool) with reassignment
-- `const` constants (cannot be reassigned)
-- Optional type annotations: `let x: int = 5;`, `let pi: float = 3.14;`, `const PI: float = 3.14;`
-- `fn` functions with parameters and `return`
-- `print()` with expression evaluation
-- Operators: `+` `-` `*` `/` `%` `==` `!=` `<` `>` `<=` `>=` `++` `--`
+### Supported Features
+- `class` declarations
+- `print()` with any expression arguments (e.g., `print(1 + 1)` outputs `2`)
+- `let` variable declarations (string, integer, float, bool)
+- Optional type annotations: `let x: int = 5;`, `let pi: float = 3.14;`
+- Variable reassignment (`name = expr;`)
+- `fn` / `func` function declarations with parameters and `return`
+- Operators: `+`, `-`, `*`, `/`, `%`, `==`, `!=`, `<`, `>`, `<=`, `>=`, `++`, `--`
 - String concatenation with `+`
-- `this` keyword for class-scope access
+- Parenthesized expressions
+- `this` keyword for class-scope variable access
 - `if` / `elif` / `else` control flow
-- `while` loops with built-in safety protection
-- `for` loops (C-style): `for (let i = 0; i < n; i = i + 1) { ... }`
-- `for-in` loops over arrays: `for (item in arr) { ... }`
-- Arrays: `[1, 2, 3]`, index access/assignment, `len()`, `push()`
-- Objects: `new ClassName()`, dot access (`obj.field`), dot methods (`obj.method()`)
-- Types: `float` literals, `true`/`false` booleans, runtime type checking
-- Mixed int/float arithmetic with auto-promotion
+- `while` loop
+- `for` loop (C-style): `for (let i = 0; i < n; i++) { ... }` (supports `++`/`--` in update)
+- `for-in` loop over arrays: `for (item in arr) { ... }`
+- Block scoping (variables in `{ }` blocks are local)
 - `wait(ms)` to pause execution
-- `@unsafe` annotation to bypass loop protection
-- `break` statement for exiting loops early
-- `continue` statement for skipping to next loop iteration
-- `math` module with functions: `sqrt`, `pow`, `abs`, `sin`, `cos`, `tan`, `floor`, `ceil`, `round`, `min`, `max`, `random`, `pi`
-- `import` statement — import other VDX files: `import "utils.vdx";`
-- `type()` — get type name as string: `type(42)` returns `"int"`
-- `input()` — read user input: `let name = input("Name: ");`
-- `pop()` — remove and return last array element: `let last = pop(arr);`
-- `len()` — now works with objects too (returns field count)
-- Modulo operator `%` for remainder calculations
-- Increment `++` and decrement `--` operators (prefix and postfix)
-- Block scoping
-- Improved error reporting with source context
+- **Loop safety protection** — `while` and `for` loops with iterations taking more than 2 seconds are flagged as potentially infinite
+- **`@unsafe` annotation** — place before `while` or `for` to disable loop protection
+- **Types** — `float` literals (`3.14`), `true`/`false` booleans, type annotations with runtime checking
+- **Mixed arithmetic** — int/float operations auto-promote to float
+- **`new` / object instantiation** — `let obj = new ClassName();`
+- **Dot access** — `obj.field`, `obj.method(args)`, `obj.field = value;`
+- **Arrays** — `let arr = [1, 2, 3];`, index access `arr[0]`, index assignment `arr[0] = 5;`
+- **Built-in `len()`** — returns length of arrays and strings
+- **Built-in `push()`** — appends a value to an array: `push(arr, 4);`
+- **`break`** — exit loops early
+- **`continue`** — skip to next loop iteration
+- **`const`** — declare immutable constants: `const PI = 3.14;`
+- **`math` module** — math functions: `sqrt`, `pow`, `abs`, `sin`, `cos`, `tan`, `floor`, `ceil`, `round`, `min`, `max`, `random`, `pi`
+- **`import`** — import other VDX files: `import "utils.vdx";`
+- **`type()`** — get type name as string: `type(42)` returns `"int"`
+- **`input()`** — read user input: `let name = input("Name: ");`
+- **`pop()`** — remove and return last array element: `let last = pop(arr);`
+- **Extended `len()`** — now works with objects (returns field count)
+- **Improved error reporting** — errors now show source file, line number, and surrounding code context
 
-### Quick start
+### Loop Safety
+By default, if a `while` or `for` loop iteration takes more than 2000ms, VDX halts it with an error. This prevents infinite loops and runaway CPU usage.
 
-```bash
-cd vdx
-cmake -B build
-cmake --build build
-./build/vdx examples/hello.vdx
+To bypass this for legitimate slow loops:
+```vdx
+@unsafe while (condition) {
+    // runs without speed checks
+}
 ```
 
 ### Install (Windows)
+Download the `.msi` installer from [voidwarelang.xyz/download](https://voidwarelang.xyz/download).
+After installation, `vdx` is available in your terminal PATH.
 
-Download the `.msi` installer from [voidwarelang.xyz/download](https://voidwarelang.xyz/download). After installation, `vdx` is available in your terminal:
-
-```bash
-vdx myfile.vdx
-```
-
-### Example
-
-```
+### Example (`hello.vdx`)
+```vdx
 class Hello {
-    let name: string = "VDX";
-    const VERSION: float = 0.9;
-    print("Welcome to", this.name, "v", VERSION);
+    print(1 + 1);
+
+    let name = "VDX";
+    print(this.name);
+
+    let x = 10;
+    if (x == 10) {
+        print("x is 10");
+    } elif (x > 5) {
+        print("x is greater than 5");
+    } else {
+        print("x is something else");
+    }
 
     fn max(a, b) {
-        if (a > b) { return a; }
-        else { return b; }
+        if (a > b) {
+            return a;
+        } else {
+            return b;
+        }
     }
 
     print("max(3, 7) =", max(3, 7));
 
-    // Arrays and for-in with break
-    let langs = ["Java", "C++", "Rust", "Python"];
-    for (lang in langs) {
-        if (lang == "Rust") {
-            break;  // Stop when we find Rust
-        }
-        print("Inspired by:", lang);
-    }
-
-    // C-style for loop with continue
-    @unsafe for (let i = 0; i < 5; i = i + 1) {
-        if (i == 2) {
-            continue;  // Skip iteration 2
-        }
+    // for loop
+    @unsafe for (let i = 0; i < 3; i++) {
         print("i:", i);
     }
 
-    // Math module usage
-    print("Square root of 16:", math.sqrt(16));
-    print("Random number:", math.random(1, 100));
+    // for-in
+    let fruits = ["apple", "banana"];
+    for (fruit in fruits) {
+        print("fruit:", fruit);
+    }
+
+    // types
+    let pi: float = 3.14;
+    let active: bool = true;
+    print("pi:", pi, "active:", active);
 }
 ```
 
-### Docs
+### Object Instantiation
+```vdx
+class Point {
+    let x: int = 0;
+    let y: int = 0;
 
-Full language documentation is in `vdx/docs/` and on the website at [voidwarelang.xyz/docs](https://voidwarelang.xyz/docs).
+    fn setXY(nx, ny) {
+        x = nx;
+        y = ny;
+    }
 
-- `vdx/docs/README.md` — Language reference
-- `vdx/docs/CHANGELOG.md` — Version history
-- `vdx/docs/TODO.md` — Roadmap
+    fn describe() {
+        print("Point:", x, y);
+    }
+}
 
-## Website (`website/`)
+class Main {
+    let p = new Point();
+    p.x = 10;
+    p.y = 20;
+    p.describe();
+}
+```
 
-The official VDX website, built with Next.js 15 + Tailwind CSS 4.
-
-### Pages
-- `/` — Home (hero, code preview, features)
-- `/download` — Download the latest `.msi` installer + version archive
-- `/docs` — Full language documentation (16 pages covering every feature)
-
-### Setup
-
+### Build
 ```bash
-cd website
-npm install
-npm run dev
+cd vdx
+cmake -B build
+cmake --build build
 ```
 
-### Deploy
-
-The site is configured for Vercel. Push to main and it deploys automatically.
-
-Domain: `voidwarelang.xyz`
-
-## Repo structure
-
-```
-.
-├── vdx/                    # VDX language
-│   ├── src/                # C++ source (lexer, parser, interpreter)
-│   │   └── modules/        # Built-in modules (math, etc.)
-│   ├── examples/           # Example .vdx programs
-│   ├── assets/             # Icon (SVG)
-│   ├── installer/          # WiX MSI installer config
-│   ├── docs/               # Language docs (README, CHANGELOG, TODO)
-│   ├── CMakeLists.txt      # Build config
-│   └── LICENSE.txt         # MIT
-├── website/                # Official website (Next.js)
-│   ├── src/app/            # Pages and layouts
-│   ├── src/components/     # Shared components
-│   └── package.json
-├── .gitignore
-└── README.md               # This file
+### Build Release (Windows MSI)
+```powershell
+# From the repository root — builds, creates MSI installer, and copies to releases/
+.\build-release.ps1
 ```
 
-## License
+### Run
+```bash
+./build/vdx examples/hello.vdx
+```
 
-MIT — see `vdx/LICENSE.txt`
+### File Format
+`.vdx`
