@@ -66,7 +66,7 @@ Token Lexer::readWord() {
     if (val == "class") return Token(TokenType::KW_CLASS, val, sl, sc);
     if (val == "print") return Token(TokenType::KW_PRINT, val, sl, sc);
     if (val == "let") return Token(TokenType::KW_LET, val, sl, sc);
-    if (val == "fn") return Token(TokenType::KW_FN, val, sl, sc);
+    if (val == "fn" || val == "func") return Token(TokenType::KW_FN, val, sl, sc);
     if (val == "return") return Token(TokenType::KW_RETURN, val, sl, sc);
     if (val == "if") return Token(TokenType::KW_IF, val, sl, sc);
     if (val == "else") return Token(TokenType::KW_ELSE, val, sl, sc);

@@ -169,7 +169,9 @@ void Interpreter::execImport(const ImportStmt* stmt) {
     }
 
     // Normalize and check for circular imports
-    //FIXME(BUG-5): canonical() throws filesystem_error if file doesn't exist, before the nice error at line 180 can fire. Should check existence first.
+    if (!std::filesystem::exists(importPath)) {
+        throw std::runtime_error("[VDX] Cannot import file '" + stmt->filename + "' at line " + std::to_string(stmt->line));
+    }
     std::string canonicalPath = std::filesystem::canonical(importPath).string();
     if (importedFiles.count(canonicalPath)) {
         return; // Already imported
@@ -212,6 +214,9 @@ void Interpreter::execImport(const ImportStmt* stmt) {
         if (cls) {
             for (auto& node : cls->body) {
                 if (auto fn = dynamic_cast<FnDecl*>(node.get())) {
+                    if (functions.count(fn->name)) {
+                        throw std::runtime_error("[VDX] Function '" + fn->name + "' is already defined (duplicate in class '" + cls->name + "') at line " + std::to_string(fn->line));
+                    }
                     functions[fn->name] = fn;
                 }
             }
@@ -222,9 +227,11 @@ void Interpreter::execImport(const ImportStmt* stmt) {
 void Interpreter::execClass(const ClassDecl* cls) {
     pushScope();
     // First pass: register functions
-    //FIXME(BUG-7): Methods are registered in the global 'functions' map. Two classes with same-named methods overwrite each other.
     for (auto& node : cls->body) {
         if (auto fn = dynamic_cast<FnDecl*>(node.get())) {
+            if (functions.count(fn->name)) {
+                throw std::runtime_error("[VDX] Function '" + fn->name + "' is already defined (duplicate in class '" + cls->name + "') at line " + std::to_string(fn->line));
+            }
             functions[fn->name] = fn;
         }
     }
