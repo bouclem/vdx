@@ -516,11 +516,14 @@ Value Interpreter::execNew(const NewExpr* expr) {
         execStatement(node);
     }
 
-    //FIXME(BUG-11): Captures ALL variables from the current scope as object fields, including temporaries (e.g. loop counters from field initializers). Pollutes the object's namespace.
-    // Capture all variables from the current scope as fields
-    if (!scopes.empty()) {
-        for (auto& pair : scopes.back()) {
-            obj->fields[pair.first] = pair.second.value;
+    // Capture only variables declared via 'let' in the class body as fields
+    // (excludes temporaries like loop counters from field initializers)
+    for (auto& node : cls->body) {
+        if (auto letStmt = dynamic_cast<LetStmt*>(node.get())) {
+            Value* val = lookupVar(letStmt->name);
+            if (val) {
+                obj->fields[letStmt->name] = *val;
+            }
         }
     }
 

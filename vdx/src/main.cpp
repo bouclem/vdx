@@ -93,13 +93,7 @@ int main(int argc, char* argv[]) {
     } catch (const std::runtime_error& e) {
         printError(source, filename, e.what());
         return 1;
-    } catch (const std::out_of_range& e) {
-        printError(source, filename, e.what());
-        return 1;
-    } catch (const std::filesystem::filesystem_error& e) {
-        printError(source, filename, e.what());
-        return 1;
-    } catch (const std::bad_alloc& e) {
+    } catch (const std::bad_alloc&) {
         std::cerr << "\n  error: Out of memory\n\n";
         return 1;
     }
