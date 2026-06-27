@@ -25,9 +25,27 @@ const versions: {
   notes: string[];
 }[] = [
   {
+    version: "0.0.13",
+    date: "2026-06-27",
+    status: "current",
+    notes: [
+      "Fixed scope corruption on continue in while/for loops",
+      "Fixed inverted loop safety check (now flags >2s, not <2s)",
+      "Fixed break/continue escaping function call boundaries",
+      "Fixed import crash on missing files (clean error instead)",
+      "Fixed signed integer overflow UB (now throws runtime error)",
+      "Fixed duplicate function names across classes silently overwriting",
+      "Fixed new capturing temporary variables as object fields",
+      "Added func as alias for fn keyword",
+      "Added ++/-- syntax in for-loop update",
+      "Replaced std::rand() with std::mt19937 for better randomness",
+      "Added compiler warnings, portable includes, and code cleanup",
+    ],
+  },
+  {
     version: "0.0.12",
     date: "2026-06-15",
-    status: "current",
+    status: "old",
     notes: [
       "Dictionary/map type: {\"key\": value}",
       "fs.readFile() and fs.writeFile() for file I/O",

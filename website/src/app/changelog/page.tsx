@@ -6,6 +6,7 @@ const codeLinks: Record<string, string> = {
   "math": "/docs/math",
   "let": "/docs/variables",
   "fn": "/docs/functions",
+  "func": "/docs/functions",
   "if": "/docs/if-elif-else",
   "elif": "/docs/if-elif-else",
   "else": "/docs/if-elif-else",
@@ -40,6 +41,31 @@ function linkifyCode(text: string): string {
 }
 
 const changelog = [
+  {
+    version: "0.0.13",
+    date: "2026-06-27",
+    changes: [
+      "Fixed `continue` in `while` and `for` loops corrupting the scope stack (double popScope)",
+      "Fixed loop safety check logic: now correctly flags iterations taking >2s instead of <2s",
+      "Fixed `break`/`continue` escaping function call boundaries into outer loops",
+      "Fixed `import` crashing with unhandled exception when file doesn't exist (now gives clean error)",
+      "Fixed signed integer overflow causing undefined behavior in `+`, `-`, `*` — now throws runtime error",
+      "Fixed duplicate function names across classes silently overwriting each other — now throws error",
+      "Fixed `new` capturing temporary variables (e.g. loop counters) as object fields — only captures `let` declarations",
+      "Added `func` as alias for `fn` keyword: `func add(a, b) { ... }`",
+      "Added `++`/`--` syntax in for-loop update: `for (let i = 0; i < 10; i++) { ... }`",
+      "Added `math` module to CMake build (was missing — dead code)",
+      "Fixed `math` module function signatures to match interpreter's `ModuleFunc` type",
+      "Added `#include <cctype>` for portable `isdigit`/`isalpha` usage in lexer and main",
+      "Added compiler warnings (`/W4` on MSVC, `-Wall -Wextra -Wpedantic` on GCC/Clang)",
+      "Replaced `std::rand()` with `std::mt19937` for better random number quality",
+      "Replaced hardcoded PI with `M_PI` from `<cmath>`",
+      "Replaced `std::endl` with `\\n` in `print` to avoid unnecessary flush",
+      "Refactored repetitive try/catch in `if`/`elif`/`else` into `execBlock` helper",
+      "Improved `extractLine` robustness: searches for \"at line \" instead of just \"line \"",
+      "Removed pointless `pushScope`/`popScope` in `execImport`",
+    ],
+  },
   {
     version: "0.0.12",
     date: "2026-06-15",

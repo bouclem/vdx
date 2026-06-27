@@ -79,7 +79,7 @@
 - [x] `pop(arr)` built-in: remove and return last element
 - [x] `len(obj)` extension for objects
 
-## v0.0.12 (current)
+## v0.0.12
 - [x] Dictionary/map type: `let user = {"name": "Alice"};`
 - [x] Dictionary access: `user["key"]`
 - [x] Dictionary assignment: `user["key"] = value;`
@@ -87,6 +87,27 @@
 - [x] `fs.writeFile(path, content)` - write string to file
 - [x] Array type annotations: `let arr: int[] = [1, 2, 3];`
 - [x] `dict` type annotation support
+
+## v0.0.13 (current)
+- [x] Fixed scope corruption on `continue` in `while`/`for` loops
+- [x] Fixed inverted loop safety check (now flags >2s, not <2s)
+- [x] Fixed `break`/`continue` escaping function call boundaries
+- [x] Fixed `import` crash on missing files (clean error)
+- [x] Fixed signed integer overflow UB (now throws runtime error)
+- [x] Fixed duplicate function names across classes silently overwriting
+- [x] Fixed `new` capturing temporary variables as object fields
+- [x] Added `func` as alias for `fn` keyword
+- [x] Added `++`/`--` syntax in for-loop update
+- [x] Added `math` module to CMake build
+- [x] Fixed `math` module function signatures
+- [x] Added portable `#include <cctype>`
+- [x] Added compiler warnings (`/W4`, `-Wall -Wextra -Wpedantic`)
+- [x] Replaced `std::rand()` with `std::mt19937`
+- [x] Replaced hardcoded PI with `M_PI`
+- [x] Replaced `std::endl` with `\n` in `print`
+- [x] Refactored repetitive try/catch into `execBlock` helper
+- [x] Improved `extractLine` robustness
+- [x] Removed pointless `pushScope`/`popScope` in `execImport`
 
 ## Future
 - [ ] Self-hosting (rewrite compiler in VDX)

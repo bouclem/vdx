@@ -4,7 +4,7 @@ The programming language of **Voidware** ([voidware.xyz](https://voidware.xyz)).
 
 Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future focus on AI and games.
 
-## Version: 0.0.12
+## Version: 0.0.13
 
 ### Supported Features
 - `class` declarations
@@ -12,18 +12,18 @@ Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future fo
 - `let` variable declarations (string, integer, float, bool)
 - Optional type annotations: `let x: int = 5;`, `let pi: float = 3.14;`
 - Variable reassignment (`name = expr;`)
-- `fn` function declarations with parameters and `return`
+- `fn` / `func` function declarations with parameters and `return`
 - Operators: `+`, `-`, `*`, `/`, `%`, `==`, `!=`, `<`, `>`, `<=`, `>=`, `++`, `--`
 - String concatenation with `+`
 - Parenthesized expressions
 - `this` keyword for class-scope variable access
 - `if` / `elif` / `else` control flow
 - `while` loop
-- `for` loop (C-style): `for (let i = 0; i < n; i = i + 1) { ... }`
+- `for` loop (C-style): `for (let i = 0; i < n; i++) { ... }` (supports `++`/`--` in update)
 - `for-in` loop over arrays: `for (item in arr) { ... }`
 - Block scoping (variables in `{ }` blocks are local)
 - `wait(ms)` to pause execution
-- **Loop safety protection** — `while` and `for` loops that iterate in under 2 seconds are blocked by default
+- **Loop safety protection** — `while` and `for` loops with iterations taking more than 2 seconds are flagged as potentially infinite
 - **`@unsafe` annotation** — place before `while` or `for` to disable loop protection
 - **Types** — `float` literals (`3.14`), `true`/`false` booleans, type annotations with runtime checking
 - **Mixed arithmetic** — int/float operations auto-promote to float
@@ -44,9 +44,9 @@ Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future fo
 - **Improved error reporting** — errors now show source file, line number, and surrounding code context
 
 ### Loop Safety
-By default, if a `while` loop iteration completes in less than 2000ms, VDX halts it with an error. This prevents infinite loops and runaway CPU usage.
+By default, if a `while` or `for` loop iteration takes more than 2000ms, VDX halts it with an error. This prevents infinite loops and runaway CPU usage.
 
-To bypass this for legitimate fast loops:
+To bypass this for legitimate slow loops:
 ```vdx
 @unsafe while (condition) {
     // runs without speed checks
@@ -85,7 +85,7 @@ class Hello {
     print("max(3, 7) =", max(3, 7));
 
     // for loop
-    @unsafe for (let i = 0; i < 3; i = i + 1) {
+    @unsafe for (let i = 0; i < 3; i++) {
         print("i:", i);
     }
 
@@ -131,6 +131,12 @@ class Main {
 cd vdx
 cmake -B build
 cmake --build build
+```
+
+### Build Release (Windows MSI)
+```powershell
+# From the repository root — builds, creates MSI installer, and copies to releases/
+.\build-release.ps1
 ```
 
 ### Run
