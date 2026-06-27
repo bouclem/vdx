@@ -7,17 +7,19 @@
 #include <ctime>
 #include <stdexcept>
 #include <algorithm>
+#include <random>
 
 // ── Math Module Implementation (v0.0.9) ──
 
 namespace MathModule {
 
-//TODO(IMP-5): std::rand() has poor quality and is considered harmful in modern C++. Use std::mt19937 from <random> instead.
+static std::mt19937 rng;
 static bool random_seeded = false;
 
 static void seed_random() {
     if (!random_seeded) {
-        std::srand(static_cast<unsigned int>(std::time(nullptr)));
+        std::random_device rd;
+        rng.seed(rd());
         random_seeded = true;
     }
 }
@@ -148,7 +150,8 @@ Value random_builtin(const std::vector<Value>& args, int line) {
     seed_random();
     if (args.size() == 0) {
         // Return random float between 0 and 1
-        return Value::makeFloat(static_cast<double>(std::rand()) / RAND_MAX);
+        std::uniform_real_distribution<double> dist(0.0, 1.0);
+        return Value::makeFloat(dist(rng));
     }
     if (args.size() == 1) {
         // Return random int between 0 and max (exclusive)
@@ -156,7 +159,8 @@ Value random_builtin(const std::vector<Value>& args, int line) {
         if (max_val <= 0) {
             throw std::runtime_error("[VDX] math.random() argument must be positive");
         }
-        return Value::makeInt(std::rand() % max_val);
+        std::uniform_int_distribution<int> dist(0, max_val - 1);
+        return Value::makeInt(dist(rng));
     }
     if (args.size() == 2) {
         // Return random int between min and max (inclusive)
@@ -165,7 +169,8 @@ Value random_builtin(const std::vector<Value>& args, int line) {
         if (max_val <= min_val) {
             throw std::runtime_error("[VDX] math.random() max must be greater than min");
         }
-        return Value::makeInt(min_val + (std::rand() % (max_val - min_val + 1)));
+        std::uniform_int_distribution<int> dist(min_val, max_val);
+        return Value::makeInt(dist(rng));
     }
     throw std::runtime_error("[VDX] math.random() expects 0, 1, or 2 arguments");
 }

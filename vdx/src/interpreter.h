@@ -88,6 +88,7 @@ private:
     void execClass(const ClassDecl* cls);
     void execImport(const ImportStmt* stmt);
     void execStatement(const NodePtr& node);
+    void execBlock(const std::vector<NodePtr>& body);
     void execLet(const LetStmt* stmt);
     void execBreak(const BreakStmt* stmt);
     void execContinue(const ContinueStmt* stmt);

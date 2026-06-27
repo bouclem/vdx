@@ -331,8 +331,7 @@ void Interpreter::execPrint(const PrintStmt* stmt) {
         if (i > 0) std::cout << " ";
         std::cout << evalExpr(stmt->args[i].get()).toString();
     }
-    //TODO(IMP-3): Use '\n' instead of std::endl to avoid unnecessary flush on every print call.
-    std::cout << std::endl;
+    std::cout << '\n';
 }
 
 void Interpreter::execReturn(const ReturnStmt* stmt) {
@@ -343,50 +342,33 @@ void Interpreter::execReturn(const ReturnStmt* stmt) {
     throw ret;
 }
 
-void Interpreter::execIf(const IfStmt* stmt) {
-    //TODO(IMP-8): This try/catch pattern for Break/Continue is duplicated 3 times (then, elif, else). Could be refactored into a helper.
-    if (isTruthy(evalExpr(stmt->condition.get()))) {
-        pushScope();
-        try {
-            for (auto& s : stmt->thenBody) execStatement(s);
-        } catch (BreakException&) {
-            popScope();
-            throw;
-        } catch (ContinueException&) {
-            popScope();
-            throw;
-        }
+void Interpreter::execBlock(const std::vector<NodePtr>& body) {
+    pushScope();
+    try {
+        for (auto& s : body) execStatement(s);
+    } catch (BreakException&) {
         popScope();
+        throw;
+    } catch (ContinueException&) {
+        popScope();
+        throw;
+    }
+    popScope();
+}
+
+void Interpreter::execIf(const IfStmt* stmt) {
+    if (isTruthy(evalExpr(stmt->condition.get()))) {
+        execBlock(stmt->thenBody);
         return;
     }
     for (auto& elif : stmt->elifs) {
         if (isTruthy(evalExpr(elif.condition.get()))) {
-            pushScope();
-            try {
-                for (auto& s : elif.body) execStatement(s);
-            } catch (BreakException&) {
-                popScope();
-                throw;
-            } catch (ContinueException&) {
-                popScope();
-                throw;
-            }
-            popScope();
+            execBlock(elif.body);
             return;
         }
     }
     if (!stmt->elseBody.empty()) {
-        pushScope();
-        try {
-            for (auto& s : stmt->elseBody) execStatement(s);
-        } catch (BreakException&) {
-            popScope();
-            throw;
-        } catch (ContinueException&) {
-            popScope();
-            throw;
-        }
-        popScope();
+        execBlock(stmt->elseBody);
     }
 }
 

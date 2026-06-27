@@ -20,15 +20,14 @@ static std::vector<std::string> splitLines(const std::string& src) {
     return lines;
 }
 
-//TODO(IMP-10): extractLine is fragile — searches for "line " in error messages. If an error mentions "line " in a different context, it extracts the wrong number. Consider storing line numbers in exceptions structurally.
 // Try to extract line number from error message like "at line 5"
 static int extractLine(const std::string& msg) {
-    // Look for "line X" pattern
-    size_t pos = msg.find("line ");
+    // Look for "at line X" pattern (more specific than just "line ")
+    size_t pos = msg.find("at line ");
     if (pos != std::string::npos) {
-        pos += 5;
+        pos += 8;
         std::string num;
-        while (pos < msg.size() && isdigit(msg[pos])) {
+        while (pos < msg.size() && isdigit(static_cast<unsigned char>(msg[pos]))) {
             num += msg[pos++];
         }
         if (!num.empty()) return std::stoi(num);

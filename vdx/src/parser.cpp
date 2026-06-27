@@ -364,16 +364,30 @@ NodePtr Parser::parseForStmt() {
     stmt->condition = parseExpr();
     expect(TokenType::SEMICOLON, "Expected ';' after for condition");
 
-    //TODO(IMP-4): For-loop update only supports `name = expr`. Writing `i++` or `i--` fails with "Expected '='". Users must write `i = i + 1` instead.
-    // update: assignment (no semicolon, followed by ')')
+    // update: assignment (name = expr) or increment/decrement (i++ / ++i / i-- / --i)
     {
         int aln = cur().line;
-        auto assign = std::make_shared<AssignStmt>();
-        assign->line = aln;
-        assign->name = expect(TokenType::IDENTIFIER, "Expected variable name in for update").value;
-        expect(TokenType::EQUALS, "Expected '='");
-        assign->value = parseExpr();
-        stmt->update = assign;
+        std::string name = expect(TokenType::IDENTIFIER, "Expected variable name in for update").value;
+        if (check(TokenType::PLUS_PLUS) || check(TokenType::MINUS_MINUS)) {
+            bool isIncrement = check(TokenType::PLUS_PLUS);
+            advance();
+            auto incDec = std::make_shared<IncDecExpr>();
+            incDec->line = aln;
+            incDec->name = name;
+            incDec->isIncrement = isIncrement;
+            incDec->isPrefix = false;
+            auto exprStmt = std::make_shared<ExprStmt>();
+            exprStmt->line = aln;
+            exprStmt->expr = incDec;
+            stmt->update = exprStmt;
+        } else {
+            expect(TokenType::EQUALS, "Expected '=' or '++'/'--' in for update");
+            auto assign = std::make_shared<AssignStmt>();
+            assign->line = aln;
+            assign->name = name;
+            assign->value = parseExpr();
+            stmt->update = assign;
+        }
     }
 
     expect(TokenType::RPAREN, "Expected ')'");
