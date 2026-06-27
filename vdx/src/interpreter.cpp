@@ -7,6 +7,7 @@
 #include <chrono>
 #include <sstream>
 #include <cmath>
+#include <climits>
 #include <fstream>
 #include <filesystem>
 
@@ -915,12 +916,26 @@ Value Interpreter::evalBinary(const BinaryExpr* expr) {
     }
 
     // Integer arithmetic
-    //FIXME(BUG-6): Signed integer overflow is undefined behavior. No overflow checks on +, -, *.
     if (left.type == Value::INT && right.type == Value::INT) {
         int l = left.intVal, r = right.intVal;
-        if (expr->op == "+") return Value::makeInt(l + r);
-        if (expr->op == "-") return Value::makeInt(l - r);
-        if (expr->op == "*") return Value::makeInt(l * r);
+        if (expr->op == "+") {
+            long long result = static_cast<long long>(l) + static_cast<long long>(r);
+            if (result > INT_MAX || result < INT_MIN)
+                throw std::runtime_error("[VDX] Integer overflow in addition at line " + std::to_string(currentLine));
+            return Value::makeInt(static_cast<int>(result));
+        }
+        if (expr->op == "-") {
+            long long result = static_cast<long long>(l) - static_cast<long long>(r);
+            if (result > INT_MAX || result < INT_MIN)
+                throw std::runtime_error("[VDX] Integer overflow in subtraction at line " + std::to_string(currentLine));
+            return Value::makeInt(static_cast<int>(result));
+        }
+        if (expr->op == "*") {
+            long long result = static_cast<long long>(l) * static_cast<long long>(r);
+            if (result > INT_MAX || result < INT_MIN)
+                throw std::runtime_error("[VDX] Integer overflow in multiplication at line " + std::to_string(currentLine));
+            return Value::makeInt(static_cast<int>(result));
+        }
         if (expr->op == "/") {
             if (r == 0) throw std::runtime_error("[VDX] Division by zero at line " + std::to_string(currentLine));
             return Value::makeInt(l / r);

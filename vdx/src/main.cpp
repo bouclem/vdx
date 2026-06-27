@@ -7,7 +7,7 @@
 #include <vector>
 #include <string>
 #include <filesystem>
-//FIXME(BUG-12): Missing #include <cctype> for isdigit. Compiles only due to transitive includes — not portable.
+#include <cctype>
 
 // Split source into lines for error display
 static std::vector<std::string> splitLines(const std::string& src) {
