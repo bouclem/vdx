@@ -405,15 +405,14 @@ void Interpreter::execWhile(const WhileStmt* stmt) {
             popScope();
         }
 
-        //FIXME(BUG-3): Loop safety logic is inverted. Throws if iteration takes LESS than 2s, making all normal fast loops fail. Should check > 2000ms (too slow = possible infinite loop).
         if (!stmt->isUnsafe) {
             auto iterEnd = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(iterEnd - iterStart).count();
-            if (elapsed < 2000) {
+            if (elapsed > 2000) {
                 throw std::runtime_error(
-                    "[VDX] Loop safety: iteration completed in " + std::to_string(elapsed) +
-                    "ms (< 2000ms minimum).\n"
-                    "      This loop may be infinite or too fast.\n"
+                    "[VDX] Loop safety: iteration took " + std::to_string(elapsed) +
+                    "ms (> 2000ms maximum).\n"
+                    "      This loop may be infinite or too slow.\n"
                     "      Use @unsafe before 'while' to disable this protection:\n"
                     "      @unsafe while (condition) { ... }");
             }
@@ -445,15 +444,14 @@ void Interpreter::execFor(const ForStmt* stmt) {
         // Execute update
         execStatement(stmt->update);
 
-        //FIXME(BUG-3): Same inverted loop safety logic as execWhile. Throws if iteration takes LESS than 2s.
         if (!stmt->isUnsafe) {
             auto iterEnd = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(iterEnd - iterStart).count();
-            if (elapsed < 2000) {
+            if (elapsed > 2000) {
                 throw std::runtime_error(
-                    "[VDX] Loop safety: iteration completed in " + std::to_string(elapsed) +
-                    "ms (< 2000ms minimum).\n"
-                    "      This loop may be infinite or too fast.\n"
+                    "[VDX] Loop safety: iteration took " + std::to_string(elapsed) +
+                    "ms (> 2000ms maximum).\n"
+                    "      This loop may be infinite or too slow.\n"
                     "      Use @unsafe before 'for' to disable this protection:\n"
                     "      @unsafe for (let i = 0; i < n; i = i + 1) { ... }");
             }
@@ -681,13 +679,11 @@ Value Interpreter::execCall(const CallExpr* call) {
     } catch (ReturnException& e) {
         result = e.value;
     } catch (BreakException&) {
-        //FIXME(BUG-10): break/continue propagate through function calls into outer loops. Should be caught and converted to an error here.
         popScope();
-        throw;
+        throw std::runtime_error("[VDX] 'break' used outside of a loop at line " + std::to_string(currentLine));
     } catch (ContinueException&) {
-        //FIXME(BUG-10): Same as above — continue escapes function boundary.
         popScope();
-        throw;
+        throw std::runtime_error("[VDX] 'continue' used outside of a loop at line " + std::to_string(currentLine));
     }
 
     popScope();
