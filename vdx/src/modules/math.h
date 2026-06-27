@@ -9,17 +9,17 @@ namespace MathModule {
     void registerMath(Interpreter& interp);
     
     // Math functions
-    Value sqrt_builtin(const std::vector<Value>& args);
-    Value pow_builtin(const std::vector<Value>& args);
-    Value abs_builtin(const std::vector<Value>& args);
-    Value sin_builtin(const std::vector<Value>& args);
-    Value cos_builtin(const std::vector<Value>& args);
-    Value tan_builtin(const std::vector<Value>& args);
-    Value floor_builtin(const std::vector<Value>& args);
-    Value ceil_builtin(const std::vector<Value>& args);
-    Value round_builtin(const std::vector<Value>& args);
-    Value min_builtin(const std::vector<Value>& args);
-    Value max_builtin(const std::vector<Value>& args);
-    Value random_builtin(const std::vector<Value>& args);
-    Value pi_builtin(const std::vector<Value>& args);
+    Value sqrt_builtin(const std::vector<Value>& args, int line);
+    Value pow_builtin(const std::vector<Value>& args, int line);
+    Value abs_builtin(const std::vector<Value>& args, int line);
+    Value sin_builtin(const std::vector<Value>& args, int line);
+    Value cos_builtin(const std::vector<Value>& args, int line);
+    Value tan_builtin(const std::vector<Value>& args, int line);
+    Value floor_builtin(const std::vector<Value>& args, int line);
+    Value ceil_builtin(const std::vector<Value>& args, int line);
+    Value round_builtin(const std::vector<Value>& args, int line);
+    Value min_builtin(const std::vector<Value>& args, int line);
+    Value max_builtin(const std::vector<Value>& args, int line);
+    Value random_builtin(const std::vector<Value>& args, int line);
+    Value pi_builtin(const std::vector<Value>& args, int line);
 }

@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include <stdexcept>
+//FIXME(BUG-12): Missing #include <cctype> for isdigit/isalpha. Compiles only due to transitive includes — not portable.
 
 Lexer::Lexer(const std::string& source) : src(source), pos(0), line(1), col(1) {}
 

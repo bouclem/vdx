@@ -4,12 +4,20 @@ project(vdx LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Enable compiler warnings
+if(MSVC)
+    add_compile_options(/W4)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 add_executable(vdx
     src/main.cpp
     src/lexer.cpp
     src/parser.cpp
     src/interpreter.cpp
     src/modules/fs.cpp
+    src/modules/math.cpp
 )
 
 target_include_directories(vdx PRIVATE src)

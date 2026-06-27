@@ -169,6 +169,7 @@ void Interpreter::execImport(const ImportStmt* stmt) {
     }
 
     // Normalize and check for circular imports
+    //FIXME(BUG-5): canonical() throws filesystem_error if file doesn't exist, before the nice error at line 180 can fire. Should check existence first.
     std::string canonicalPath = std::filesystem::canonical(importPath).string();
     if (importedFiles.count(canonicalPath)) {
         return; // Already imported
@@ -205,18 +206,15 @@ void Interpreter::execImport(const ImportStmt* stmt) {
         }
     }
 
-    // Execute imported file's classes to register their functions
+    // Register imported file's functions
     for (auto& decl : importedProgram->declarations) {
         auto cls = dynamic_cast<ClassDecl*>(decl.get());
         if (cls) {
-            // Only register functions, don't execute body
-            pushScope();
             for (auto& node : cls->body) {
                 if (auto fn = dynamic_cast<FnDecl*>(node.get())) {
                     functions[fn->name] = fn;
                 }
             }
-            popScope();
         }
     }
 }
@@ -224,6 +222,7 @@ void Interpreter::execImport(const ImportStmt* stmt) {
 void Interpreter::execClass(const ClassDecl* cls) {
     pushScope();
     // First pass: register functions
+    //FIXME(BUG-7): Methods are registered in the global 'functions' map. Two classes with same-named methods overwrite each other.
     for (auto& node : cls->body) {
         if (auto fn = dynamic_cast<FnDecl*>(node.get())) {
             functions[fn->name] = fn;
@@ -325,6 +324,7 @@ void Interpreter::execPrint(const PrintStmt* stmt) {
         if (i > 0) std::cout << " ";
         std::cout << evalExpr(stmt->args[i].get()).toString();
     }
+    //TODO(IMP-3): Use '\n' instead of std::endl to avoid unnecessary flush on every print call.
     std::cout << std::endl;
 }
 
@@ -337,6 +337,7 @@ void Interpreter::execReturn(const ReturnStmt* stmt) {
 }
 
 void Interpreter::execIf(const IfStmt* stmt) {
+    //TODO(IMP-8): This try/catch pattern for Break/Continue is duplicated 3 times (then, elif, else). Could be refactored into a helper.
     if (isTruthy(evalExpr(stmt->condition.get()))) {
         pushScope();
         try {
@@ -389,15 +390,15 @@ void Interpreter::execWhile(const WhileStmt* stmt) {
         pushScope();
         try {
             for (auto& s : stmt->body) execStatement(s);
+            popScope();
         } catch (BreakException&) {
             popScope();
             break;
         } catch (ContinueException&) {
             popScope();
-            // continue to next iteration
         }
-        popScope();
 
+        //FIXME(BUG-3): Loop safety logic is inverted. Throws if iteration takes LESS than 2s, making all normal fast loops fail. Should check > 2000ms (too slow = possible infinite loop).
         if (!stmt->isUnsafe) {
             auto iterEnd = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(iterEnd - iterStart).count();
@@ -425,19 +426,19 @@ void Interpreter::execFor(const ForStmt* stmt) {
         pushScope(); // body scope
         try {
             for (auto& s : stmt->body) execStatement(s);
+            popScope();
         } catch (BreakException&) {
             popScope();
             popScope(); // pop init scope too
             return;
         } catch (ContinueException&) {
             popScope();
-            // continue to update
         }
-        popScope();
 
         // Execute update
         execStatement(stmt->update);
 
+        //FIXME(BUG-3): Same inverted loop safety logic as execWhile. Throws if iteration takes LESS than 2s.
         if (!stmt->isUnsafe) {
             auto iterEnd = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(iterEnd - iterStart).count();
@@ -527,6 +528,7 @@ Value Interpreter::execNew(const NewExpr* expr) {
         execStatement(node);
     }
 
+    //FIXME(BUG-11): Captures ALL variables from the current scope as object fields, including temporaries (e.g. loop counters from field initializers). Pollutes the object's namespace.
     // Capture all variables from the current scope as fields
     if (!scopes.empty()) {
         for (auto& pair : scopes.back()) {
@@ -672,9 +674,11 @@ Value Interpreter::execCall(const CallExpr* call) {
     } catch (ReturnException& e) {
         result = e.value;
     } catch (BreakException&) {
+        //FIXME(BUG-10): break/continue propagate through function calls into outer loops. Should be caught and converted to an error here.
         popScope();
         throw;
     } catch (ContinueException&) {
+        //FIXME(BUG-10): Same as above — continue escapes function boundary.
         popScope();
         throw;
     }
@@ -926,6 +930,7 @@ Value Interpreter::evalBinary(const BinaryExpr* expr) {
     }
 
     // Integer arithmetic
+    //FIXME(BUG-6): Signed integer overflow is undefined behavior. No overflow checks on +, -, *.
     if (left.type == Value::INT && right.type == Value::INT) {
         int l = left.intVal, r = right.intVal;
         if (expr->op == "+") return Value::makeInt(l + r);

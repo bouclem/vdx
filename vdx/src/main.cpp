@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <filesystem>
+//FIXME(BUG-12): Missing #include <cctype> for isdigit. Compiles only due to transitive includes — not portable.
 
 // Split source into lines for error display
 static std::vector<std::string> splitLines(const std::string& src) {
@@ -19,6 +20,7 @@ static std::vector<std::string> splitLines(const std::string& src) {
     return lines;
 }
 
+//TODO(IMP-10): extractLine is fragile — searches for "line " in error messages. If an error mentions "line " in a different context, it extracts the wrong number. Consider storing line numbers in exceptions structurally.
 // Try to extract line number from error message like "at line 5"
 static int extractLine(const std::string& msg) {
     // Look for "line X" pattern
@@ -91,6 +93,15 @@ int main(int argc, char* argv[]) {
         interp.run(program, sourceDir);
     } catch (const std::runtime_error& e) {
         printError(source, filename, e.what());
+        return 1;
+    } catch (const std::out_of_range& e) {
+        printError(source, filename, e.what());
+        return 1;
+    } catch (const std::filesystem::filesystem_error& e) {
+        printError(source, filename, e.what());
+        return 1;
+    } catch (const std::bad_alloc& e) {
+        std::cerr << "\n  error: Out of memory\n\n";
         return 1;
     }
 

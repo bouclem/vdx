@@ -1,4 +1,7 @@
 #include "math.h"
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
@@ -9,6 +12,7 @@
 
 namespace MathModule {
 
+//TODO(IMP-5): std::rand() has poor quality and is considered harmful in modern C++. Use std::mt19937 from <random> instead.
 static bool random_seeded = false;
 
 static void seed_random() {
@@ -18,7 +22,8 @@ static void seed_random() {
     }
 }
 
-Value sqrt_builtin(const std::vector<Value>& args) {
+Value sqrt_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.sqrt() expects 1 argument");
     }
@@ -29,7 +34,8 @@ Value sqrt_builtin(const std::vector<Value>& args) {
     return Value::makeFloat(std::sqrt(x));
 }
 
-Value pow_builtin(const std::vector<Value>& args) {
+Value pow_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
     if (args.size() != 2) {
         throw std::runtime_error("[VDX] math.pow() expects 2 arguments (base, exponent)");
     }
@@ -38,7 +44,8 @@ Value pow_builtin(const std::vector<Value>& args) {
     return Value::makeFloat(std::pow(base, exp));
 }
 
-Value abs_builtin(const std::vector<Value>& args) {
+Value abs_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.abs() expects 1 argument");
     }
@@ -48,42 +55,48 @@ Value abs_builtin(const std::vector<Value>& args) {
     return Value::makeFloat(std::abs(args[0].toDouble()));
 }
 
-Value sin_builtin(const std::vector<Value>& args) {
+Value sin_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.sin() expects 1 argument (radians)");
     }
     return Value::makeFloat(std::sin(args[0].toDouble()));
 }
 
-Value cos_builtin(const std::vector<Value>& args) {
+Value cos_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.cos() expects 1 argument (radians)");
     }
     return Value::makeFloat(std::cos(args[0].toDouble()));
 }
 
-Value tan_builtin(const std::vector<Value>& args) {
+Value tan_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.tan() expects 1 argument (radians)");
     }
     return Value::makeFloat(std::tan(args[0].toDouble()));
 }
 
-Value floor_builtin(const std::vector<Value>& args) {
+Value floor_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.floor() expects 1 argument");
     }
     return Value::makeFloat(std::floor(args[0].toDouble()));
 }
 
-Value ceil_builtin(const std::vector<Value>& args) {
+Value ceil_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.ceil() expects 1 argument");
     }
     return Value::makeFloat(std::ceil(args[0].toDouble()));
 }
 
-Value round_builtin(const std::vector<Value>& args) {
+Value round_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.round() expects 1 argument");
     }
@@ -94,7 +107,8 @@ Value round_builtin(const std::vector<Value>& args) {
     return Value::makeFloat(std::round(x));
 }
 
-Value min_builtin(const std::vector<Value>& args) {
+Value min_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
     if (args.size() < 1) {
         throw std::runtime_error("[VDX] math.min() expects at least 1 argument");
     }
@@ -111,7 +125,8 @@ Value min_builtin(const std::vector<Value>& args) {
     return Value::makeInt(static_cast<int>(min_val));
 }
 
-Value max_builtin(const std::vector<Value>& args) {
+Value max_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
     if (args.size() < 1) {
         throw std::runtime_error("[VDX] math.max() expects at least 1 argument");
     }
@@ -128,7 +143,8 @@ Value max_builtin(const std::vector<Value>& args) {
     return Value::makeInt(static_cast<int>(max_val));
 }
 
-Value random_builtin(const std::vector<Value>& args) {
+Value random_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
     seed_random();
     if (args.size() == 0) {
         // Return random float between 0 and 1
@@ -154,9 +170,10 @@ Value random_builtin(const std::vector<Value>& args) {
     throw std::runtime_error("[VDX] math.random() expects 0, 1, or 2 arguments");
 }
 
-Value pi_builtin(const std::vector<Value>& args) {
+Value pi_builtin(const std::vector<Value>& args, int line) {
     (void)args; // unused
-    return Value::makeFloat(3.14159265358979323846);
+    (void)line;
+    return Value::makeFloat(M_PI);
 }
 
 } // namespace MathModule

@@ -10,6 +10,7 @@
 struct ObjectData;
 
 struct Value {
+    //TODO(IMP-1): This struct is very large (100+ bytes) because it contains all type fields simultaneously. Consider using std::variant to reduce memory and copy cost.
     enum Type { STRING, INT, FLOAT, BOOL, VOID, ARRAY, OBJECT, DICT };
     Type type;
     std::string strVal;
@@ -33,6 +34,7 @@ struct Value {
     // Get numeric value as double (for mixed int/float arithmetic)
     double toDouble() const {
         if (type == FLOAT) return floatVal;
+        //TODO(IMP-2): Use static_cast<double>(intVal) instead of C-style cast.
         if (type == INT) return (double)intVal;
         return 0.0;
     }

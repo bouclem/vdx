@@ -364,6 +364,7 @@ NodePtr Parser::parseForStmt() {
     stmt->condition = parseExpr();
     expect(TokenType::SEMICOLON, "Expected ';' after for condition");
 
+    //TODO(IMP-4): For-loop update only supports `name = expr`. Writing `i++` or `i--` fails with "Expected '='". Users must write `i = i + 1` instead.
     // update: assignment (no semicolon, followed by ')')
     {
         int aln = cur().line;
