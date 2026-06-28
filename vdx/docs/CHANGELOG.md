@@ -10,6 +10,8 @@
 - Fixed const variables modifiable via `push()`, `pop()`, `arr[i]=`, `obj.f=`, and `++`/`--` — all mutation paths now check `isVarConst`
 - Fixed `break`/`continue` escaping method call boundaries via `DotCallExpr` — now throws runtime error matching `execCall` behavior
 - Fixed duplicate function names across classes causing collision — methods are now namespaced as `ClassName::funcName` in the internal function map, allowing same-named methods in different classes
+- Fixed `math.floor()` and `math.ceil()` returning FLOAT instead of INT — now returns INT for whole-number results
+- Fixed duplicate class names silently overwriting each other — now throws error on duplicate class declarations (both main file and imports)
 
 ## v0.0.13 — 2026-06-27
 - Fixed `continue` in `while` and `for` loops corrupting the scope stack (double popScope)

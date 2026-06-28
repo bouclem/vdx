@@ -153,7 +153,12 @@ void Interpreter::run(const Program& program, const std::string& sourceDir) {
     // Second pass: register all class declarations for 'new'
     for (auto& decl : program.declarations) {
         auto cls = dynamic_cast<ClassDecl*>(decl.get());
-        if (cls) classDecls[cls->name] = cls;
+        if (cls) {
+            if (classDecls.count(cls->name)) {
+                throw std::runtime_error("[VDX] Class '" + cls->name + "' is already defined at line " + std::to_string(cls->line));
+            }
+            classDecls[cls->name] = cls;
+        }
     }
     // Third pass: execute top-level classes
     for (auto& decl : program.declarations) {
@@ -207,6 +212,9 @@ void Interpreter::execImport(const ImportStmt* stmt) {
     for (auto& decl : importedProgram->declarations) {
         auto cls = dynamic_cast<ClassDecl*>(decl.get());
         if (cls) {
+            if (classDecls.count(cls->name)) {
+                throw std::runtime_error("[VDX] Class '" + cls->name + "' is already defined (imported at line " + std::to_string(stmt->line) + ")");
+            }
             classDecls[cls->name] = cls;
         }
     }

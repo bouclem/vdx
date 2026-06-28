@@ -89,7 +89,10 @@ Value floor_builtin(const std::vector<Value>& args, int line) {
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.floor() expects 1 argument");
     }
-    return Value::makeFloat(std::floor(args[0].toDouble()));
+    if (args[0].type == Value::INT) {
+        return Value::makeInt(args[0].intVal);
+    }
+    return Value::makeInt(static_cast<int>(std::floor(args[0].toDouble())));
 }
 
 Value ceil_builtin(const std::vector<Value>& args, int line) {
@@ -97,7 +100,10 @@ Value ceil_builtin(const std::vector<Value>& args, int line) {
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.ceil() expects 1 argument");
     }
-    return Value::makeFloat(std::ceil(args[0].toDouble()));
+    if (args[0].type == Value::INT) {
+        return Value::makeInt(args[0].intVal);
+    }
+    return Value::makeInt(static_cast<int>(std::ceil(args[0].toDouble())));
 }
 
 Value round_builtin(const std::vector<Value>& args, int line) {
