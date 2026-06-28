@@ -1,0 +1,38 @@
+// utils.vdx — Imported by vdx-pro-examples.vdx
+// Demonstrates import pattern: utility functions in separate file
+
+class Utils {
+    fn add(a, b) {
+        return a + b;
+    }
+
+    fn multiply(a, b) {
+        return a * b;
+    }
+
+    fn greet(name) {
+        return "Hello, " + name + "!";
+    }
+
+    fn isEven(n) {
+        return n % 2 == 0;
+    }
+
+    fn clamp(val, minVal, maxVal) {
+        if (val < minVal) {
+            return minVal;
+        }
+        if (val > maxVal) {
+            return maxVal;
+        }
+        return val;
+    }
+
+    fn repeat(str, times) {
+        let result = "";
+        @unsafe for (let i = 0; i < times; i++) {
+            result = result + str;
+        }
+        return result;
+    }
+}

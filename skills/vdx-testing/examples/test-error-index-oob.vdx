@@ -1,0 +1,7 @@
+// test-error-index-oob.vdx — Should error: array index out of bounds
+// Run: vdx test-error-index-oob.vdx
+// Expected: exit code 1, error "Array index out of bounds"
+class Test {
+    let arr = [1, 2, 3];
+    print(arr[10]);
+}

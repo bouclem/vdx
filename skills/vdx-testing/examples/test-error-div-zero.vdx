@@ -1,0 +1,7 @@
+// test-error-div-zero.vdx — Should error: division by zero
+// Run: vdx test-error-div-zero.vdx
+// Expected: exit code 1, error "Division by zero"
+class Test {
+    let x = 1 / 0;
+    print("should not reach:", x);
+}

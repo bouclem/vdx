@@ -1,0 +1,12 @@
+// test-error-break-method.vdx — Should error: break inside method (not in loop)
+// Run: vdx test-error-break-method.vdx
+// Expected: exit code 1, error "'break' used outside of a loop"
+class Test {
+    fn badMethod() {
+        break;
+        return 1;
+    }
+
+    let result = badMethod();
+    print("should not reach:", result);
+}

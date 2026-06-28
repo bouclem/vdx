@@ -1,0 +1,247 @@
+// vdx-knowledge-examples.vdx — Demonstrates internal behaviors and edge cases
+// For AI agents to understand VDX runtime behavior
+
+// ── Class with same method name (BUG-8 fix demonstration) ──
+class Dog {
+    fn speak() {
+        return "Woof";
+    }
+
+    fn info() {
+        // Calls sibling method by bare name — resolves to Dog::speak
+        return speak();
+    }
+}
+
+class Cat {
+    fn speak() {
+        return "Meow";
+    }
+
+    fn info() {
+        // Same bare name but resolves to Cat::speak (namespaced)
+        return speak();
+    }
+}
+
+// ── Class showing scope behavior with return ──
+class ScopeDemo {
+    fn returnFromIf() {
+        // return inside if block — scope properly popped
+        if (true) {
+            let local = 100;
+            return local;
+        }
+        return 0;
+    }
+
+    fn returnFromWhile() {
+        let i = 0;
+        while (i < 10) {
+            if (i == 5) {
+                return i;
+            }
+            i = i + 1;
+        }
+        return 0 - 1;
+    }
+
+    fn returnFromFor() {
+        let arr = [10, 20, 30];
+        for (item in arr) {
+            if (item == 20) {
+                return item;
+            }
+        }
+        return 0 - 1;
+    }
+
+    // Demonstrates that block-scoped variables don't leak
+    fn blockScope() {
+        let x = 1;
+        if (true) {
+            let x = 2;  // shadows outer x in this block
+            // inner x is 2 here
+        }
+        // outer x is still 1
+        return x;
+    }
+}
+
+// ── Class showing const enforcement ──
+class ConstDemo {
+    const PI: float = 3.14159;
+    const MAX: int = 100;
+    const TAG: string = "vdx";
+    const ITEMS = [1, 2, 3];
+
+    fn testConst() {
+        // All of these would throw "Cannot assign/modify const":
+        // PI = 3.0;           // direct assign
+        // MAX = 200;          // direct assign
+        // push(ITEMS, 4);     // push on const array
+        // pop(ITEMS);         // pop on const array
+        // ITEMS[0] = 99;      // index assign on const array
+        // MAX++;              // increment const
+
+        // These are fine — reading const:
+        print("PI:", PI);
+        print("MAX:", MAX);
+        print("TAG:", TAG);
+        print("ITEMS:", ITEMS);
+        return PI * 2;
+    }
+}
+
+// ── Class showing type system ──
+class TypeDemo {
+    fn showTypes() {
+        let i: int = 42;
+        let f: float = 3.14;
+        let s: string = "hello";
+        let b: bool = true;
+        let arr = [1, 2, 3];
+        let d = {"key": "value"};
+        let obj = new TypeDemo();
+
+        print("int:", type(i));        // "int"
+        print("float:", type(f));      // "float"
+        print("string:", type(s));     // "string"
+        print("bool:", type(b));       // "bool"
+        print("array:", type(arr));    // "array"
+        print("dict:", type(d));       // "dict"
+        print("object:", type(obj));   // "object"
+    }
+
+    fn typePromotion() {
+        let i = 10;
+        let f = 3.5;
+
+        print("int + int:", i + 5);       // 15 (int)
+        print("int + float:", i + f);     // 13.5 (float)
+        print("int / int:", 7 / 2);       // 3 (int, truncated!)
+        print("int / float:", 7 / 2.0);   // 3.5 (float)
+        print("float / float:", 7.0 / 2.0); // 3.5 (float)
+        print("int % int:", 7 % 3);       // 1 (int)
+        print("float % float:", 7.5 % 2.5); // 0.0 (float)
+    }
+
+    fn truthiness() {
+        // Falsy values
+        if (0) { print("0 is truthy"); } else { print("0 is falsy"); }
+        if (0.0) { print("0.0 is truthy"); } else { print("0.0 is falsy"); }
+        if (false) { print("false is truthy"); } else { print("false is falsy"); }
+        if ("") { print("empty string is truthy"); } else { print("empty string is falsy"); }
+        if ([]) { print("empty array is truthy"); } else { print("empty array is falsy"); }
+
+        // Truthy values
+        if (1) { print("1 is truthy"); }
+        if (0.001) { print("0.001 is truthy"); }
+        if (true) { print("true is truthy"); }
+        if ("a") { print("non-empty string is truthy"); }
+        if ([0]) { print("non-empty array is truthy"); }
+    }
+}
+
+// ── Class showing object construction ──
+class Animal {
+    let name: string = "unknown";
+    let sound: string = "";
+    let legs: int = 4;
+
+    fn setName(n) {
+        name = n;
+    }
+
+    fn setSound(s) {
+        sound = s;
+    }
+
+    fn describe() {
+        print(name, "says", sound, "and has", legs, "legs");
+    }
+}
+
+// ── Main runner ──
+class Main {
+    print("=== Same Method Name (BUG-8) ===");
+    let d = new Dog();
+    let c = new Cat();
+    print("Dog speak:", d.speak());    // Woof
+    print("Cat speak:", c.speak());    // Meow
+    print("Dog info:", d.info());      // Woof (calls Dog::speak)
+    print("Cat info:", c.info());      // Meow (calls Cat::speak)
+
+    print("\n=== Scope Demo (BUG-1) ===");
+    let sd = new ScopeDemo();
+    print("returnFromIf:", sd.returnFromIf());      // 100
+    print("returnFromWhile:", sd.returnFromWhile()); // 5
+    print("returnFromFor:", sd.returnFromFor());     // 20
+    print("blockScope:", sd.blockScope());            // 1 (outer not modified)
+
+    print("\n=== Const Demo (BUG-5) ===");
+    let cd = new ConstDemo();
+    print("PI*2:", cd.testConst());
+
+    print("\n=== Type Demo ===");
+    let td = new TypeDemo();
+    td.showTypes();
+
+    print("\n=== Type Promotion ===");
+    td.typePromotion();
+
+    print("\n=== Truthiness ===");
+    td.truthiness();
+
+    print("\n=== Object Construction ===");
+    let a1 = new Animal();
+    a1.setName("Dog");
+    a1.setSound("Woof");
+    a1.describe();
+
+    let a2 = new Animal();
+    a2.setName("Cat");
+    a2.setSound("Meow");
+    a2.legs = 4;
+    a2.describe();
+
+    // Objects are independent
+    print("\n=== Object Independence ===");
+    print("a1.name:", a1.name);  // Dog
+    print("a2.name:", a2.name);  // Cat
+
+    // Object field count via len()
+    print("len(a1):", len(a1));  // 3 (name, sound, legs)
+
+    print("\n=== Module Functions ===");
+    // DotCallExpr dispatches to moduleFunctions before object method lookup
+    print("math.sqrt(25):", math.sqrt(25));   // 5.0
+    print("math.pi:", math.pi);               // 3.14159...
+    print("math.pow(2, 10):", math.pow(2, 10)); // 1024.0
+    print("math.floor(4.9):", math.floor(4.9)); // 4.0 (returns float!)
+    print("math.ceil(4.1):", math.ceil(4.1));   // 5.0 (returns float!)
+    print("math.round(4.5):", math.round(4.5)); // 5.0
+
+    print("\n=== Edge Cases ===");
+    // No unary minus — use 0 - x
+    let negative = 0 - 42;
+    print("0 - 42 =", negative);
+
+    // String concatenation with numbers (literals work, variables don't)
+    print("count:", 5);           // works — comma-separated
+    print("pi:", 3.14);           // works — comma-separated
+    print("bool:", true);         // works — comma-separated
+
+    // Nested arrays
+    let matrix = [[1, 2], [3, 4]];
+    print("matrix[0][1]:", matrix[0][1]);  // 2
+    print("matrix[1][0]:", matrix[1][0]);  // 3
+
+    // Dict with mixed value types
+    let mixed = {"name": "Alice", "age": 30, "active": true};
+    print("name:", mixed["name"]);
+    print("age:", mixed["age"]);
+    print("active:", mixed["active"]);
+
+    print("\n=== All knowledge examples done! ===");
+}

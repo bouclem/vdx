@@ -1,0 +1,7 @@
+// test-error-int-overflow.vdx — Should error: integer literal out of range
+// Run: vdx test-error-int-overflow.vdx
+// Expected: exit code 1, error "Integer literal is out of range"
+class Test {
+    let big = 99999999999999999999999999;
+    print(big);
+}

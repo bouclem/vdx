@@ -1,0 +1,326 @@
+import "utils.vdx";
+// vdx-pro-examples.vdx — Complete VDX coding patterns for AI reference
+// Demonstrates all language features and best practices
+
+// ── Data class pattern ──
+class Point {
+    let x: int = 0;
+    let y: int = 0;
+
+    fn setXY(nx, ny) {
+        x = nx;
+        y = ny;
+    }
+
+    fn distance(other) {
+        let dx = x - other.x;
+        let dy = y - other.y;
+        return math.sqrt(dx * dx + dy * dy);
+    }
+
+    fn describe() {
+        print("Point(", x, ", ", y, ")");
+    }
+}
+
+// ── Class with constructor-like initialization ──
+class Counter {
+    let count: int = 0;
+    const STEP: int = 1;
+
+    fn increment() {
+        count = count + STEP;
+    }
+
+    fn decrement() {
+        count = count - STEP;
+    }
+
+    fn reset() {
+        count = 0;
+    }
+
+    fn getValue() {
+        return count;
+    }
+
+    fn isZero() {
+        return count == 0;
+    }
+}
+
+// ── Class with array operations ──
+class Stack {
+    let items = [];
+
+    fn pushItem(val) {
+        push(items, val);
+    }
+
+    fn popItem() {
+        if (len(items) == 0) {
+            print("ERROR: stack empty");
+            return 0 - 1;
+        }
+        return pop(items);
+    }
+
+    fn peek() {
+        if (len(items) == 0) {
+            return 0 - 1;
+        }
+        return items[len(items) - 1];
+    }
+
+    fn size() {
+        return len(items);
+    }
+
+    fn isEmpty() {
+        return len(items) == 0;
+    }
+
+    fn printAll() {
+        print("Stack:", items);
+    }
+}
+
+// ── Class with dict operations ──
+class Config {
+    let settings = {"timeout": 30, "retries": 3};
+
+    fn get(key) {
+        return settings[key];
+    }
+
+    fn set(key, val) {
+        settings[key] = val;
+    }
+
+    fn has(key) {
+        // No logical operators — use found flag
+        let found = 0;
+        let keys = ["timeout", "retries"];
+        for (k in keys) {
+            if (k == key) {
+                found = 1;
+            }
+        }
+        return found == 1;
+    }
+
+    fn printConfig() {
+        print("timeout:", settings["timeout"]);
+        print("retries:", settings["retries"]);
+    }
+}
+
+// ── Main entry point ──
+class Main {
+    // ── Basic variables and types ──
+    let name: string = "VDX";
+    let version: float = 0.14;
+    let count: int = 42;
+    let active: bool = true;
+    const MAX_SIZE: int = 100;
+
+    print("=== Variables ===");
+    print("name:", name);
+    print("version:", version);
+    print("count:", count);
+    print("active:", active);
+    print("MAX_SIZE:", MAX_SIZE);
+
+    // ── Arithmetic ──
+    print("\n=== Arithmetic ===");
+    let a = 10;
+    let b = 3;
+    print("a + b =", a + b);
+    print("a - b =", a - b);
+    print("a * b =", a * b);
+    print("a / b =", a / b);
+    print("a % b =", a % b);
+    print("a * 1.0 / b =", a * 1.0 / b);
+
+    // ── String operations ──
+    print("\n=== Strings ===");
+    let greeting = "Hello";
+    let target = "World";
+    print(greeting + ", " + target + "!");
+    print("Length:", len(greeting));
+    print("First char:", greeting[0]);
+    print("Last char:", greeting[len(greeting) - 1]);
+
+    // ── Arrays ──
+    print("\n=== Arrays ===");
+    let fruits = ["apple", "banana", "cherry"];
+    print("Array:", fruits);
+    print("Length:", len(fruits));
+    print("First:", fruits[0]);
+    fruits[1] = "blueberry";
+    print("After modify:", fruits);
+    push(fruits, "date");
+    print("After push:", fruits);
+    let last = pop(fruits);
+    print("Popped:", last, "Remaining:", fruits);
+
+    // ── Dict ──
+    print("\n=== Dict ===");
+    let person = {"name": "Alice", "age": 30};
+    print("name:", person["name"]);
+    print("age:", person["age"]);
+    person["city"] = "Paris";
+    print("city:", person["city"]);
+    print("len:", len(person));
+
+    // ── Control flow: if/elif/else ──
+    print("\n=== Control Flow ===");
+    let score = 85;
+    if (score >= 90) {
+        print("Grade: A");
+    } elif (score >= 80) {
+        print("Grade: B");
+    } elif (score >= 70) {
+        print("Grade: C");
+    } else {
+        print("Grade: F");
+    }
+
+    // ── While loop ──
+    print("\n=== While Loop ===");
+    let n = 5;
+    let factorial = 1;
+    while (n > 0) {
+        factorial = factorial * n;
+        n = n - 1;
+    }
+    print("5! =", factorial);
+
+    // ── For loop (C-style) ──
+    print("\n=== For Loop ===");
+    let sum = 0;
+    @unsafe for (let i = 1; i <= 10; i++) {
+        sum = sum + i;
+    }
+    print("Sum 1-10:", sum);
+
+    // ── For-in loop ──
+    print("\n=== For-In Loop ===");
+    let colors = ["red", "green", "blue"];
+    for (color in colors) {
+        print("color:", color);
+    }
+
+    // ── Break and continue ──
+    print("\n=== Break/Continue ===");
+    @unsafe for (let i = 0; i < 10; i++) {
+        if (i == 5) {
+            break;
+        }
+        if (i == 2) {
+            continue;
+        }
+        print("i:", i);
+    }
+
+    // ── Objects ──
+    print("\n=== Objects ===");
+    let p1 = new Point();
+    p1.setXY(3, 4);
+    p1.describe();
+
+    let p2 = new Point();
+    p2.setXY(0, 0);
+    p2.describe();
+
+    print("Distance:", p1.distance(p2));
+
+    // ── Counter object ──
+    print("\n=== Counter ===");
+    let counter = new Counter();
+    counter.increment();
+    counter.increment();
+    counter.increment();
+    print("Count:", counter.getValue());
+    counter.decrement();
+    print("After decrement:", counter.getValue());
+    print("Is zero:", counter.isZero());
+
+    // ── Stack object ──
+    print("\n=== Stack ===");
+    let stack = new Stack();
+    stack.pushItem(10);
+    stack.pushItem(20);
+    stack.pushItem(30);
+    stack.printAll();
+    print("Peek:", stack.peek());
+    print("Pop:", stack.popItem());
+    stack.printAll();
+    print("Size:", stack.size());
+
+    // ── Config object ──
+    print("\n=== Config ===");
+    let config = new Config();
+    config.printConfig();
+    config.set("timeout", 60);
+    print("New timeout:", config.get("timeout"));
+
+    // ── Type checking ──
+    print("\n=== Type() ===");
+    print("type(42):", type(42));
+    print("type(3.14):", type(3.14));
+    print("type('hi'):", type("hi"));
+    print("type(true):", type(true));
+    print("type([1,2]):", type([1, 2]));
+    print("type(p1):", type(p1));
+
+    // ── Math module ──
+    print("\n=== Math ===");
+    print("math.sqrt(16):", math.sqrt(16));
+    print("math.pow(2, 8):", math.pow(2, 8));
+    print("math.abs(0 - 7):", math.abs(0 - 7));
+    print("math.floor(3.7):", math.floor(3.7));
+    print("math.ceil(3.2):", math.ceil(3.2));
+    print("math.round(3.5):", math.round(3.5));
+    print("math.min(5, 3, 8):", math.min(5, 3, 8));
+    print("math.max(5, 3, 8):", math.max(5, 3, 8));
+    print("math.pi:", math.pi);
+    print("math.random(100):", math.random(100));
+
+    // ── Nested logic without && / || ──
+    print("\n=== Nested Conditions ===");
+    let x = 5;
+    let y = 10;
+    // Instead of: if (x > 0 && y > 0)
+    if (x > 0) {
+        if (y > 0) {
+            print("Both positive");
+        }
+    }
+
+    // Instead of: if (x > 0 || y > 0)
+    let eitherPositive = 0;
+    if (x > 0) { eitherPositive = 1; }
+    if (y > 0) { eitherPositive = 1; }
+    if (eitherPositive == 1) {
+        print("At least one positive");
+    }
+
+    // ── Negative numbers (no unary minus) ──
+    print("\n=== Negative Numbers ===");
+    let neg = 0 - 42;
+    print("neg:", neg);
+    print("abs(neg):", math.abs(neg));
+
+    // ── Wait ──
+    print("\n=== Wait ===");
+    print("Waiting 100ms...");
+    wait(100);
+    print("Done!");
+
+    // ── Input (commented out for non-interactive) ──
+    // let userName = input("Enter your name: ");
+    // print("Hello, " + userName);
+
+    print("\n=== All examples complete! ===");
+}

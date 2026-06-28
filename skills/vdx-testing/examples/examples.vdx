@@ -1,0 +1,349 @@
+// vdx-testing-examples.vdx — Test patterns and bug-hunting examples for AI
+// Shows how to write tests, verify behavior, and hunt bugs in VDX
+
+// ── Test helper class ──
+class Assert {
+    // VDX has no assert() built-in — manual pattern
+    fn equal(actual, expected, testName) {
+        if (actual == expected) {
+            print("PASS:", testName);
+        } else {
+            print("FAIL:", testName, "expected", expected, "got", actual);
+        }
+    }
+
+    fn notEqual(actual, expected, testName) {
+        if (actual != expected) {
+            print("PASS:", testName);
+        } else {
+            print("FAIL:", testName, "expected NOT", expected, "got", actual);
+        }
+    }
+
+    fn isTrue(val, testName) {
+        if (val) {
+            print("PASS:", testName);
+        } else {
+            print("FAIL:", testName, "expected truthy, got", val);
+        }
+    }
+
+    fn isFalse(val, testName) {
+        if (val) {
+            print("FAIL:", testName, "expected falsy, got", val);
+        } else {
+            print("PASS:", testName);
+        }
+    }
+}
+
+// ── Functions under test ──
+class MathUtils {
+    fn factorial(n) {
+        if (n <= 1) {
+            return 1;
+        }
+        let result = 1;
+        @unsafe for (let i = 2; i <= n; i++) {
+            result = result * i;
+        }
+        return result;
+    }
+
+    fn fibonacci(n) {
+        if (n <= 0) {
+            return 0;
+        }
+        if (n == 1) {
+            return 1;
+        }
+        let a = 0;
+        let b = 1;
+        @unsafe for (let i = 2; i <= n; i++) {
+            let temp = a + b;
+            a = b;
+            b = temp;
+        }
+        return b;
+    }
+
+    fn isPrime(n) {
+        if (n < 2) {
+            return false;
+        }
+        if (n == 2) {
+            return true;
+        }
+        if (n % 2 == 0) {
+            return false;
+        }
+        let i = 3;
+        @unsafe while (i * i <= n) {
+            if (n % i == 0) {
+                return false;
+            }
+            i = i + 2;
+        }
+        return true;
+    }
+
+    fn gcd(a, b) {
+        while (b != 0) {
+            let temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return a;
+    }
+
+    fn reverseString(s) {
+        let result = "";
+        let len = len(s);
+        @unsafe for (let i = len - 1; i >= 0; i = i - 1) {
+            result = result + s[i];
+        }
+        return result;
+    }
+
+    fn sumArray(arr) {
+        let total = 0;
+        for (val in arr) {
+            total = total + val;
+        }
+        return total;
+    }
+
+    fn maxInArray(arr) {
+        let maxVal = arr[0];
+        for (val in arr) {
+            if (val > maxVal) {
+                maxVal = val;
+            }
+        }
+        return maxVal;
+    }
+}
+
+// ── Class to test objects ──
+class BankAccount {
+    let balance: int = 0;
+    const MIN_BALANCE: int = 0;
+
+    fn deposit(amount) {
+        if (amount <= 0) {
+            return false;
+        }
+        balance = balance + amount;
+        return true;
+    }
+
+    fn withdraw(amount) {
+        if (amount <= 0) {
+            return false;
+        }
+        if (balance - amount < MIN_BALANCE) {
+            return false;
+        }
+        balance = balance - amount;
+        return true;
+    }
+
+    fn getBalance() {
+        return balance;
+    }
+}
+
+// ── Main test runner ──
+class Main {
+    let assert = new Assert();
+    let math = new MathUtils();
+
+    print("========================================");
+    print("  VDX Test Suite — Examples for AI");
+    print("========================================\n");
+
+    // ── Factorial tests ──
+    print("--- Factorial ---");
+    assert.equal(math.factorial(0), 1, "factorial(0)");
+    assert.equal(math.factorial(1), 1, "factorial(1)");
+    assert.equal(math.factorial(5), 120, "factorial(5)");
+    assert.equal(math.factorial(10), 3628800, "factorial(10)");
+
+    // ── Fibonacci tests ──
+    print("\n--- Fibonacci ---");
+    assert.equal(math.fibonacci(0), 0, "fibonacci(0)");
+    assert.equal(math.fibonacci(1), 1, "fibonacci(1)");
+    assert.equal(math.fibonacci(2), 1, "fibonacci(2)");
+    assert.equal(math.fibonacci(10), 55, "fibonacci(10)");
+    assert.equal(math.fibonacci(20), 6765, "fibonacci(20)");
+
+    // ── Prime tests ──
+    print("\n--- Prime ---");
+    assert.isFalse(math.isPrime(0), "0 is not prime");
+    assert.isFalse(math.isPrime(1), "1 is not prime");
+    assert.isTrue(math.isPrime(2), "2 is prime");
+    assert.isTrue(math.isPrime(3), "3 is prime");
+    assert.isFalse(math.isPrime(4), "4 is not prime");
+    assert.isTrue(math.isPrime(7), "7 is prime");
+    assert.isFalse(math.isPrime(9), "9 is not prime");
+    assert.isTrue(math.isPrime(13), "13 is prime");
+
+    // ── GCD tests ──
+    print("\n--- GCD ---");
+    assert.equal(math.gcd(12, 8), 4, "gcd(12, 8)");
+    assert.equal(math.gcd(17, 5), 1, "gcd(17, 5)");
+    assert.equal(math.gcd(100, 50), 50, "gcd(100, 50)");
+    assert.equal(math.gcd(7, 7), 7, "gcd(7, 7)");
+
+    // ── String tests ──
+    print("\n--- String ---");
+    assert.equal(math.reverseString("hello"), "olleh", "reverse(hello)");
+    assert.equal(math.reverseString("VDX"), "XDV", "reverse(VDX)");
+    assert.equal(math.reverseString("a"), "a", "reverse(single char)");
+    assert.equal(math.reverseString(""), "", "reverse(empty)");
+
+    // ── Array tests ──
+    print("\n--- Array ---");
+    assert.equal(math.sumArray([1, 2, 3, 4, 5]), 15, "sumArray(1-5)");
+    assert.equal(math.sumArray([10]), 10, "sumArray(single)");
+    assert.equal(math.maxInArray([3, 7, 2, 9, 1]), 9, "maxInArray");
+    assert.equal(math.maxInArray([0 - 5, 0 - 1, 0 - 10]), 0 - 1, "maxInArray(negatives)");
+
+    // ── BankAccount tests ──
+    print("\n--- BankAccount ---");
+    let acc = new BankAccount();
+    assert.equal(acc.getBalance(), 0, "initial balance");
+
+    acc.deposit(100);
+    assert.equal(acc.getBalance(), 100, "after deposit 100");
+
+    assert.isTrue(acc.deposit(50), "deposit 50 returns true");
+    assert.equal(acc.getBalance(), 150, "balance after second deposit");
+
+    assert.isFalse(acc.deposit(0 - 10), "negative deposit fails");
+    assert.equal(acc.getBalance(), 150, "balance unchanged after failed deposit");
+
+    assert.isTrue(acc.withdraw(50), "withdraw 50 succeeds");
+    assert.equal(acc.getBalance(), 100, "balance after withdrawal");
+
+    assert.isFalse(acc.withdraw(200), "overdraft fails");
+    assert.equal(acc.getBalance(), 100, "balance unchanged after failed withdrawal");
+
+    // ── Scope/return tests (BUG-1 regression) ──
+    print("\n--- Scope & Return (BUG-1) ---");
+
+    fn returnFromIf() {
+        if (true) {
+            return 42;
+        }
+        return 0;
+    }
+    assert.equal(returnFromIf(), 42, "return from if block");
+
+    fn returnFromWhile() {
+        let i = 0;
+        while (i < 100) {
+            if (i == 7) {
+                return i;
+            }
+            i = i + 1;
+        }
+        return 0 - 1;
+    }
+    assert.equal(returnFromWhile(), 7, "return from while loop");
+
+    fn returnFromForIn() {
+        let items = [10, 20, 30, 40];
+        for (item in items) {
+            if (item == 30) {
+                return item;
+            }
+        }
+        return 0 - 1;
+    }
+    assert.equal(returnFromForIn(), 30, "return from for-in loop");
+
+    // ── Math module tests (BUG-2 regression) ──
+    print("\n--- Math Module (BUG-2) ---");
+    assert.equal(math.sqrt(16), 4.0, "math.sqrt(16)");
+    assert.equal(math.abs(0 - 7), 7, "math.abs(-7)");
+    assert.equal(math.floor(3.7), 3.0, "math.floor(3.7)");
+    assert.equal(math.ceil(3.2), 4.0, "math.ceil(3.2)");
+    assert.equal(math.pow(2, 3), 8.0, "math.pow(2, 3)");
+
+    // math.pi is approximately 3.14159
+    let piVal = math.pi;
+    assert.isTrue(piVal > 3.0, "math.pi > 3.0");
+    assert.isTrue(piVal < 4.0, "math.pi < 4.0");
+
+    // ── Const enforcement tests (BUG-5 regression) ──
+    print("\n--- Const Enforcement (BUG-5) ---");
+    // These should throw if uncommented — tested via separate error files
+    // const LOCKED = [1, 2, 3];
+    // push(LOCKED, 4);  // Should error: "Cannot push to const array"
+    // LOCKED[0] = 99;   // Should error: "Cannot modify const variable"
+    print("(Const error cases tested via separate files)");
+
+    // ── Type system tests ──
+    print("\n--- Type System ---");
+    assert.equal(type(42), "int", "type(42)");
+    assert.equal(type(3.14), "float", "type(3.14)");
+    assert.equal(type("hi"), "string", "type(hi)");
+    assert.equal(type(true), "bool", "type(true)");
+    assert.equal(type([1, 2]), "array", "type([1,2])");
+    assert.equal(type({"k": 1}), "dict", "type(dict)");
+
+    // ── Integer division edge case ──
+    print("\n--- Integer Division ---");
+    assert.equal(7 / 2, 3, "7/2 = 3 (int truncation)");
+    assert.equal(7.0 / 2.0, 3.5, "7.0/2.0 = 3.5 (float)");
+    assert.equal(7 * 1.0 / 2, 3.5, "7*1.0/2 = 3.5 (promotion trick)");
+
+    // ── Negative numbers (no unary minus) ──
+    print("\n--- Negative Numbers ---");
+    let neg = 0 - 5;
+    assert.equal(neg, 0 - 5, "0 - 5 == 0 - 5");
+    assert.equal(math.abs(neg), 5, "abs(0 - 5) = 5");
+    assert.equal(0 - 0, 0, "0 - 0 = 0");
+
+    // ── Break/continue tests ──
+    print("\n--- Break/Continue ---");
+    let breakResult = 0;
+    @unsafe for (let i = 0; i < 10; i++) {
+        if (i == 5) {
+            break;
+        }
+        breakResult = breakResult + 1;
+    }
+    assert.equal(breakResult, 5, "break at i==5, count=5");
+
+    let continueResult = 0;
+    @unsafe for (let i = 0; i < 5; i++) {
+        if (i == 2) {
+            continue;
+        }
+        continueResult = continueResult + 1;
+    }
+    assert.equal(continueResult, 4, "skip i==2, count=4");
+
+    // ── Nested conditions (no && / ||) ──
+    print("\n--- Nested Conditions (no && / ||) ---");
+    let x = 5;
+    let y = 10;
+    let bothPass = 0;
+    if (x > 0) {
+        if (y > 5) {
+            bothPass = 1;
+        }
+    }
+    assert.equal(bothPass, 1, "nested if acts as &&");
+
+    let eitherPass = 0;
+    if (x > 100) { eitherPass = 1; }
+    if (y > 5) { eitherPass = 1; }
+    assert.equal(eitherPass, 1, "sequential if acts as ||");
+
+    print("\n========================================");
+    print("  All tests complete!");
+    print("========================================");
+}

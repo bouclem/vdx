@@ -1,0 +1,7 @@
+// test-error-unary-minus.vdx — Should error: unary minus not supported
+// Run: vdx test-error-unary-minus.vdx
+// Expected: exit code 1, error "Expected expression" (got '-')
+class Test {
+    let x = -5;
+    print(x);
+}

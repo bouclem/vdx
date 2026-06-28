@@ -1,0 +1,8 @@
+// test-error-pop-empty.vdx — Should error: pop from empty array
+// Run: vdx test-error-pop-empty.vdx
+// Expected: exit code 1, error "pop() cannot pop from empty array"
+class Test {
+    let arr = [];
+    let x = pop(arr);
+    print(x);
+}

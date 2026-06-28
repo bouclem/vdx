@@ -1,0 +1,7 @@
+// test-error-const-push.vdx — Should error: push to const array
+// Run: vdx test-error-const-push.vdx
+// Expected: exit code 1, error "Cannot push to const array"
+class Test {
+    const arr = [1, 2, 3];
+    push(arr, 4);
+}

@@ -1,0 +1,7 @@
+// test-error-const-assign.vdx — Should error: direct assign to const
+// Run: vdx test-error-const-assign.vdx
+// Expected: exit code 1, error "Cannot assign to const variable"
+class Test {
+    const X = 10;
+    X = 20;
+}
