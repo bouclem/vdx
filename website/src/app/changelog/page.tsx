@@ -42,6 +42,26 @@ function linkifyCode(text: string): string {
 
 const changelog = [
   {
+    version: "0.0.14",
+    date: "2026-06-28",
+    changes: [
+      "Fixed scope leak on `return` inside `if` blocks, `while`, `for`, and `for-in` loops",
+      "Fixed `math` module never being registered at startup",
+      "Fixed module function dispatch for `math.sqrt()` etc. — now checks `moduleFunctions` before object lookup",
+      "Module constants like `math.pi` now work via `DotExpr` with 0 args",
+      "Fixed `std::stoi`/`std::stod` throwing uncaught `std::out_of_range` on out-of-range literals",
+      "Fixed undefined behavior: `isdigit`/`isalpha`/`isalnum` in lexer now receive `unsigned char` cast",
+      "Fixed `const` variables modifiable via `push()`, `pop()`, `arr[i]=`, `obj.f=`, and `++`/`--`",
+      "Fixed `break`/`continue` escaping method call boundaries via `DotCallExpr`",
+      "Fixed duplicate function names across classes — methods now namespaced as `ClassName::funcName`",
+      "Fixed `math.floor()` and `math.ceil()` returning FLOAT instead of INT",
+      "Fixed duplicate class names silently overwriting each other — now throws error",
+      "Added unary minus/plus operator support: `let x = -5;`, `5 - -3` now parse correctly",
+      "Fixed `static` module registration flag breaking multiple Interpreter instances",
+      "Fixed math functions silently accepting non-numeric arguments — now throws type error",
+    ],
+  },
+  {
     version: "0.0.13",
     date: "2026-06-27",
     changes: [

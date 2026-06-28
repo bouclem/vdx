@@ -25,9 +25,30 @@ const versions: {
   notes: string[];
 }[] = [
   {
+    version: "0.0.14",
+    date: "2026-06-28",
+    status: "current",
+    notes: [
+      "Fixed scope leak on return inside if/while/for/for-in loops",
+      "Fixed math module never being registered at startup",
+      "Fixed module function dispatch for math.sqrt() etc.",
+      "Module constants like math.pi now work",
+      "Fixed std::stoi/std::stod uncaught out_of_range on large literals",
+      "Fixed UB: isdigit/isalpha/isalnum now receive unsigned char cast",
+      "Fixed const variables modifiable via push(), pop(), arr[i]=, obj.f=, ++/--",
+      "Fixed break/continue escaping method call boundaries",
+      "Fixed duplicate function names across classes (namespaced as ClassName::funcName)",
+      "Fixed math.floor() and math.ceil() returning FLOAT instead of INT",
+      "Fixed duplicate class names silently overwriting each other",
+      "Added unary minus/plus operator support",
+      "Fixed static module registration breaking multiple Interpreter instances",
+      "Fixed math functions silently accepting non-numeric arguments",
+    ],
+  },
+  {
     version: "0.0.13",
     date: "2026-06-27",
-    status: "current",
+    status: "old",
     notes: [
       "Fixed scope corruption on continue in while/for loops",
       "Fixed inverted loop safety check (now flags >2s, not <2s)",
