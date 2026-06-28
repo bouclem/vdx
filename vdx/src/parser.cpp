@@ -516,6 +516,23 @@ ExprPtr Parser::parseUnary() {
         incDec->isPrefix = true;
         return incDec;
     }
+    // Unary minus/plus: -expr, +expr
+    if (check(TokenType::MINUS) || check(TokenType::PLUS)) {
+        int ln = cur().line;
+        std::string op = advance().value;
+        auto operand = parseUnary();
+        if (op == "+") return operand;
+        // unary minus: 0 - operand
+        auto zero = std::make_shared<IntLiteral>();
+        zero->line = ln;
+        zero->value = 0;
+        auto bin = std::make_shared<BinaryExpr>();
+        bin->line = ln;
+        bin->left = zero;
+        bin->op = "-";
+        bin->right = operand;
+        return bin;
+    }
     auto expr = parsePrimary();
     return parsePostfix(expr);
 }

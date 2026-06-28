@@ -27,11 +27,18 @@ static void seed_random() {
     }
 }
 
+static void checkNumeric(const Value& arg, const std::string& funcName) {
+    if (!arg.isNumeric()) {
+        throw std::runtime_error("[VDX] math." + funcName + "() expects numeric argument");
+    }
+}
+
 Value sqrt_builtin(const std::vector<Value>& args, int line) {
     (void)line;
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.sqrt() expects 1 argument");
     }
+    checkNumeric(args[0], "sqrt");
     double x = args[0].toDouble();
     if (x < 0) {
         throw std::runtime_error("[VDX] math.sqrt() cannot calculate square root of negative number");
@@ -44,6 +51,8 @@ Value pow_builtin(const std::vector<Value>& args, int line) {
     if (args.size() != 2) {
         throw std::runtime_error("[VDX] math.pow() expects 2 arguments (base, exponent)");
     }
+    checkNumeric(args[0], "pow");
+    checkNumeric(args[1], "pow");
     double base = args[0].toDouble();
     double exp = args[1].toDouble();
     return Value::makeFloat(std::pow(base, exp));
@@ -54,6 +63,7 @@ Value abs_builtin(const std::vector<Value>& args, int line) {
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.abs() expects 1 argument");
     }
+    checkNumeric(args[0], "abs");
     if (args[0].type == Value::INT) {
         return Value::makeInt(std::abs(args[0].intVal));
     }
@@ -65,6 +75,7 @@ Value sin_builtin(const std::vector<Value>& args, int line) {
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.sin() expects 1 argument (radians)");
     }
+    checkNumeric(args[0], "sin");
     return Value::makeFloat(std::sin(args[0].toDouble()));
 }
 
@@ -73,6 +84,7 @@ Value cos_builtin(const std::vector<Value>& args, int line) {
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.cos() expects 1 argument (radians)");
     }
+    checkNumeric(args[0], "cos");
     return Value::makeFloat(std::cos(args[0].toDouble()));
 }
 
@@ -81,6 +93,7 @@ Value tan_builtin(const std::vector<Value>& args, int line) {
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.tan() expects 1 argument (radians)");
     }
+    checkNumeric(args[0], "tan");
     return Value::makeFloat(std::tan(args[0].toDouble()));
 }
 
@@ -89,6 +102,7 @@ Value floor_builtin(const std::vector<Value>& args, int line) {
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.floor() expects 1 argument");
     }
+    checkNumeric(args[0], "floor");
     if (args[0].type == Value::INT) {
         return Value::makeInt(args[0].intVal);
     }
@@ -100,6 +114,7 @@ Value ceil_builtin(const std::vector<Value>& args, int line) {
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.ceil() expects 1 argument");
     }
+    checkNumeric(args[0], "ceil");
     if (args[0].type == Value::INT) {
         return Value::makeInt(args[0].intVal);
     }
@@ -111,6 +126,7 @@ Value round_builtin(const std::vector<Value>& args, int line) {
     if (args.size() != 1) {
         throw std::runtime_error("[VDX] math.round() expects 1 argument");
     }
+    checkNumeric(args[0], "round");
     double x = args[0].toDouble();
     if (args[0].type == Value::INT) {
         return Value::makeInt(args[0].intVal);
@@ -122,6 +138,9 @@ Value min_builtin(const std::vector<Value>& args, int line) {
     (void)line;
     if (args.size() < 1) {
         throw std::runtime_error("[VDX] math.min() expects at least 1 argument");
+    }
+    for (size_t i = 0; i < args.size(); i++) {
+        checkNumeric(args[i], "min");
     }
     double min_val = args[0].toDouble();
     for (size_t i = 1; i < args.size(); i++) {
@@ -140,6 +159,9 @@ Value max_builtin(const std::vector<Value>& args, int line) {
     (void)line;
     if (args.size() < 1) {
         throw std::runtime_error("[VDX] math.max() expects at least 1 argument");
+    }
+    for (size_t i = 0; i < args.size(); i++) {
+        checkNumeric(args[i], "max");
     }
     double max_val = args[0].toDouble();
     for (size_t i = 1; i < args.size(); i++) {
@@ -164,6 +186,7 @@ Value random_builtin(const std::vector<Value>& args, int line) {
     }
     if (args.size() == 1) {
         // Return random int between 0 and max (exclusive)
+        checkNumeric(args[0], "random");
         int max_val = static_cast<int>(args[0].toDouble());
         if (max_val <= 0) {
             throw std::runtime_error("[VDX] math.random() argument must be positive");
@@ -173,6 +196,8 @@ Value random_builtin(const std::vector<Value>& args, int line) {
     }
     if (args.size() == 2) {
         // Return random int between min and max (inclusive)
+        checkNumeric(args[0], "random");
+        checkNumeric(args[1], "random");
         int min_val = static_cast<int>(args[0].toDouble());
         int max_val = static_cast<int>(args[1].toDouble());
         if (max_val <= min_val) {

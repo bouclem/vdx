@@ -134,8 +134,7 @@ void Interpreter::checkType(const std::string& annotation, const Value& val, int
 void Interpreter::run(const Program& program, const std::string& sourceDir) {
     sourceDirectory = sourceDir;
 
-    // Register built-in modules (only once)
-    static bool modulesRegistered = false;
+    // Register built-in modules (only once per Interpreter instance)
     if (!modulesRegistered) {
         FSModule::registerFS(*this);
         MathModule::registerMath(*this);

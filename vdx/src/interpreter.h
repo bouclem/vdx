@@ -78,6 +78,7 @@ private:
     std::string currentClassName;
     std::vector<std::shared_ptr<Program>> importedPrograms;  // Keep imported AST alive
     std::unordered_map<std::string, ModuleFunc> moduleFunctions;  // C++ module functions
+    bool modulesRegistered = false;
 
     void pushScope();
     void popScope();

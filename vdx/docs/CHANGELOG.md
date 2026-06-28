@@ -12,6 +12,9 @@
 - Fixed duplicate function names across classes causing collision — methods are now namespaced as `ClassName::funcName` in the internal function map, allowing same-named methods in different classes
 - Fixed `math.floor()` and `math.ceil()` returning FLOAT instead of INT — now returns INT for whole-number results
 - Fixed duplicate class names silently overwriting each other — now throws error on duplicate class declarations (both main file and imports)
+- Added unary minus/plus operator support: `let x = -5;`, `let y = -x;`, `5 - -3` now parse correctly
+- Fixed `static` module registration flag breaking multiple Interpreter instances — moved to per-instance member variable
+- Fixed math functions silently accepting non-numeric arguments (string, bool, array, etc.) — now throws type error
 
 ## v0.0.13 — 2026-06-27
 - Fixed `continue` in `while` and `for` loops corrupting the scope stack (double popScope)
