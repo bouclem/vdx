@@ -49,11 +49,11 @@ Token Lexer::readString() {
 Token Lexer::readNumber() {
     int sl = line, sc = col;
     std::string val;
-    while (pos < src.size() && isdigit(cur())) { val += cur(); advance(); }
+    while (pos < src.size() && isdigit(static_cast<unsigned char>(cur()))) { val += cur(); advance(); }
     // Check for float: digits followed by '.' and more digits
-    if (pos < src.size() && cur() == '.' && (pos + 1) < src.size() && isdigit(peek())) {
+    if (pos < src.size() && cur() == '.' && (pos + 1) < src.size() && isdigit(static_cast<unsigned char>(peek()))) {
         val += cur(); advance(); // consume '.'
-        while (pos < src.size() && isdigit(cur())) { val += cur(); advance(); }
+        while (pos < src.size() && isdigit(static_cast<unsigned char>(cur()))) { val += cur(); advance(); }
         return Token(TokenType::FLOAT, val, sl, sc);
     }
     return Token(TokenType::INTEGER, val, sl, sc);
@@ -62,7 +62,7 @@ Token Lexer::readNumber() {
 Token Lexer::readWord() {
     int sl = line, sc = col;
     std::string val;
-    while (pos < src.size() && (isalnum(cur()) || cur() == '_')) { val += cur(); advance(); }
+    while (pos < src.size() && (isalnum(static_cast<unsigned char>(cur())) || cur() == '_')) { val += cur(); advance(); }
     if (val == "class") return Token(TokenType::KW_CLASS, val, sl, sc);
     if (val == "print") return Token(TokenType::KW_PRINT, val, sl, sc);
     if (val == "let") return Token(TokenType::KW_LET, val, sl, sc);
@@ -97,9 +97,9 @@ std::vector<Token> Lexer::tokenize() {
             // Check for @unsafe annotation
             int sl = line, sc = col;
             advance(); // skip '@'
-            if (pos < src.size() && (isalpha(cur()) || cur() == '_')) {
+            if (pos < src.size() && (isalpha(static_cast<unsigned char>(cur())) || cur() == '_')) {
                 std::string word;
-                while (pos < src.size() && (isalnum(cur()) || cur() == '_')) {
+                while (pos < src.size() && (isalnum(static_cast<unsigned char>(cur())) || cur() == '_')) {
                     word += cur();
                     advance();
                 }
@@ -113,8 +113,8 @@ std::vector<Token> Lexer::tokenize() {
             throw std::runtime_error(std::string("Unexpected '@' at line ") +
                 std::to_string(sl) + ":" + std::to_string(sc));
         }
-        if (isdigit(cur())) { tokens.push_back(readNumber()); continue; }
-        if (isalpha(cur()) || cur() == '_') { tokens.push_back(readWord()); continue; }
+        if (isdigit(static_cast<unsigned char>(cur()))) { tokens.push_back(readNumber()); continue; }
+        if (isalpha(static_cast<unsigned char>(cur())) || cur() == '_') { tokens.push_back(readWord()); continue; }
 
         int sl = line, sc = col;
         char c = cur();

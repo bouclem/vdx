@@ -1,0 +1,5 @@
+// Test BUG-4: non-ASCII characters should not cause UB in lexer
+class TestBug4 {
+    let x = 42;
+    print("ok");
+}

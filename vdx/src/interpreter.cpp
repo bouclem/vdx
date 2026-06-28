@@ -2,6 +2,7 @@
 #include "lexer.h"
 #include "parser.h"
 #include "modules/fs.h"
+#include "modules/math.h"
 #include <iostream>
 #include <thread>
 #include <chrono>
@@ -137,6 +138,7 @@ void Interpreter::run(const Program& program, const std::string& sourceDir) {
     static bool modulesRegistered = false;
     if (!modulesRegistered) {
         FSModule::registerFS(*this);
+        MathModule::registerMath(*this);
         modulesRegistered = true;
     }
 
@@ -209,16 +211,17 @@ void Interpreter::execImport(const ImportStmt* stmt) {
         }
     }
 
-    // Register imported file's functions
+    // Register imported file's functions (namespaced as ClassName::funcName)
     for (auto& decl : importedProgram->declarations) {
         auto cls = dynamic_cast<ClassDecl*>(decl.get());
         if (cls) {
             for (auto& node : cls->body) {
                 if (auto fn = dynamic_cast<FnDecl*>(node.get())) {
-                    if (functions.count(fn->name)) {
-                        throw std::runtime_error("[VDX] Function '" + fn->name + "' is already defined (duplicate in class '" + cls->name + "') at line " + std::to_string(fn->line));
+                    std::string key = cls->name + "::" + fn->name;
+                    if (functions.count(key)) {
+                        throw std::runtime_error("[VDX] Function '" + fn->name + "' is already defined in class '" + cls->name + "' at line " + std::to_string(fn->line));
                     }
-                    functions[fn->name] = fn;
+                    functions[key] = fn;
                 }
             }
         }
@@ -227,13 +230,16 @@ void Interpreter::execImport(const ImportStmt* stmt) {
 
 void Interpreter::execClass(const ClassDecl* cls) {
     pushScope();
-    // First pass: register functions
+    std::string savedClassName = currentClassName;
+    currentClassName = cls->name;
+    // First pass: register functions (namespaced as ClassName::funcName)
     for (auto& node : cls->body) {
         if (auto fn = dynamic_cast<FnDecl*>(node.get())) {
-            if (functions.count(fn->name)) {
-                throw std::runtime_error("[VDX] Function '" + fn->name + "' is already defined (duplicate in class '" + cls->name + "') at line " + std::to_string(fn->line));
+            std::string key = cls->name + "::" + fn->name;
+            if (functions.count(key)) {
+                throw std::runtime_error("[VDX] Function '" + fn->name + "' is already defined in class '" + cls->name + "' at line " + std::to_string(fn->line));
             }
-            functions[fn->name] = fn;
+            functions[key] = fn;
         }
     }
     // Second pass: execute non-function statements
@@ -241,6 +247,7 @@ void Interpreter::execClass(const ClassDecl* cls) {
         if (dynamic_cast<FnDecl*>(node.get())) continue;
         execStatement(node);
     }
+    currentClassName = savedClassName;
     popScope();
 }
 
@@ -275,6 +282,9 @@ void Interpreter::execStatement(const NodePtr& node) {
         }
         *v = evalExpr(assign->value.get());
     } else if (auto idxAssign = dynamic_cast<IndexAssignStmt*>(node.get())) {
+        if (isVarConst(idxAssign->name)) {
+            throw std::runtime_error("[VDX] Cannot modify const variable '" + idxAssign->name + "' at line " + std::to_string(currentLine));
+        }
         Value* v = lookupVar(idxAssign->name);
         if (!v) {
             throw std::runtime_error("[VDX] Undefined variable '" + idxAssign->name + "' at line " + std::to_string(currentLine));
@@ -299,6 +309,11 @@ void Interpreter::execStatement(const NodePtr& node) {
             throw std::runtime_error("[VDX] Cannot index into variable '" + idxAssign->name + "' at line " + std::to_string(currentLine));
         }
     } else if (auto dotAssign = dynamic_cast<DotAssignStmt*>(node.get())) {
+        if (auto idExpr = dynamic_cast<const IdentifierExpr*>(dotAssign->object.get())) {
+            if (isVarConst(idExpr->name)) {
+                throw std::runtime_error("[VDX] Cannot modify field on const variable '" + idExpr->name + "' at line " + std::to_string(currentLine));
+            }
+        }
         Value obj = evalExpr(dotAssign->object.get());
         if (obj.type != Value::OBJECT || !obj.objVal) {
             throw std::runtime_error("[VDX] Cannot set field on non-object at line " + std::to_string(currentLine));
@@ -353,6 +368,9 @@ void Interpreter::execBlock(const std::vector<NodePtr>& body) {
     } catch (ContinueException&) {
         popScope();
         throw;
+    } catch (ReturnException&) {
+        popScope();
+        throw;
     }
     popScope();
 }
@@ -386,6 +404,9 @@ void Interpreter::execWhile(const WhileStmt* stmt) {
             break;
         } catch (ContinueException&) {
             popScope();
+        } catch (ReturnException&) {
+            popScope();
+            throw;
         }
 
         if (!stmt->isUnsafe) {
@@ -422,6 +443,10 @@ void Interpreter::execFor(const ForStmt* stmt) {
             return;
         } catch (ContinueException&) {
             popScope();
+        } catch (ReturnException&) {
+            popScope();
+            popScope(); // pop init scope too
+            throw;
         }
 
         // Execute update
@@ -460,6 +485,9 @@ void Interpreter::execForIn(const ForInStmt* stmt) {
         } catch (ContinueException&) {
             popScope();
             continue;
+        } catch (ReturnException&) {
+            popScope();
+            throw;
         }
         popScope();
     }
@@ -502,6 +530,8 @@ Value Interpreter::execNew(const NewExpr* expr) {
 
     // Push a scope for the object construction
     pushScope();
+    std::string savedClassName = currentClassName;
+    currentClassName = expr->className;
 
     // First pass: register methods
     for (auto& node : cls->body) {
@@ -528,6 +558,7 @@ Value Interpreter::execNew(const NewExpr* expr) {
     }
 
     popScope();
+    currentClassName = savedClassName;
 
     return Value::makeObject(obj);
 }
@@ -561,6 +592,9 @@ Value Interpreter::execCall(const CallExpr* call) {
         if (!id) {
             throw std::runtime_error("[VDX] push() first argument must be a variable at line " + std::to_string(currentLine));
         }
+        if (isVarConst(id->name)) {
+            throw std::runtime_error("[VDX] Cannot push to const array '" + id->name + "' at line " + std::to_string(currentLine));
+        }
         Value* arr = lookupVar(id->name);
         if (!arr || arr->type != Value::ARRAY) {
             throw std::runtime_error("[VDX] push() first argument must be an array variable at line " + std::to_string(currentLine));
@@ -577,6 +611,9 @@ Value Interpreter::execCall(const CallExpr* call) {
         auto id = dynamic_cast<const IdentifierExpr*>(call->args[0].get());
         if (!id) {
             throw std::runtime_error("[VDX] pop() argument must be a variable at line " + std::to_string(currentLine));
+        }
+        if (isVarConst(id->name)) {
+            throw std::runtime_error("[VDX] Cannot pop from const array '" + id->name + "' at line " + std::to_string(currentLine));
         }
         Value* arr = lookupVar(id->name);
         if (!arr || arr->type != Value::ARRAY) {
@@ -636,11 +673,23 @@ Value Interpreter::execCall(const CallExpr* call) {
         return modIt->second(argVals, currentLine);
     }
 
-    auto it = functions.find(call->name);
-    if (it == functions.end()) {
+    // Try namespaced lookup first (currentClassName::funcName), then plain name
+    const FnDecl* fn = nullptr;
+    if (!currentClassName.empty()) {
+        auto it = functions.find(currentClassName + "::" + call->name);
+        if (it != functions.end()) {
+            fn = it->second;
+        }
+    }
+    if (!fn) {
+        auto it = functions.find(call->name);
+        if (it != functions.end()) {
+            fn = it->second;
+        }
+    }
+    if (!fn) {
         throw std::runtime_error("[VDX] Undefined function '" + call->name + "' at line " + std::to_string(currentLine));
     }
-    const FnDecl* fn = it->second;
     if (call->args.size() != fn->params.size()) {
         throw std::runtime_error("[VDX] Function '" + fn->name + "' expects " +
             std::to_string(fn->params.size()) + " args, got " +
@@ -764,6 +813,14 @@ Value Interpreter::evalExpr(const Expr* expr) {
         return execNew(ne);
     }
     if (auto dot = dynamic_cast<const DotExpr*>(expr)) {
+        // Check if this is a module constant (e.g. math.pi)
+        if (auto ident = dynamic_cast<const IdentifierExpr*>(dot->object.get())) {
+            std::string fullFuncName = ident->name + "." + dot->field;
+            auto modIt = moduleFunctions.find(fullFuncName);
+            if (modIt != moduleFunctions.end()) {
+                return modIt->second({}, currentLine);
+            }
+        }
         Value obj = evalExpr(dot->object.get());
         if (obj.type != Value::OBJECT || !obj.objVal) {
             throw std::runtime_error("[VDX] Cannot access field '" + dot->field + "' on non-object at line " + std::to_string(currentLine));
@@ -775,6 +832,18 @@ Value Interpreter::evalExpr(const Expr* expr) {
         return it->second;
     }
     if (auto dc = dynamic_cast<const DotCallExpr*>(expr)) {
+        // Check if this is a module function call (e.g. math.sqrt, fs.readFile)
+        if (auto ident = dynamic_cast<const IdentifierExpr*>(dc->object.get())) {
+            std::string fullFuncName = ident->name + "." + dc->method;
+            auto modIt = moduleFunctions.find(fullFuncName);
+            if (modIt != moduleFunctions.end()) {
+                std::vector<Value> argVals;
+                for (size_t i = 0; i < dc->args.size(); i++) {
+                    argVals.push_back(evalExpr(dc->args[i].get()));
+                }
+                return modIt->second(argVals, currentLine);
+            }
+        }
         Value obj = evalExpr(dc->object.get());
         if (obj.type != Value::OBJECT || !obj.objVal) {
             throw std::runtime_error("[VDX] Cannot call method '" + dc->method + "' on non-object at line " + std::to_string(currentLine));
@@ -805,6 +874,9 @@ Value Interpreter::evalExpr(const Expr* expr) {
             declareVar(fn->params[i], argVals[i], false);
         }
 
+        std::string savedClassName = currentClassName;
+        currentClassName = obj.objVal->className;
+
         Value result = Value::makeVoid();
         try {
             for (auto& stmt : fn->body) {
@@ -815,11 +887,11 @@ Value Interpreter::evalExpr(const Expr* expr) {
         } catch (BreakException&) {
             popScope(); // param scope
             popScope(); // object fields scope
-            throw;
+            throw std::runtime_error("[VDX] 'break' used outside of a loop at line " + std::to_string(currentLine));
         } catch (ContinueException&) {
             popScope(); // param scope
             popScope(); // object fields scope
-            throw;
+            throw std::runtime_error("[VDX] 'continue' used outside of a loop at line " + std::to_string(currentLine));
         }
 
         // Update object fields from the object scope (methods may modify fields)
@@ -833,6 +905,7 @@ Value Interpreter::evalExpr(const Expr* expr) {
 
         popScope(); // param scope
         popScope(); // object fields scope
+        currentClassName = savedClassName;
         return result;
     }
     // Modulo: a % b
@@ -857,6 +930,9 @@ Value Interpreter::evalExpr(const Expr* expr) {
     }
     // Increment/decrement: ++x, x++, --x, x--
     if (auto incDec = dynamic_cast<const IncDecExpr*>(expr)) {
+        if (isVarConst(incDec->name)) {
+            throw std::runtime_error("[VDX] Cannot increment/decrement const variable '" + incDec->name + "' at line " + std::to_string(currentLine));
+        }
         Value* var = lookupVar(incDec->name);
         if (!var) {
             throw std::runtime_error("[VDX] Undefined variable '" + incDec->name + "' at line " + std::to_string(currentLine));

@@ -184,4 +184,20 @@ Value pi_builtin(const std::vector<Value>& args, int line) {
     return Value::makeFloat(M_PI);
 }
 
+void registerMath(Interpreter& interp) {
+    interp.registerModuleFunc("math.sqrt", sqrt_builtin);
+    interp.registerModuleFunc("math.pow", pow_builtin);
+    interp.registerModuleFunc("math.abs", abs_builtin);
+    interp.registerModuleFunc("math.sin", sin_builtin);
+    interp.registerModuleFunc("math.cos", cos_builtin);
+    interp.registerModuleFunc("math.tan", tan_builtin);
+    interp.registerModuleFunc("math.floor", floor_builtin);
+    interp.registerModuleFunc("math.ceil", ceil_builtin);
+    interp.registerModuleFunc("math.round", round_builtin);
+    interp.registerModuleFunc("math.min", min_builtin);
+    interp.registerModuleFunc("math.max", max_builtin);
+    interp.registerModuleFunc("math.random", random_builtin);
+    interp.registerModuleFunc("math.pi", pi_builtin);
+}
+
 } // namespace MathModule

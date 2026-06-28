@@ -1,0 +1,27 @@
+// Test BUG-8: method calls on objects with same method name
+class Dog {
+    fn speak() {
+        return "Woof";
+    }
+    fn info() {
+        return speak();
+    }
+}
+
+class Cat {
+    fn speak() {
+        return "Meow";
+    }
+    fn info() {
+        return speak();
+    }
+}
+
+class Main {
+    let d = new Dog();
+    let c = new Cat();
+    print("Dog says:", d.speak());
+    print("Cat says:", c.speak());
+    print("Dog info:", d.info());
+    print("Cat info:", c.info());
+}

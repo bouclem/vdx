@@ -1,0 +1,5 @@
+// Test BUG-5: const variables cannot be modified via push/pop/[]=/.=/++
+class TestBug5 {
+    const arr = [1, 2, 3];
+    push(arr, 4);
+}

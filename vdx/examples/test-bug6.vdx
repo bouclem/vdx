@@ -1,0 +1,14 @@
+// Test BUG-6: break inside method should error, not escape to outer loop
+class TestBug6 {
+    fn badMethod() {
+        break;
+        return 1;
+    }
+
+    let i = 0;
+    while (i < 3) {
+        let result = badMethod();
+        print("should not reach here", result);
+        i = i + 1;
+    }
+}

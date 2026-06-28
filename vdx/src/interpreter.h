@@ -75,6 +75,7 @@ private:
     std::unordered_map<std::string, const ClassDecl*> classDecls;
     std::unordered_set<std::string> importedFiles;
     std::string sourceDirectory;
+    std::string currentClassName;
     std::vector<std::shared_ptr<Program>> importedPrograms;  // Keep imported AST alive
     std::unordered_map<std::string, ModuleFunc> moduleFunctions;  // C++ module functions
 

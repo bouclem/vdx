@@ -591,16 +591,26 @@ ExprPtr Parser::parsePrimary() {
     }
     if (check(TokenType::INTEGER)) {
         int ln = cur().line;
+        std::string val = advance().value;
         auto lit = std::make_shared<IntLiteral>();
         lit->line = ln;
-        lit->value = std::stoi(advance().value);
+        try {
+            lit->value = std::stoi(val);
+        } catch (const std::out_of_range&) {
+            throw std::runtime_error("Integer literal '" + val + "' is out of range at line " + std::to_string(ln));
+        }
         return lit;
     }
     if (check(TokenType::FLOAT)) {
         int ln = cur().line;
+        std::string val = advance().value;
         auto lit = std::make_shared<FloatLiteral>();
         lit->line = ln;
-        lit->value = std::stod(advance().value);
+        try {
+            lit->value = std::stod(val);
+        } catch (const std::out_of_range&) {
+            throw std::runtime_error("Float literal '" + val + "' is out of range at line " + std::to_string(ln));
+        }
         return lit;
     }
     if (check(TokenType::KW_TRUE)) {

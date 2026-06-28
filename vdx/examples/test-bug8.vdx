@@ -1,0 +1,14 @@
+// Test BUG-8: two classes with same method name should work
+class ClassA {
+    fn getName() {
+        return "Alice";
+    }
+    print("A:", getName());
+}
+
+class ClassB {
+    fn getName() {
+        return "Bob";
+    }
+    print("B:", getName());
+}

@@ -1,0 +1,5 @@
+// Test BUG-3: out-of-range integer literal should give clean error
+class TestBug3 {
+    let big = 99999999999999999999999999;
+    print("should not reach here");
+}

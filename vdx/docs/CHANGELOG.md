@@ -1,5 +1,16 @@
 # VDX Changelog
 
+## v0.0.14 — 2026-06-28
+- Fixed scope leak on `return` inside `if` blocks, `while`, `for`, and `for-in` loops — `ReturnException` now pops scope before propagating
+- Fixed `math` module never being registered — added missing `registerMath` definition and call at startup
+- Fixed module function dispatch for `math.sqrt()` etc. — `DotCallExpr` and `DotExpr` now check `moduleFunctions` before object method/field lookup
+- Module constants like `math.pi` now work via `DotExpr` module function lookup with 0 args
+- Fixed `std::stoi`/`std::stod` throwing uncaught `std::out_of_range` on out-of-range integer/float literals — now gives clean error with line number
+- Fixed undefined behavior: `isdigit`/`isalpha`/`isalnum` in lexer now receive `unsigned char` cast to avoid UB on non-ASCII input
+- Fixed const variables modifiable via `push()`, `pop()`, `arr[i]=`, `obj.f=`, and `++`/`--` — all mutation paths now check `isVarConst`
+- Fixed `break`/`continue` escaping method call boundaries via `DotCallExpr` — now throws runtime error matching `execCall` behavior
+- Fixed duplicate function names across classes causing collision — methods are now namespaced as `ClassName::funcName` in the internal function map, allowing same-named methods in different classes
+
 ## v0.0.13 — 2026-06-27
 - Fixed `continue` in `while` and `for` loops corrupting the scope stack (double popScope)
 - Fixed loop safety check logic: now correctly flags iterations taking >2s instead of <2s

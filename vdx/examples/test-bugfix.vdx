@@ -1,0 +1,40 @@
+// Test BUG-1 & BUG-2 fixes
+class TestBugfix {
+    fn foo() {
+        if (true) {
+            return 5;
+        }
+        return 10;
+    }
+    print("foo() =", foo());
+
+    fn bar() {
+        let i = 0;
+        while (i < 10) {
+            if (i == 3) {
+                return i;
+            }
+            i = i + 1;
+        }
+        return 0 - 1;
+    }
+    print("bar() =", bar());
+
+    fn baz() {
+        let arr = [10, 20, 30];
+        for (item in arr) {
+            if (item == 20) {
+                return item;
+            }
+        }
+        return 0 - 1;
+    }
+    print("baz() =", baz());
+
+    // Test BUG-2: math module is registered
+    print("math.sqrt(16) =", math.sqrt(16));
+    print("math.pi =", math.pi);
+    let neg7 = 0 - 7;
+    print("math.abs(neg7) =", math.abs(neg7));
+    print("math.floor(3.7) =", math.floor(3.7));
+}
