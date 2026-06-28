@@ -120,7 +120,7 @@ struct ObjectData {
 1. Built-in check: `len`, `push`, `pop`, `type`, `input`
 2. Module function check: `moduleFunctions` map (e.g., `math.sqrt`, `fs.readFile`)
 3. Namespaced lookup: `currentClassName + "::" + callName` (e.g., `Point::distance`)
-4. Plain name fallback: `callName` in `functions` map
+4. Plain name fallback: `callName` in `functions` map (includes top-level functions registered at file scope, v0.0.15+)
 5. If none match → "Undefined function" error
 
 ### currentClassName Tracking
@@ -143,6 +143,7 @@ Module functions (`math.*`, `fs.*`) are registered in a separate `moduleFunction
 - Imported file is lexed, parsed, and its classes/functions registered
 - Classes go into `classDecls` map
 - Functions go into `functions` map as `ClassName::funcName`
+- Top-level functions (outside class) are also registered in `functions` map by plain name (v0.0.15+)
 - Circular import protection via `importedFiles` set
 - Transitive imports NOT processed — each file must be imported directly
 
@@ -151,7 +152,7 @@ Module functions (`math.*`, `fs.*`) are registered in a separate `moduleFunction
 ### Error Types
 - **Lexer errors**: unterminated string, unexpected character, unknown annotation
 - **Parser errors**: unexpected token, expected expression, expected `class`
-- **Runtime errors**: undefined variable/function, type mismatch, index out of bounds, division by zero, const violation, loop safety timeout, break/continue outside loop
+- **Runtime errors**: undefined variable/function, type mismatch, index out of bounds, division by zero, const violation, loop safety timeout, break/continue outside loop (graceful warning in v0.0.15+ for top-level/class-body/new contexts)
 - **Out-of-range literals**: integer/float literals exceeding type limits
 
 ### Error Output Format

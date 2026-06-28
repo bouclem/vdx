@@ -88,7 +88,32 @@
 - [x] Array type annotations: `let arr: int[] = [1, 2, 3];`
 - [x] `dict` type annotation support
 
-## v0.0.13 (current)
+## v0.0.15
+- [x] `class{}` wrapper is no longer mandatory (top-level statements allowed)
+- [x] Top-level function declarations supported at file scope
+- [x] Top-level functions importable from other files
+- [x] Recommendation warning when no `class` declaration is present
+- [x] Fixed `math.round()` returning FLOAT instead of INT
+- [x] Fixed `math.random(max)` exclusive vs inclusive inconsistency
+- [x] Fixed `return`/`break`/`continue` crash at top level, in class body, and during `new`
+- [x] Fixed scope leak in `execClass` and `execNew` on exception
+
+## v0.0.14
+- [x] Fixed scope leak on `return` inside `if`/`while`/`for`/`for-in` blocks
+- [x] Fixed `math` module never being registered
+- [x] Fixed module function dispatch for `math.sqrt()` etc.
+- [x] Fixed `std::stoi`/`std::stod` uncaught `std::out_of_range`
+- [x] Fixed UB: `isdigit`/`isalpha`/`isalnum` now receive `unsigned char` cast
+- [x] Fixed const variables modifiable via `push()`, `pop()`, `arr[i]=`, `obj.f=`, `++`/`--`
+- [x] Fixed `break`/`continue` escaping method call boundaries via `DotCallExpr`
+- [x] Fixed duplicate function names across classes (namespaced as `ClassName::funcName`)
+- [x] Fixed `math.floor()`/`math.ceil()` returning FLOAT instead of INT
+- [x] Fixed duplicate class names silently overwriting
+- [x] Added unary minus/plus operator support
+- [x] Fixed `static` module registration flag breaking multiple Interpreter instances
+- [x] Fixed math functions silently accepting non-numeric arguments
+
+## v0.0.13
 - [x] Fixed scope corruption on `continue` in `while`/`for` loops
 - [x] Fixed inverted loop safety check (now flags >2s, not <2s)
 - [x] Fixed `break`/`continue` escaping function call boundaries

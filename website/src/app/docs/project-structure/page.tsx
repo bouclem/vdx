@@ -5,7 +5,7 @@ export default function ProjectStructureDoc() {
     <DocPage title="Project Structure">
       <p>
         VDX programs are simple — each <code className="text-[#A78BFA]">.vdx</code> file contains
-        one or more class declarations. There is no special project layout required.
+        top-level statements and/or class declarations. There is no special project layout required.
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Minimal project</h2>
@@ -27,20 +27,19 @@ export default function ProjectStructureDoc() {
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Entry point</h2>
       <p>
         VDX does not have a <code className="text-[#A78BFA]">main()</code> function. Instead,
-        code inside a class body runs top-to-bottom when the file is executed. Functions are
-        registered first, then statements run in order.
+        top-level statements run top-to-bottom when the file is executed. Inside a class body,
+        functions are registered first, then statements run in order. Top-level functions
+        (outside a class) are also registered before any statements execute.
       </p>
       <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
-        <pre className="text-sm"><code>{`class App {
-    // Functions are registered first (pass 1)
-    fn sayHi() {
-        print("hi");
-    }
+        <pre className="text-sm"><code>{`// Top-level functions are registered first
+fn sayHi() {
+    print("hi");
+}
 
-    // Then statements run in order (pass 2)
-    sayHi();
-    print("done");
-}`}</code></pre>
+// Then statements run in order
+sayHi();
+print("done");`}</code></pre>
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Comments</h2>

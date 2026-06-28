@@ -30,8 +30,10 @@ Program Parser::parse() {
             }
             // Store import nodes as declarations too for potential future use
             prog.declarations.push_back(importNode);
-        } else {
+        } else if (check(TokenType::KW_CLASS)) {
             prog.declarations.push_back(parseClassDecl());
+        } else {
+            prog.declarations.push_back(parseStatement());
         }
     }
     return prog;

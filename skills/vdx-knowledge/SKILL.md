@@ -19,7 +19,7 @@ VDX is a class-based interpreted programming language built in C++17. It runs vi
 - **Website**: [voidwarelang.xyz](https://voidwarelang.xyz)
 - **Repository**: Voidware/vdx
 - **File extension**: `.vdx`
-- **Current version**: 0.0.14
+- **Current version**: 0.0.15
 
 ## Architecture
 
@@ -29,7 +29,7 @@ VDX is a class-based interpreted programming language built in C++17. It runs vi
 3. **Interpreter** (`interpreter.cpp`) — Tree-walking evaluator with stack-based scopes
 
 ### Key Design Decisions
-- All code must be inside `class` bodies — no bare top-level statements
+- `class{}` wrapper is optional (v0.0.15+) — top-level statements and functions allowed at file scope
 - `shared_ptr` for AST node ownership
 - Stack of `unordered_map` scopes for variable lookup
 - Exceptions for control flow: `ReturnException`, `BreakException`, `ContinueException`
@@ -42,11 +42,11 @@ VDX is a class-based interpreted programming language built in C++17. It runs vi
 - **Function resolution**: built-ins → module functions → namespaced (`ClassName::funcName`) → plain name
 - **Scope**: stack of unordered_maps; `if`/`while`/`for`/`for-in` each push a scope; exceptions pop before propagating
 - **Module dispatch**: `math.*` and `fs.*` checked via `DotCallExpr`/`DotExpr` before object method lookup
-- **Imports**: relative to source dir; namespaced as `ClassName::funcName`; circular detection; no transitive imports
+- **Imports**: relative to source dir; namespaced as `ClassName::funcName`; circular detection; no transitive imports; top-level functions are importable (v0.0.15+)
 - **Truthiness**: `0`, `0.0`, `false`, `""`, `[]` are falsy; everything else truthy
 - **Type promotion**: int + float → float; int / int → int (truncates)
 
-## Known Limitations (as of v0.0.14)
+## Known Limitations (as of v0.0.15)
 
 - No unary minus (`-x`) — use `0 - x`
 - No logical operators (`&&`, `||`, `!`)
@@ -55,7 +55,6 @@ VDX is a class-based interpreted programming language built in C++17. It runs vi
 - No recursion depth limit (deep recursion → C++ stack overflow)
 - No user-defined function can override built-ins (`len`, `push`, etc.)
 - `input()` doesn't flush prompt or handle EOF
-- `math.floor`/`math.ceil`/`math.round` return float, not int
 - Dict iteration order is non-deterministic
 - No string escape for `\0`, `\r`
 - No null/nil type — use `void` or empty string

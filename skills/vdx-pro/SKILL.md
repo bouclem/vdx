@@ -14,15 +14,15 @@ description: VDX coding standards, best practices, and production-quality code g
 
 ## Language Overview
 
-VDX is a class-based, interpreted programming language. All executable code must live inside `class` bodies. Entry point is any class with top-level statements (non-function statements execute top-to-bottom).
+VDX is a class-based, interpreted programming language. Starting with v0.0.15, the `class{}` wrapper is optional — top-level statements and functions can be written directly at file scope. Classes are still recommended for larger programs and are required for object instantiation. Entry point is any file with top-level statements (non-function statements execute top-to-bottom).
 
 ## File Structure
 
 - File extension: `.vdx`
 - Comments: `// line comments` only
 - Imports must be first: `import "other.vdx";`
-- Class declarations follow imports
-- One primary class per file is conventional
+- Class declarations follow imports (optional — file can have zero classes)
+- One primary class per file is conventional for larger programs
 
 ## Syntax Rules
 
@@ -61,7 +61,9 @@ class ClassName {
 - No explicit parameter types
 - `return` exits function with optional value
 - Functions called by name within same class: `add(3, 5)`
+- Top-level functions (outside class) can be called directly: `add(3, 5)`
 - Cross-class calls require object instantiation and dot-call: `obj.method(args)`
+- Top-level functions are importable from other files (v0.0.15+)
 
 ### Control Flow
 - `if` / `elif` / `else`: standard syntax with `{ }` blocks
@@ -182,13 +184,13 @@ class ClassName {
 - **push/pop first arg must be a variable**: `push(arr, 1)` works, `push([1,2], 1)` does not
 - **Integer division truncates**: `7 / 2 = 3`. Use `7.0 / 2.0` for float
 - **No logical operators**: No `&&`, `||`, `!`. Use nested if
-- **Top-level code must be in a class**: No bare statements outside `class { }`
+- **Class is optional but recommended**: No `class{}` needed for simple scripts; a stderr tip is printed if no class is present
 - **String + int variable throws**: Use `print("count:", x)` not `print("count: " + x)`
 - **Dict key order is non-deterministic**: Don't rely on insertion order
 - **Transitive imports don't work**: Import each file directly
 
 ## References
 
-- See `references/patterns.md` for code patterns (singleton, data class, collection iteration, conditional without logical operators)
+- See `references/patterns.md` for code patterns (singleton, data class, collection iteration, conditional without logical operators, class-free scripts)
 - See `examples/examples.vdx` for a complete working demo of all features
 - See `examples/utils.vdx` for import pattern example

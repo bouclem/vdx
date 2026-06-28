@@ -1,0 +1,27 @@
+// VDX v0.0.15 — class{} is no longer mandatory
+// Top-level statements and functions work directly without a class wrapper
+
+print("Hello from class-free VDX!");
+
+let name = "VDX";
+let version = 0.015;
+print("Language:", name, "Version:", version);
+
+fn greet(who) {
+    return "Hello, " + who + "!";
+}
+
+print(greet("World"));
+
+let nums = [1, 2, 3, 4, 5];
+let total = 0;
+for (n in nums) {
+    total = total + n;
+}
+print("Sum:", total);
+
+if (total == 15) {
+    print("Correct!");
+} else {
+    print("Something went wrong");
+}

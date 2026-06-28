@@ -144,3 +144,24 @@ let absVal = math.abs(neg);
 // Force float result from integer operands
 let avg = total * 1.0 / count;
 ```
+
+## Class-Free Script (v0.0.15+)
+
+```vdx
+// No class{} wrapper needed — top-level statements run directly
+print("Starting...");
+
+let data = [1, 2, 3, 4, 5];
+let sum = 0;
+for (n in data) {
+    sum = sum + n;
+}
+print("Sum:", sum);
+
+fn double(x) {
+    return x * 2;
+}
+print("Double of sum:", double(sum));
+```
+
+For larger programs, wrapping in `class{}` is still recommended for organization.

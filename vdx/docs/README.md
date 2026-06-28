@@ -4,10 +4,10 @@ The programming language of **Voidware** ([voidware.xyz](https://voidware.xyz)).
 
 Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future focus on AI and games.
 
-## Version: 0.0.13
+## Version: 0.0.15
 
 ### Supported Features
-- `class` declarations
+- `class` declarations (recommended but optional — top-level statements work without a class wrapper)
 - `print()` with any expression arguments (e.g., `print(1 + 1)` outputs `2`)
 - `let` variable declarations (string, integer, float, bool)
 - Optional type annotations: `let x: int = 5;`, `let pi: float = 3.14;`

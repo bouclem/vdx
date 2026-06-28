@@ -127,11 +127,10 @@ Value round_builtin(const std::vector<Value>& args, int line) {
         throw std::runtime_error("[VDX] math.round() expects 1 argument");
     }
     checkNumeric(args[0], "round");
-    double x = args[0].toDouble();
     if (args[0].type == Value::INT) {
         return Value::makeInt(args[0].intVal);
     }
-    return Value::makeFloat(std::round(x));
+    return Value::makeInt(static_cast<int>(std::round(args[0].toDouble())));
 }
 
 Value min_builtin(const std::vector<Value>& args, int line) {
@@ -185,13 +184,13 @@ Value random_builtin(const std::vector<Value>& args, int line) {
         return Value::makeFloat(dist(rng));
     }
     if (args.size() == 1) {
-        // Return random int between 0 and max (exclusive)
+        // Return random int between 0 and max (inclusive)
         checkNumeric(args[0], "random");
         int max_val = static_cast<int>(args[0].toDouble());
-        if (max_val <= 0) {
-            throw std::runtime_error("[VDX] math.random() argument must be positive");
+        if (max_val < 0) {
+            throw std::runtime_error("[VDX] math.random() argument must be non-negative");
         }
-        std::uniform_int_distribution<int> dist(0, max_val - 1);
+        std::uniform_int_distribution<int> dist(0, max_val);
         return Value::makeInt(dist(rng));
     }
     if (args.size() == 2) {

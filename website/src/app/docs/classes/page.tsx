@@ -4,8 +4,10 @@ export default function ClassesDoc() {
   return (
     <DocPage title="Classes">
       <p>
-        Every VDX program is organized into classes. A class is the top-level
-        container for all code — variables, functions, and statements.
+        Classes are the primary way to organize code in VDX. Starting with v0.0.15,
+        classes are <strong>recommended but optional</strong> — you can write top-level
+        statements directly. However, classes are still essential for object instantiation
+        and for organizing larger programs.
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Syntax</h2>
@@ -17,10 +19,11 @@ export default function ClassesDoc() {
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Rules</h2>
       <ul className="list-disc list-inside space-y-2 text-sm">
-        <li>Every <code className="text-[#A78BFA]">.vdx</code> file must contain at least one class</li>
+        <li>A <code className="text-[#A78BFA]">.vdx</code> file can contain zero or more classes (v0.0.15+)</li>
         <li>Class names must start with a letter or underscore</li>
-        <li>Code outside a class is not allowed</li>
+        <li>Code outside a class is allowed — top-level statements run in order</li>
         <li>A file can contain multiple classes — they run in order</li>
+        <li>If no class is present, a recommendation tip is printed to stderr</li>
       </ul>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Execution order</h2>

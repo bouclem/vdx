@@ -150,20 +150,54 @@ void Interpreter::run(const Program& program, const std::string& sourceDir) {
     }
 
     // Second pass: register all class declarations for 'new'
+    bool hasClass = false;
     for (auto& decl : program.declarations) {
         auto cls = dynamic_cast<ClassDecl*>(decl.get());
         if (cls) {
+            hasClass = true;
             if (classDecls.count(cls->name)) {
                 throw std::runtime_error("[VDX] Class '" + cls->name + "' is already defined at line " + std::to_string(cls->line));
             }
             classDecls[cls->name] = cls;
         }
     }
-    // Third pass: execute top-level classes
+
+    // Third pass: register top-level function declarations
     for (auto& decl : program.declarations) {
-        auto cls = dynamic_cast<ClassDecl*>(decl.get());
-        if (cls) execClass(cls);
+        auto fn = dynamic_cast<FnDecl*>(decl.get());
+        if (fn) {
+            if (functions.count(fn->name)) {
+                throw std::runtime_error("[VDX] Function '" + fn->name + "' is already defined at line " + std::to_string(fn->line));
+            }
+            functions[fn->name] = fn;
+        }
     }
+
+    // Recommendation: suggest using class{} wrapper if none present
+    if (!hasClass) {
+        std::cerr << "[VDX] Tip: Wrapping code in class{} is recommended for better organization.\n\n";
+    }
+
+    // Fourth pass: execute top-level declarations in order
+    pushScope();
+    try {
+        for (auto& decl : program.declarations) {
+            if (dynamic_cast<ImportStmt*>(decl.get())) continue;
+            if (dynamic_cast<FnDecl*>(decl.get())) continue;
+            if (auto cls = dynamic_cast<ClassDecl*>(decl.get())) {
+                execClass(cls);
+                continue;
+            }
+            execStatement(decl);
+        }
+    } catch (ReturnException&) {
+        // 'return' at top level outside a function — ignore
+    } catch (BreakException&) {
+        throw std::runtime_error("[VDX] 'break' used outside of a loop at line " + std::to_string(currentLine));
+    } catch (ContinueException&) {
+        throw std::runtime_error("[VDX] 'continue' used outside of a loop at line " + std::to_string(currentLine));
+    }
+    popScope();
 }
 
 void Interpreter::execImport(const ImportStmt* stmt) {
@@ -233,26 +267,43 @@ void Interpreter::execImport(const ImportStmt* stmt) {
             }
         }
     }
+
+    // Register imported file's top-level functions (by plain name)
+    for (auto& decl : importedProgram->declarations) {
+        auto fn = dynamic_cast<FnDecl*>(decl.get());
+        if (fn) {
+            if (functions.count(fn->name)) {
+                throw std::runtime_error("[VDX] Function '" + fn->name + "' is already defined (imported at line " + std::to_string(stmt->line) + ")");
+            }
+            functions[fn->name] = fn;
+        }
+    }
 }
 
 void Interpreter::execClass(const ClassDecl* cls) {
     pushScope();
     std::string savedClassName = currentClassName;
     currentClassName = cls->name;
-    // First pass: register functions (namespaced as ClassName::funcName)
-    for (auto& node : cls->body) {
-        if (auto fn = dynamic_cast<FnDecl*>(node.get())) {
-            std::string key = cls->name + "::" + fn->name;
-            if (functions.count(key)) {
-                throw std::runtime_error("[VDX] Function '" + fn->name + "' is already defined in class '" + cls->name + "' at line " + std::to_string(fn->line));
+    try {
+        // First pass: register functions (namespaced as ClassName::funcName)
+        for (auto& node : cls->body) {
+            if (auto fn = dynamic_cast<FnDecl*>(node.get())) {
+                std::string key = cls->name + "::" + fn->name;
+                if (functions.count(key)) {
+                    throw std::runtime_error("[VDX] Function '" + fn->name + "' is already defined in class '" + cls->name + "' at line " + std::to_string(fn->line));
+                }
+                functions[key] = fn;
             }
-            functions[key] = fn;
         }
-    }
-    // Second pass: execute non-function statements
-    for (auto& node : cls->body) {
-        if (dynamic_cast<FnDecl*>(node.get())) continue;
-        execStatement(node);
+        // Second pass: execute non-function statements
+        for (auto& node : cls->body) {
+            if (dynamic_cast<FnDecl*>(node.get())) continue;
+            execStatement(node);
+        }
+    } catch (...) {
+        currentClassName = savedClassName;
+        popScope();
+        throw;
     }
     currentClassName = savedClassName;
     popScope();
@@ -540,28 +591,34 @@ Value Interpreter::execNew(const NewExpr* expr) {
     std::string savedClassName = currentClassName;
     currentClassName = expr->className;
 
-    // First pass: register methods
-    for (auto& node : cls->body) {
-        if (auto fn = dynamic_cast<FnDecl*>(node.get())) {
-            obj->methods[fn->name] = fn;
-        }
-    }
-
-    // Second pass: execute non-function statements (to set up fields)
-    for (auto& node : cls->body) {
-        if (dynamic_cast<FnDecl*>(node.get())) continue;
-        execStatement(node);
-    }
-
-    // Capture only variables declared via 'let' in the class body as fields
-    // (excludes temporaries like loop counters from field initializers)
-    for (auto& node : cls->body) {
-        if (auto letStmt = dynamic_cast<LetStmt*>(node.get())) {
-            Value* val = lookupVar(letStmt->name);
-            if (val) {
-                obj->fields[letStmt->name] = *val;
+    try {
+        // First pass: register methods
+        for (auto& node : cls->body) {
+            if (auto fn = dynamic_cast<FnDecl*>(node.get())) {
+                obj->methods[fn->name] = fn;
             }
         }
+
+        // Second pass: execute non-function statements (to set up fields)
+        for (auto& node : cls->body) {
+            if (dynamic_cast<FnDecl*>(node.get())) continue;
+            execStatement(node);
+        }
+
+        // Capture only variables declared via 'let' in the class body as fields
+        // (excludes temporaries like loop counters from field initializers)
+        for (auto& node : cls->body) {
+            if (auto letStmt = dynamic_cast<LetStmt*>(node.get())) {
+                Value* val = lookupVar(letStmt->name);
+                if (val) {
+                    obj->fields[letStmt->name] = *val;
+                }
+            }
+        }
+    } catch (...) {
+        currentClassName = savedClassName;
+        popScope();
+        throw;
     }
 
     popScope();

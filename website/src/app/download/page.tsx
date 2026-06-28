@@ -25,9 +25,24 @@ const versions: {
   notes: string[];
 }[] = [
   {
-    version: "0.0.14",
+    version: "0.0.15",
     date: "2026-06-28",
     status: "current",
+    notes: [
+      "class{} wrapper is no longer mandatory — top-level statements allowed",
+      "Top-level function declarations supported at file scope",
+      "Top-level functions importable from other files",
+      "Recommendation warning when no class declaration is present",
+      "Fixed math.round() returning FLOAT instead of INT",
+      "Fixed math.random(max) exclusive vs inclusive inconsistency",
+      "Fixed return/break/continue crash at top level, in class body, and during new",
+      "Fixed scope leak in execClass and execNew on exception",
+    ],
+  },
+  {
+    version: "0.0.14",
+    date: "2026-06-28",
+    status: "old",
     notes: [
       "Fixed scope leak on return inside if/while/for/for-in loops",
       "Fixed math module never being registered at startup",

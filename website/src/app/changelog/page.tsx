@@ -42,6 +42,24 @@ function linkifyCode(text: string): string {
 
 const changelog = [
   {
+    version: "0.0.15",
+    date: "2026-06-28",
+    changes: [
+      "`class{}` wrapper is no longer mandatory — top-level statements (print, let, fn, if, while, for, etc.) can now be written directly without a class wrapper",
+      "Top-level function declarations are now supported: `fn add(a, b) { ... }` at file scope",
+      "Top-level functions are importable: imported files can export plain functions (not just class methods)",
+      "Added recommendation warning: when a VDX file has no `class` declaration, a tip is printed to stderr suggesting `class{}` for better organization",
+      "`class{}` is now recommended but optional — existing code with classes continues to work unchanged",
+      "Fixed `math.round()` returning FLOAT instead of INT for float inputs — now returns INT like `math.floor()` and `math.ceil()`",
+      "Fixed `math.random(max)` being exclusive (0 to max-1) — now inclusive (0 to max) for consistency with `math.random(min, max)`",
+      "Fixed `return`/`break`/`continue` at top level (outside function/loop) causing crash — now handled gracefully",
+      "Fixed `return`/`break`/`continue` in class body (outside functions) causing crash — now handled gracefully",
+      "Fixed `return`/`break`/`continue` during object construction (`new`) causing crash — now handled gracefully",
+      "Fixed scope leak in `execClass` on exception — scope is now properly popped on all exit paths",
+      "Fixed scope leak in `execNew` on exception — scope is now properly popped on all exit paths",
+    ],
+  },
+  {
     version: "0.0.14",
     date: "2026-06-28",
     changes: [

@@ -27,11 +27,11 @@ Check all mutation paths on `const` variables:
 
 #### 2. Scope Leaks
 - `return` inside `if`/`while`/`for`/`for-in` — OK (scope popped before propagating)
-- `break`/`continue` inside a function or method but not in a loop — runtime error
+- `break`/`continue` at top level or in class body outside a loop — now handled gracefully (v0.0.15+), previously crashed
 
 #### 3. Type Confusion
 - Integer division truncation: `7 / 2` yields `3`, not `3.5`
-- `math.floor(3.7)` returns `3.0` (float), not `3` (int)
+- `math.floor(3.7)` returns `3` (int), `math.round(3.5)` returns `4` (int) — all rounding functions return int (v0.0.15+)
 - String indexing returns single-character string, not char/int
 
 #### 4. Missing Language Features
@@ -62,22 +62,20 @@ Check all mutation paths on `const` variables:
 ### Phase 2: Dynamic Testing (Run Code)
 
 #### Test File Structure
-All VDX test files must wrap code in a class:
+Starting with v0.0.15, test files can use top-level statements directly (no class wrapper required):
 ```vdx
-class TestSomething {
-    // Setup
-    let input = [1, 2, 3];
-    
-    // Test case
-    let result = len(input);
-    print("len([1,2,3]):", result);
-    
-    // Assertion (manual — VDX has no assert)
-    if (result == 3) {
-        print("PASS: len test");
-    } else {
-        print("FAIL: len test, expected 3, got", result);
-    }
+// Setup
+let input = [1, 2, 3];
+
+// Test case
+let result = len(input);
+print("len([1,2,3]):", result);
+
+// Assertion (manual — VDX has no assert)
+if (result == 3) {
+    print("PASS: len test");
+} else {
+    print("FAIL: len test, expected 3, got", result);
 }
 ```
 

@@ -3,7 +3,7 @@ export default function Home() {
     <div className="max-w-5xl mx-auto px-6">
       {/* Hero */}
       <section className="pt-24 pb-20">
-        <p className="text-[var(--vdx-muted)] text-sm font-mono mb-4">v0.0.14 — by Voidware</p>
+        <p className="text-[var(--vdx-muted)] text-sm font-mono mb-4">v0.0.15 — by Voidware</p>
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-5 tracking-tight leading-tight">
           The VDX Programming Language
         </h1>
@@ -32,25 +32,25 @@ export default function Home() {
         <div className="border border-[var(--vdx-border)] rounded-lg overflow-hidden bg-[var(--vdx-surface)]">
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--vdx-border)]">
             <span className="text-xs text-[var(--vdx-muted)] font-mono">hello.vdx</span>
-            <span className="text-xs text-[var(--vdx-muted)]">VDX 0.0.14</span>
+            <span className="text-xs text-[var(--vdx-muted)]">VDX 0.0.15</span>
           </div>
           <pre className="p-5 text-[13px] leading-relaxed overflow-x-auto text-zinc-300">
-            <code>{`class Hello {
-    let name: string = "VDX";
-    let version: float = 0.8;
-    print("Welcome to", this.name);
+            <code>{`print("Hello, VDX!");
 
-    fn max(a, b) {
-        if (a > b) { return a; }
-        else { return b; }
-    }
+let name = "VDX";
+let version = 0.015;
+print("Welcome to", name, "v", version);
 
-    print("max(3, 7) =", max(3, 7));
+fn max(a, b) {
+    if (a > b) { return a; }
+    else { return b; }
+}
 
-    let langs = ["Java", "C++", "Rust"];
-    for (lang in langs) {
-        print("Inspired by:", lang);
-    }
+print("max(3, 7) =", max(3, 7));
+
+let langs = ["Java", "C++", "Rust"];
+for (lang in langs) {
+    print("Inspired by:", lang);
 }`}</code>
           </pre>
         </div>

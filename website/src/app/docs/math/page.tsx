@@ -76,19 +76,19 @@ export default function MathDoc() {
           <tr>
             <td><code>math.floor(x)</code></td>
             <td>number</td>
-            <td>float</td>
+            <td>int</td>
             <td>Round down to nearest integer</td>
           </tr>
           <tr>
             <td><code>math.ceil(x)</code></td>
             <td>number</td>
-            <td>float</td>
+            <td>int</td>
             <td>Round up to nearest integer</td>
           </tr>
           <tr>
             <td><code>math.round(x)</code></td>
             <td>number</td>
-            <td>number</td>
+            <td>int</td>
             <td>Round to nearest integer</td>
           </tr>
           <tr>
@@ -113,7 +113,7 @@ export default function MathDoc() {
             <td><code>math.random(max)</code></td>
             <td>int max</td>
             <td>int</td>
-            <td>Random int 0 to max-1</td>
+            <td>Random int 0 to max (inclusive)</td>
           </tr>
           <tr>
             <td><code>math.random(min, max)</code></td>
@@ -145,8 +145,8 @@ export default function MathDoc() {
 
       <h3>Rounding</h3>
       <pre><code>{`class App {
-    print(math.floor(3.7));      // 3.0
-    print(math.ceil(3.2));       // 4.0
+    print(math.floor(3.7));      // 3
+    print(math.ceil(3.2));       // 4
     print(math.round(3.5));     // 4
 }`}</code></pre>
 
@@ -163,7 +163,7 @@ export default function MathDoc() {
     // Random float 0.0 to 1.0
     print(math.random());        // e.g., 0.8473...
     
-    // Random int 0 to 99
+    // Random int 0 to 100 (inclusive)
     print(math.random(100));   // e.g., 42
     
     // Random int 1 to 6 (dice roll)
@@ -190,7 +190,7 @@ export default function MathDoc() {
       <h2>Error handling</h2>
       <ul>
         <li><code>math.sqrt()</code> of a negative number throws an error</li>
-        <li><code>math.random(max)</code> requires max &gt; 0</li>
+        <li><code>math.random(max)</code> requires max &gt;= 0</li>
         <li><code>math.random(min, max)</code> requires max &gt; min</li>
         <li>All math functions require numeric arguments</li>
       </ul>

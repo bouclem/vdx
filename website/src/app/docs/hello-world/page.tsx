@@ -4,13 +4,20 @@ export default function HelloWorldDoc() {
   return (
     <DocPage title="Hello World">
       <p>
-        Your first VDX program. Every VDX program starts with a{" "}
-        <code className="text-[#A78BFA]">class</code> declaration.
+        Your first VDX program. Starting with v0.0.15, a <code className="text-[#A78BFA]">class</code>{' '}
+        wrapper is optional — you can write top-level statements directly.
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">1. Create a file</h2>
       <p>
         Create a file called <code className="text-[#A78BFA]">hello.vdx</code>:
+      </p>
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
+        <pre className="text-sm"><code>{`print("Hello, world!");`}</code></pre>
+      </div>
+
+      <p className="text-sm text-[var(--vdx-muted)] mt-2">
+        Or with a class wrapper (recommended for larger programs):
       </p>
       <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class Hello {
@@ -30,30 +37,29 @@ export default function HelloWorldDoc() {
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">3. What happened?</h2>
       <ul className="list-disc list-inside space-y-2 text-sm">
         <li>
-          <code className="text-[#A78BFA]">class Hello {"{"} ... {"}"}</code> — declares a class
-          named <code className="text-[#A78BFA]">Hello</code>. All code lives inside a class.
-        </li>
-        <li>
           <code className="text-[#A78BFA]">print("Hello, world!");</code> — prints text to the
           terminal. Every statement ends with <code className="text-[#A78BFA]">;</code>
+        </li>
+        <li>
+          <code className="text-[#A78BFA]">class Hello {"{"} ... {"}"}</code> — declares a class
+          named <code className="text-[#A78BFA]">Hello</code>. Classes are optional but recommended
+          for organizing larger programs.
         </li>
       </ul>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">A bigger example</h2>
       <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
-        <pre className="text-sm"><code>{`class Hello {
-    let name = "VDX";
-    print("Welcome to", this.name);
+        <pre className="text-sm"><code>{`let name = "VDX";
+print("Welcome to", name);
 
-    print(1 + 1);
-    print(10 * 3 + 2);
+print(1 + 1);
+print(10 * 3 + 2);
 
-    fn greet(who) {
-        print("Hello,", who);
-    }
+fn greet(who) {
+    print("Hello,", who);
+}
 
-    greet("developer");
-}`}</code></pre>
+greet("developer");`}</code></pre>
       </div>
       <p>Output:</p>
       <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
