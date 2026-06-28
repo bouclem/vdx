@@ -24,7 +24,7 @@ export default function LoopProtectionDoc() {
         iteration, VDX checks how long that iteration took. If it was under 2
         seconds, the runtime throws an error:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm text-red-400 whitespace-pre-wrap">{`[VDX] Loop safety: iteration completed in 0ms (< 2000ms minimum).
       This loop may be infinite or too fast.
       Use @unsafe before 'while' to disable this protection:
@@ -32,7 +32,7 @@ export default function LoopProtectionDoc() {
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Example: blocked loop</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     let i = 0;
     // This will be BLOCKED — each iteration is instant (< 2s)
@@ -44,7 +44,7 @@ export default function LoopProtectionDoc() {
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Example: safe loop with wait</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     let i = 0;
     // This is fine — wait(2100) makes each iteration > 2s

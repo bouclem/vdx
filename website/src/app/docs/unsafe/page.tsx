@@ -25,14 +25,14 @@ export default function UnsafeDoc() {
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Syntax</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`@unsafe while (condition) {
     // loop body — no speed protection
 }`}</code></pre>
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Example</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     fn fastCount(n) {
         @unsafe while (n > 0) {
@@ -63,7 +63,7 @@ export default function UnsafeDoc() {
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">What @unsafe disables</h2>
       <table className="w-full text-sm border border-white/10 rounded-xl overflow-hidden">
         <thead>
-          <tr className="bg-[#110827]">
+          <tr className="bg-[var(--vdx-surface)]">
             <th className="text-left p-3 text-white">Protection</th>
             <th className="text-left p-3 text-white">Normal while</th>
             <th className="text-left p-3 text-white">@unsafe while</th>

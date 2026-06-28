@@ -9,7 +9,7 @@ export default function ArraysDoc() {
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Creating arrays</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let numbers = [1, 2, 3];
 let names = ["Alice", "Bob", "Charlie"];
 let empty = [];`}</code></pre>
@@ -19,7 +19,7 @@ let empty = [];`}</code></pre>
       <p>
         Access elements by index (starting at 0):
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let arr = [10, 20, 30];
 print(arr[0]);    // 10
 print(arr[2]);    // 30`}</code></pre>
@@ -29,7 +29,7 @@ print(arr[2]);    // 30`}</code></pre>
       <p>
         Change an element by assigning to an index:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let arr = [1, 2, 3];
 arr[1] = 99;
 print(arr);       // [1, 99, 3]`}</code></pre>
@@ -40,7 +40,7 @@ print(arr);       // [1, 99, 3]`}</code></pre>
         Get the length of an array with the built-in{" "}
         <code className="text-[#A78BFA]">len()</code> function:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let arr = [1, 2, 3];
 print(len(arr));  // 3`}</code></pre>
       </div>
@@ -54,14 +54,14 @@ print(len(arr));  // 3`}</code></pre>
         Append a value to an array with{" "}
         <code className="text-[#A78BFA]">push()</code>:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let arr = [1, 2];
 push(arr, 3);
 print(arr);       // [1, 2, 3]`}</code></pre>
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Printing arrays</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let arr = [1, "two", 3];
 print(arr);       // [1, "two", 3]`}</code></pre>
       </div>
@@ -70,7 +70,7 @@ print(arr);       // [1, "two", 3]`}</code></pre>
       <p>
         Non-empty arrays are truthy, empty arrays are falsy:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let arr = [1];
 if (arr) {
     print("has items");

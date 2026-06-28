@@ -9,7 +9,7 @@ export default function ClassesDoc() {
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Syntax</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class ClassName {
     // variables, functions, statements
 }`}</code></pre>
@@ -32,7 +32,7 @@ export default function ClassesDoc() {
         <li>Execute all non-function statements top-to-bottom</li>
       </ol>
 
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     // This works — greet() is registered in pass 1
     greet();
@@ -44,7 +44,7 @@ export default function ClassesDoc() {
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Multiple classes</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class First {
     print("I run first");
 }
@@ -60,7 +60,7 @@ class Second {
         <code className="text-[#A78BFA]">new</code>. See{" "}
         <a href="/docs/objects" className="text-[#A78BFA] hover:underline">Objects (new)</a>.
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class Point {
     let x: int = 0;
     let y: int = 0;

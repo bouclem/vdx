@@ -9,12 +9,12 @@ export default function WaitDoc() {
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Syntax</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>wait(milliseconds);</code></pre>
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Examples</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`wait(1000);    // pause 1 second
 wait(500);     // pause 0.5 seconds
 wait(3000);    // pause 3 seconds`}</code></pre>
@@ -28,7 +28,7 @@ wait(3000);    // pause 3 seconds`}</code></pre>
         <a href="/docs/loop-protection" className="text-[#A78BFA] hover:underline">loop protection</a>{" "}
         (2-second minimum per iteration):
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     let i = 3;
     while (i > 0) {
@@ -47,7 +47,7 @@ wait(3000);    // pause 3 seconds`}</code></pre>
       </ul>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Errors</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm text-red-400"><code>{`wait("hello");  // [VDX] wait() expects an integer (milliseconds)
 wait(-100);     // [VDX] wait() duration cannot be negative`}</code></pre>
       </div>

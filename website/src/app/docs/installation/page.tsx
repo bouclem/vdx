@@ -12,7 +12,7 @@ export default function InstallationDoc() {
         <li>Run the installer and follow the steps</li>
         <li>
           Open a new terminal and type:
-          <div className="bg-[#110827] border border-white/10 rounded-xl p-4 mt-2">
+          <div className="bg-[var(--vdx-surface)] border border-white/10 rounded-xl p-4 mt-2">
             <code>vdx --version</code>
           </div>
         </li>
@@ -24,7 +24,7 @@ export default function InstallationDoc() {
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Build from Source</h2>
       <p>Requires CMake 3.16+ and a C++17 compiler.</p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`git clone https://github.com/voidware/vdx.git
 cd vdx
 cmake -B build
@@ -36,7 +36,7 @@ cmake --build build`}</code></pre>
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Run a .vdx file</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>vdx hello.vdx</code></pre>
       </div>
     </DocPage>

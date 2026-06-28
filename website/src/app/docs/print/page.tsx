@@ -9,13 +9,13 @@ export default function PrintDoc() {
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Syntax</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`print(expr);
 print(expr1, expr2, expr3);`}</code></pre>
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Basic usage</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`print("hello");         // hello
 print(42);              // 42
 print("age:", 25);      // age: 25`}</code></pre>
@@ -25,7 +25,7 @@ print("age:", 25);      // age: 25`}</code></pre>
       <p>
         You can pass any expression — it gets evaluated before printing:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`print(1 + 1);           // 2
 print(10 * 3 + 2);     // 32
 print(5 == 5);          // true`}</code></pre>
@@ -36,13 +36,13 @@ print(5 == 5);          // true`}</code></pre>
         Multiple arguments are separated by a space in the output. Each{" "}
         <code className="text-[#A78BFA]">print()</code> call ends with a newline.
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`print("x =", 10, "y =", 20);
 // Output: x = 10 y = 20`}</code></pre>
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Variables and function calls</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let name = "VDX";
 print("Welcome to", name);
 
@@ -53,7 +53,7 @@ print("result:", double(5));    // result: 10`}</code></pre>
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Escape sequences</h2>
       <table className="w-full text-sm border border-white/10 rounded-xl overflow-hidden">
         <thead>
-          <tr className="bg-[#110827]">
+          <tr className="bg-[var(--vdx-surface)]">
             <th className="text-left p-3 text-white">Sequence</th>
             <th className="text-left p-3 text-white">Output</th>
           </tr>

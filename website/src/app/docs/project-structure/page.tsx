@@ -9,12 +9,12 @@ export default function ProjectStructureDoc() {
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Minimal project</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`my-project/
   main.vdx`}</code></pre>
       </div>
       <p>Run it with:</p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>vdx main.vdx</code></pre>
       </div>
 
@@ -30,7 +30,7 @@ export default function ProjectStructureDoc() {
         code inside a class body runs top-to-bottom when the file is executed. Functions are
         registered first, then statements run in order.
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     // Functions are registered first (pass 1)
     fn sayHi() {
@@ -48,7 +48,7 @@ export default function ProjectStructureDoc() {
         Line comments start with <code className="text-[#A78BFA]">//</code>. There are no
         block comments yet.
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`// This is a comment
 print("hello"); // inline comment`}</code></pre>
       </div>

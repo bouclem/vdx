@@ -12,7 +12,7 @@ export default function ErrorReportingDoc() {
       <p>
         Instead of a raw crash, VDX displays the error like this:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm text-red-300"><code>{`  error: [VDX] Undefined variable 'z' at line 4
    --> myfile.vdx:4
     |
@@ -32,7 +32,7 @@ export default function ErrorReportingDoc() {
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Common errors</h2>
       <table className="w-full text-sm border border-white/10 rounded-xl overflow-hidden">
         <thead>
-          <tr className="bg-[#110827]">
+          <tr className="bg-[var(--vdx-surface)]">
             <th className="text-left p-3 text-white">Error</th>
             <th className="text-left p-3 text-white">Cause</th>
           </tr>

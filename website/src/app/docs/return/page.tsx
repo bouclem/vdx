@@ -9,13 +9,13 @@ export default function ReturnDoc() {
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Syntax</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`return expr;    // return a value
 return;         // return void`}</code></pre>
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Returning a value</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     fn add(a, b) {
         return a + b;
@@ -31,7 +31,7 @@ return;         // return void`}</code></pre>
         <code className="text-[#A78BFA]">return</code> exits the function immediately,
         skipping any remaining code:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     fn abs(n) {
         if (n >= 0) {
@@ -46,7 +46,7 @@ return;         // return void`}</code></pre>
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Return with conditionals</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     fn max(a, b) {
         if (a > b) {
@@ -65,7 +65,7 @@ return;         // return void`}</code></pre>
         Functions without a <code className="text-[#A78BFA]">return</code> statement (or with
         a bare <code className="text-[#A78BFA]">return;</code>) return <code className="text-[#A78BFA]">void</code>:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     fn doWork() {
         print("working...");
@@ -81,7 +81,7 @@ return;         // return void`}</code></pre>
       <p>
         Return values can be used anywhere an expression is expected:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     fn square(n) { return n * n; }
     fn double(n) { return n * 2; }

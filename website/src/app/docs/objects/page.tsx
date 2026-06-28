@@ -13,7 +13,7 @@ export default function ObjectsDoc() {
         Define a class as a blueprint, then instantiate it with{" "}
         <code className="text-[#A78BFA]">new ClassName()</code>:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class Point {
     let x: int = 0;
     let y: int = 0;
@@ -34,7 +34,7 @@ class Main {
       <p>
         Read fields with dot notation:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let p = new Point();
 print(p.x);    // 0
 print(p.y);    // 0`}</code></pre>
@@ -44,7 +44,7 @@ print(p.y);    // 0`}</code></pre>
       <p>
         Assign to fields with dot notation:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let p = new Point();
 p.x = 10;
 p.y = 20;
@@ -56,7 +56,7 @@ print(p.x, p.y);   // 10 20`}</code></pre>
         Functions declared in the class become methods on the object. Methods can
         read and modify the object&apos;s fields:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class Point {
     let x: int = 0;
     let y: int = 0;
@@ -79,7 +79,7 @@ class Main {
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Methods with return</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class Counter {
     let count: int = 0;
 
@@ -105,7 +105,7 @@ class Main {
         Each <code className="text-[#A78BFA]">new</code> call creates an independent object
         with its own fields:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class Main {
     let a = new Point();
     let b = new Point();
@@ -120,7 +120,7 @@ class Main {
       <p>
         Objects are always truthy in boolean context:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let p = new Point();
 if (p) {
     print("object exists");

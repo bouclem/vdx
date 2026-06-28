@@ -10,12 +10,12 @@ export default function ArrayFunctionsDoc() {
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">push()</h2>
       <p>Appends a value to the end of an array:</p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`push(array, value)`}</code></pre>
       </div>
 
       <h2 className="text-xl font-semibold text-white mt-6 mb-3">push() example</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let arr = [1, 2];
 push(arr, 3);
 print(arr);       // [1, 2, 3]
@@ -26,12 +26,12 @@ print(arr);       // [1, 2, 3, 4]`}</code></pre>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">pop()</h2>
       <p>Removes and returns the last element from an array:</p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`pop(array)  // Returns the removed element`}</code></pre>
       </div>
 
       <h2 className="text-xl font-semibold text-white mt-6 mb-3">pop() example</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let arr = [10, 20, 30];
 let last = pop(arr);
 
@@ -44,7 +44,7 @@ print(arr);       // [10, 20]`}</code></pre>
         Combined, <code className="text-[#A78BFA]">push()</code> and <code className="text-[#A78BFA]">pop()</code> 
         enable stack (LIFO) behavior:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class Stack {
     let items = [];
     

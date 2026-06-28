@@ -9,7 +9,7 @@ export default function TypeDoc() {
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Syntax</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`type(value)`}</code></pre>
       </div>
 
@@ -33,7 +33,7 @@ export default function TypeDoc() {
       </table>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Examples</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let x = 42;
 let y = 3.14;
 let s = "hello";
@@ -51,7 +51,7 @@ print(type(obj));    // "object"`}</code></pre>
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Use case: Type checking</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`fn process(value) {
     if (type(value) == "array") {
         print("Processing array of length", len(value));

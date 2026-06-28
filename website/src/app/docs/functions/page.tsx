@@ -9,14 +9,14 @@ export default function FunctionsDoc() {
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Syntax</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`fn name(param1, param2) {
     // body
 }`}</code></pre>
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Basic function</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     fn sayHello() {
         print("Hello!");
@@ -27,7 +27,7 @@ export default function FunctionsDoc() {
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Parameters</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     fn greet(name) {
         print("Hello,", name);
@@ -43,7 +43,7 @@ export default function FunctionsDoc() {
         Use <code className="text-[#A78BFA]">return</code> to send a value back from a function.
         See <a href="/docs/return" className="text-[#A78BFA] hover:underline">Return Values</a>.
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     fn add(a, b) {
         return a + b;
@@ -56,7 +56,7 @@ export default function FunctionsDoc() {
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Functions as expressions</h2>
       <p>Function calls can be used anywhere an expression is expected:</p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     fn double(n) {
         return n * 2;
@@ -73,7 +73,7 @@ export default function FunctionsDoc() {
         Functions are registered before any statements run (two-pass execution).
         You can call a function before it appears in the code:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     sayHi();    // works!
 

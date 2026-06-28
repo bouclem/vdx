@@ -10,7 +10,7 @@ export default function OperatorsDoc() {
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Arithmetic</h2>
       <table className="w-full text-sm border border-white/10 rounded-xl overflow-hidden">
         <thead>
-          <tr className="bg-[#110827]">
+          <tr className="bg-[var(--vdx-surface)]">
             <th className="text-left p-3 text-white">Operator</th>
             <th className="text-left p-3 text-white">Description</th>
             <th className="text-left p-3 text-white">Example</th>
@@ -27,7 +27,7 @@ export default function OperatorsDoc() {
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Comparison</h2>
       <table className="w-full text-sm border border-white/10 rounded-xl overflow-hidden">
         <thead>
-          <tr className="bg-[#110827]">
+          <tr className="bg-[var(--vdx-surface)]">
             <th className="text-left p-3 text-white">Operator</th>
             <th className="text-left p-3 text-white">Description</th>
             <th className="text-left p-3 text-white">Example</th>
@@ -44,7 +44,7 @@ export default function OperatorsDoc() {
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Equality</h2>
       <table className="w-full text-sm border border-white/10 rounded-xl overflow-hidden">
         <thead>
-          <tr className="bg-[#110827]">
+          <tr className="bg-[var(--vdx-surface)]">
             <th className="text-left p-3 text-white">Operator</th>
             <th className="text-left p-3 text-white">Description</th>
             <th className="text-left p-3 text-white">Example</th>
@@ -60,7 +60,7 @@ export default function OperatorsDoc() {
       <p>
         The <code className="text-[#A78BFA]">+</code> operator also concatenates strings:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let greeting = "Hello" + " " + "world";
 print(greeting);    // Hello world`}</code></pre>
       </div>
@@ -79,7 +79,7 @@ print(greeting);    // Hello world`}</code></pre>
       <p>
         Dividing by zero throws a runtime error:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm text-red-400"><code>[VDX] Division by zero</code></pre>
       </div>
     </DocPage>

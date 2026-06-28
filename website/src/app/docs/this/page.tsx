@@ -9,7 +9,7 @@ export default function ThisDoc() {
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Syntax</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>this.variableName</code></pre>
       </div>
 
@@ -21,7 +21,7 @@ export default function ThisDoc() {
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Example</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     let name = "VDX";
     let version = 1;
@@ -32,7 +32,7 @@ export default function ThisDoc() {
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Inside functions</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     let lang = "VDX";
 
@@ -46,7 +46,7 @@ export default function ThisDoc() {
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">In conditions</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     let mode = "debug";
 

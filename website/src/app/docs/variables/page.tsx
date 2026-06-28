@@ -9,7 +9,7 @@ export default function VariablesDoc() {
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Declaration</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let name = "VDX";
 let age = 1;
 let result = 10 + 5;`}</code></pre>
@@ -20,7 +20,7 @@ let result = 10 + 5;`}</code></pre>
         After declaring a variable with <code className="text-[#A78BFA]">let</code>, you can
         reassign it without <code className="text-[#A78BFA]">let</code>:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let x = 10;
 x = 20;        // reassign
 print(x);      // 20`}</code></pre>
@@ -33,7 +33,7 @@ print(x);      // 20`}</code></pre>
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Types</h2>
       <table className="w-full text-sm border border-white/10 rounded-xl overflow-hidden">
         <thead>
-          <tr className="bg-[#110827]">
+          <tr className="bg-[var(--vdx-surface)]">
             <th className="text-left p-3 text-white">Type</th>
             <th className="text-left p-3 text-white">Example</th>
           </tr>
@@ -63,7 +63,7 @@ print(x);      // 20`}</code></pre>
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Using variables in print</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let lang = "VDX";
 print("Language:", lang);    // Language: VDX`}</code></pre>
       </div>
@@ -74,7 +74,7 @@ print("Language:", lang);    // Language: VDX`}</code></pre>
         <code className="text-[#A78BFA]">this.name</code>. See{" "}
         <a href="/docs/this" className="text-[#A78BFA] hover:underline">this keyword</a>.
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     let version = 1;
     print(this.version);   // 1

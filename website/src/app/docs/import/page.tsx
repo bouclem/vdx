@@ -9,13 +9,13 @@ export default function ImportDoc() {
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Basic syntax</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`import "filename.vdx";`}</code></pre>
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Example</h2>
       <p>Create a utils file (<code className="text-[#A78BFA]">utils.vdx</code>):</p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class Utils {
     fn add(a, b) {
         return a + b;
@@ -28,7 +28,7 @@ export default function ImportDoc() {
       </div>
 
       <p>Import and use it in your main file:</p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`import "utils.vdx";
 
 class Main {

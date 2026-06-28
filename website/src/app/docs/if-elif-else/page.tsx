@@ -10,7 +10,7 @@ export default function IfDoc() {
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Syntax</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`if (condition) {
     // runs if condition is true
 } elif (condition2) {
@@ -21,7 +21,7 @@ export default function IfDoc() {
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Simple if</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let x = 10;
 if (x > 5) {
     print("x is big");
@@ -29,7 +29,7 @@ if (x > 5) {
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">if / else</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let age = 15;
 if (age >= 18) {
     print("adult");
@@ -39,7 +39,7 @@ if (age >= 18) {
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">if / elif / else</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let score = 85;
 if (score >= 90) {
     print("A");
@@ -59,7 +59,7 @@ if (score >= 90) {
       <p>Conditions are evaluated for truthiness:</p>
       <table className="w-full text-sm border border-white/10 rounded-xl overflow-hidden">
         <thead>
-          <tr className="bg-[#110827]">
+          <tr className="bg-[var(--vdx-surface)]">
             <th className="text-left p-3 text-white">Type</th>
             <th className="text-left p-3 text-white">Truthy</th>
             <th className="text-left p-3 text-white">Falsy</th>

@@ -10,7 +10,7 @@ export default function FsDoc() {
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">fs.readFile(path)</h2>
       <p>Reads a file and returns its contents as a string:</p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let content = fs.readFile("data.txt");
 print(content);`}</code></pre>
       </div>
@@ -20,7 +20,7 @@ print(content);`}</code></pre>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">fs.writeFile(path, content)</h2>
       <p>Writes a string to a file:</p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`fs.writeFile("output.txt", "Hello, World!");
 
 // Write multiple lines
@@ -33,7 +33,7 @@ fs.writeFile("lines.txt", data);`}</code></pre>
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Example: Save and load config</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class Config {
     fn save(filename, settings) {
         // Convert dict to simple format

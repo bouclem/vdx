@@ -15,7 +15,7 @@ export default function TypesDoc() {
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Value types</h2>
       <table className="w-full text-sm border border-white/10 rounded-xl overflow-hidden">
         <thead>
-          <tr className="bg-[#110827]">
+          <tr className="bg-[var(--vdx-surface)]">
             <th className="text-left p-3 text-white">Type</th>
             <th className="text-left p-3 text-white">Example</th>
             <th className="text-left p-3 text-white">Description</th>
@@ -49,7 +49,7 @@ export default function TypesDoc() {
       <p>
         Any number with a decimal point is a <code className="text-[#A78BFA]">float</code>:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let pi = 3.14;
 let half = 0.5;
 let five = 5.0;    // float, not int
@@ -61,7 +61,7 @@ print(pi);         // 3.14`}</code></pre>
         Use <code className="text-[#A78BFA]">true</code> and{" "}
         <code className="text-[#A78BFA]">false</code> directly:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let active = true;
 let done = false;
 if (active) {
@@ -74,7 +74,7 @@ if (active) {
         Add a type after the variable name with <code className="text-[#A78BFA]">:</code> to
         enable runtime type checking:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let count: int = 42;
 let pi: float = 3.14;
 let name: string = "VDX";
@@ -88,7 +88,7 @@ let ok: bool = true;`}</code></pre>
       <p>
         If the value doesn&apos;t match the annotation, VDX throws a runtime error:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let x: int = "hello";
 // error: Type mismatch: expected 'int', got 'string'`}</code></pre>
       </div>
@@ -104,7 +104,7 @@ let ok: bool = true;`}</code></pre>
         <code className="text-[#A78BFA]">float</code> are used together in an operation,
         the result is automatically promoted to <code className="text-[#A78BFA]">float</code>:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`print(10 + 3.5);    // 13.5
 print(2 * 3.14);    // 6.28
 print(7 / 2.0);     // 3.5`}</code></pre>
@@ -113,7 +113,7 @@ print(7 / 2.0);     // 3.5`}</code></pre>
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Truthiness</h2>
       <table className="w-full text-sm border border-white/10 rounded-xl overflow-hidden">
         <thead>
-          <tr className="bg-[#110827]">
+          <tr className="bg-[var(--vdx-surface)]">
             <th className="text-left p-3 text-white">Type</th>
             <th className="text-left p-3 text-white">Truthy</th>
             <th className="text-left p-3 text-white">Falsy</th>

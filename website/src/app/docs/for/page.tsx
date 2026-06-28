@@ -21,12 +21,12 @@ export default function ForDoc() {
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">C-style for loop</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`for (init; condition; update) {
     // body
 }`}</code></pre>
       </div>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     @unsafe for (let i = 0; i < 5; i = i + 1) {
         print("i:", i);
@@ -45,12 +45,12 @@ export default function ForDoc() {
       <p>
         Iterate over each element in an array:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`for (variable in array) {
     // body — variable holds the current element
 }`}</code></pre>
       </div>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     let fruits = ["apple", "banana", "cherry"];
     for (fruit in fruits) {
@@ -64,7 +64,7 @@ export default function ForDoc() {
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Accumulating with for</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     let sum: float = 0.0;
     let values = [1.5, 2.5, 3.0];
@@ -76,7 +76,7 @@ export default function ForDoc() {
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Nested for loops</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     @unsafe for (let i = 0; i < 3; i = i + 1) {
         @unsafe for (let j = 0; j < 3; j = j + 1) {

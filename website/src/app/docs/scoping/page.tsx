@@ -18,7 +18,7 @@ export default function ScopingDoc() {
       </ul>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Inner scopes can read outer variables</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     let x = 10;
 
@@ -29,7 +29,7 @@ export default function ScopingDoc() {
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Inner variables don't leak out</h2>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     if (1) {
         let secret = "hidden";
@@ -44,7 +44,7 @@ export default function ScopingDoc() {
       <p>
         You can reassign an outer variable from an inner scope:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     let count = 0;
 
@@ -64,7 +64,7 @@ export default function ScopingDoc() {
         Variables declared with <code className="text-[#A78BFA]">let</code> inside the loop body
         are recreated each iteration:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     let i = 3;
     @unsafe while (i > 0) {
@@ -80,7 +80,7 @@ export default function ScopingDoc() {
         Function parameters live in the function's scope and do not affect outer variables
         with the same name:
       </p>
-      <div className="bg-[#110827] border border-white/10 rounded-xl p-5 my-4">
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     let x = 100;
 
