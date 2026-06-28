@@ -17,7 +17,7 @@ description: Complete VDX language reference, runtime behavior, internals, and t
 VDX is a class-based interpreted programming language built in C++17. It runs via a tree-walking interpreter (lexer → parser → AST → interpreter). Designed for speed with future focus on AI and game development.
 
 - **Website**: [voidwarelang.xyz](https://voidwarelang.xyz)
-- **Repository**: Voidware/vdx
+- **Repository**: bouclem/vdx
 - **File extension**: `.vdx`
 - **Current version**: 0.0.15
 

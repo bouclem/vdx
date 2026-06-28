@@ -25,7 +25,7 @@ export default function InstallationDoc() {
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Build from Source</h2>
       <p>Requires CMake 3.16+ and a C++17 compiler.</p>
       <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
-        <pre className="text-sm"><code>{`git clone https://github.com/voidware/vdx.git
+        <pre className="text-sm"><code>{`git clone https://github.com/bouclem/vdx.git
 cd vdx
 cmake -B build
 cmake --build build`}</code></pre>

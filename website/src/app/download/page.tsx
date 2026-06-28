@@ -196,6 +196,16 @@ export default function DownloadPage() {
               </svg>
               Windows Installer (.msi)
             </a>
+            <p className="text-xs text-[var(--vdx-muted)] mt-4 leading-relaxed">
+              <strong className="text-zinc-400">Windows SmartScreen warning?</strong> The installer
+              is not digitally signed, so Windows may show a "protected your PC" warning. Click{" "}
+              <span className="text-zinc-400">More info</span> &rarr;{" "}
+              <span className="text-zinc-400">Run anyway</span>. The installer is safe — it was built
+              from the open-source code in the{" "}
+              <a href="https://github.com/bouclem/vdx" className="text-[var(--vdx-accent)] hover:text-white">
+                GitHub repo
+              </a>.
+            </p>
           </div>
         </section>
       )}
