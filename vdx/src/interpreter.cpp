@@ -3,6 +3,7 @@
 #include "parser.h"
 #include "modules/fs.h"
 #include "modules/math.h"
+#include "modules/graph.h"
 #include <iostream>
 #include <thread>
 #include <chrono>
@@ -83,7 +84,7 @@ Value* Interpreter::lookupVar(const std::string& name) {
     return nullptr;
 }
 
-bool Interpreter::isVarConst(const std::string& name) {
+bool Interpreter::isVarConst(const std::string& name) const {
     for (int i = (int)scopes.size() - 1; i >= 0; i--) {
         auto it = scopes[i].find(name);
         if (it != scopes[i].end()) return it->second.isConst;
@@ -138,6 +139,7 @@ void Interpreter::run(const Program& program, const std::string& sourceDir) {
     if (!modulesRegistered) {
         FSModule::registerFS(*this);
         MathModule::registerMath(*this);
+        GraphModule::registerGraph(*this);
         modulesRegistered = true;
     }
 
@@ -241,6 +243,17 @@ void Interpreter::execImport(const ImportStmt* stmt) {
     // Import classes and functions from the imported file
     std::string importDir = importPath.parent_path().string();
 
+    // Process nested imports from the imported file first (depth-first)
+    // Temporarily switch sourceDirectory so relative imports resolve correctly
+    std::string savedSourceDir = sourceDirectory;
+    sourceDirectory = importDir;
+    for (auto& decl : importedProgram->declarations) {
+        if (auto nestedImport = dynamic_cast<ImportStmt*>(decl.get())) {
+            execImport(nestedImport);
+        }
+    }
+    sourceDirectory = savedSourceDir;
+
     // Register imported classes
     for (auto& decl : importedProgram->declarations) {
         auto cls = dynamic_cast<ClassDecl*>(decl.get());
@@ -294,11 +307,6 @@ void Interpreter::execClass(const ClassDecl* cls) {
                 }
                 functions[key] = fn;
             }
-        }
-        // Second pass: execute non-function statements
-        for (auto& node : cls->body) {
-            if (dynamic_cast<FnDecl*>(node.get())) continue;
-            execStatement(node);
         }
     } catch (...) {
         currentClassName = savedClassName;
@@ -562,7 +570,7 @@ void Interpreter::execWait(const WaitStmt* stmt) {
     std::this_thread::sleep_for(std::chrono::milliseconds(dur.intVal));
 }
 
-bool Interpreter::isTruthy(const Value& v) {
+bool Interpreter::isTruthy(const Value& v) const {
     switch (v.type) {
         case Value::BOOL: return v.boolVal;
         case Value::INT: return v.intVal != 0;
@@ -589,7 +597,9 @@ Value Interpreter::execNew(const NewExpr* expr) {
     // Push a scope for the object construction
     pushScope();
     std::string savedClassName = currentClassName;
+    std::shared_ptr<ObjectData> savedObject = currentObject;
     currentClassName = expr->className;
+    currentObject = obj;
 
     try {
         // First pass: register methods
@@ -599,10 +609,12 @@ Value Interpreter::execNew(const NewExpr* expr) {
             }
         }
 
-        // Second pass: execute non-function statements (to set up fields)
+        // Second pass: execute only LetStmt nodes (field initializers)
+        // Skip side-effect statements like print, if, etc.
         for (auto& node : cls->body) {
-            if (dynamic_cast<FnDecl*>(node.get())) continue;
-            execStatement(node);
+            if (auto letStmt = dynamic_cast<LetStmt*>(node.get())) {
+                execLet(letStmt);
+            }
         }
 
         // Capture only variables declared via 'let' in the class body as fields
@@ -617,12 +629,14 @@ Value Interpreter::execNew(const NewExpr* expr) {
         }
     } catch (...) {
         currentClassName = savedClassName;
+        currentObject = savedObject;
         popScope();
         throw;
     }
 
     popScope();
     currentClassName = savedClassName;
+    currentObject = savedObject;
 
     return Value::makeObject(obj);
 }
@@ -739,10 +753,12 @@ Value Interpreter::execCall(const CallExpr* call) {
 
     // Try namespaced lookup first (currentClassName::funcName), then plain name
     const FnDecl* fn = nullptr;
+    bool isMethod = false;
     if (!currentClassName.empty()) {
         auto it = functions.find(currentClassName + "::" + call->name);
         if (it != functions.end()) {
             fn = it->second;
+            isMethod = true;
         }
     }
     if (!fn) {
@@ -765,6 +781,16 @@ Value Interpreter::execCall(const CallExpr* call) {
         argVals.push_back(evalExpr(call->args[i].get()));
     }
 
+    // If calling a method via bare name from within a method, push object fields as scope
+    bool pushedObjScope = false;
+    if (isMethod && currentObject) {
+        pushScope();
+        for (auto& pair : currentObject->fields) {
+            declareVar(pair.first, pair.second, false);
+        }
+        pushedObjScope = true;
+    }
+
     pushScope();
     for (size_t i = 0; i < fn->params.size(); i++) {
         declareVar(fn->params[i], argVals[i], false);
@@ -779,13 +805,24 @@ Value Interpreter::execCall(const CallExpr* call) {
         result = e.value;
     } catch (BreakException&) {
         popScope();
+        if (pushedObjScope) popScope();
         throw std::runtime_error("[VDX] 'break' used outside of a loop at line " + std::to_string(currentLine));
     } catch (ContinueException&) {
         popScope();
+        if (pushedObjScope) popScope();
         throw std::runtime_error("[VDX] 'continue' used outside of a loop at line " + std::to_string(currentLine));
     }
 
+    // Sync object fields back from the object scope
+    if (pushedObjScope && scopes.size() >= 2) {
+        auto& objScope = scopes[scopes.size() - 2];
+        for (auto& pair : objScope) {
+            currentObject->fields[pair.first] = pair.second.value;
+        }
+    }
+
     popScope();
+    if (pushedObjScope) popScope();
     return result;
 }
 
@@ -818,11 +855,10 @@ Value Interpreter::evalExpr(const Expr* expr) {
         return execCall(call);
     }
     if (auto te = dynamic_cast<const ThisExpr*>(expr)) {
-        Value* v = lookupVar(te->field);
-        if (!v) {
-            throw std::runtime_error("[VDX] Undefined field 'this." + te->field + "' at line " + std::to_string(currentLine));
+        if (!currentObject) {
+            throw std::runtime_error("[VDX] 'this' used outside of object context at line " + std::to_string(currentLine));
         }
-        return *v;
+        return Value::makeObject(currentObject);
     }
     if (auto arr = dynamic_cast<const ArrayLiteral*>(expr)) {
         std::vector<Value> elems;
@@ -939,7 +975,9 @@ Value Interpreter::evalExpr(const Expr* expr) {
         }
 
         std::string savedClassName = currentClassName;
+        std::shared_ptr<ObjectData> savedObject = currentObject;
         currentClassName = obj.objVal->className;
+        currentObject = obj.objVal;
 
         Value result = Value::makeVoid();
         try {
@@ -951,10 +989,14 @@ Value Interpreter::evalExpr(const Expr* expr) {
         } catch (BreakException&) {
             popScope(); // param scope
             popScope(); // object fields scope
+            currentClassName = savedClassName;
+            currentObject = savedObject;
             throw std::runtime_error("[VDX] 'break' used outside of a loop at line " + std::to_string(currentLine));
         } catch (ContinueException&) {
             popScope(); // param scope
             popScope(); // object fields scope
+            currentClassName = savedClassName;
+            currentObject = savedObject;
             throw std::runtime_error("[VDX] 'continue' used outside of a loop at line " + std::to_string(currentLine));
         }
 
@@ -970,6 +1012,7 @@ Value Interpreter::evalExpr(const Expr* expr) {
         popScope(); // param scope
         popScope(); // object fields scope
         currentClassName = savedClassName;
+        currentObject = savedObject;
         return result;
     }
     // Modulo: a % b

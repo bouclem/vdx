@@ -4,6 +4,7 @@ const codeLinks: Record<string, string> = {
   "continue": "/docs/continue",
   "const": "/docs/const",
   "math": "/docs/math",
+  "graph": "/docs/graph",
   "let": "/docs/variables",
   "fn": "/docs/functions",
   "func": "/docs/functions",
@@ -41,6 +42,22 @@ function linkifyCode(text: string): string {
 }
 
 const changelog = [
+  {
+    version: "0.1.0",
+    date: "2026-06-29",
+    changes: [
+      "`this` system overhaul — `this` now returns the actual object instead of doing scope lookup, fixing param/field shadowing bugs",
+      "Fixed `this.field = value` parse error — `this` field assignment now works inside methods",
+      "Fixed `this.method()` parse error — `this` method calls now work inside methods",
+      "Fixed method-to-method calls losing object context — calling a bare method name from within another method now properly pushes object fields as scope",
+      "Fixed `new` re-executing side-effect statements (e.g. `print`) on every instantiation — only `let` field initializers are executed now",
+      "Fixed `class` executing non-function statements at declaration time — now only registers methods",
+      "Fixed nested imports not being processed — imported files' own `import` statements are now resolved recursively",
+      "Fixed `math.random(min, max)` rejecting `min == max` — now returns `min` instead of erroring",
+      "C++ quality: `noexcept` on simple getters, `const` correctness on `isVarConst` and `isTruthy`",
+      "`graph` module — new plotting and data visualization module (SVG vector graphics output): `graph.scatter()`, `graph.line()`, `graph.bar()`, `graph.hist()`, `graph.title()`, `graph.xlabel()`, `graph.ylabel()`, `graph.save(path)`, `graph.show()`",
+    ],
+  },
   {
     version: "0.0.15",
     date: "2026-06-28",

@@ -61,9 +61,7 @@ struct CallExpr : Expr {
     std::vector<ExprPtr> args;
 };
 
-struct ThisExpr : Expr {
-    std::string field;
-};
+struct ThisExpr : Expr {};
 
 struct ArrayLiteral : Expr {
     std::vector<ExprPtr> elements;

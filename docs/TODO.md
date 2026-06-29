@@ -134,7 +134,25 @@
 - [x] Improved `extractLine` robustness
 - [x] Removed pointless `pushScope`/`popScope` in `execImport`
 
+## v0.1.0
+- [x] Fixed `this.field = value` parse error (BUG-1)
+- [x] Fixed `this.method()` parse error (BUG-2)
+- [x] Fixed method-to-method calls losing object context (BUG-3)
+- [x] Fixed `this.field` shadowed by params (BUG-4)
+- [x] Fixed `execNew` re-executing side-effect statements (BUG-5)
+- [x] Fixed nested imports not being processed (BUG-6)
+- [x] Fixed `math.random(min, max)` rejecting `min == max` (BUG-12)
+- [x] C++ quality: `noexcept` on simple getters (`toDouble`, `isNumeric`, factory methods, `Lexer::cur`, `Lexer::peek`)
+- [x] C++ quality: `const` correctness on `isVarConst` and `isTruthy`
+- [x] `graph` module: `scatter`, `line`, `bar`, `hist` SVG plots
+- [x] `graph` module: `title`, `xlabel`, `ylabel` plot configuration
+- [x] `graph` module: `save(path)` SVG file export, `show()` open in viewer
+
 ## Future
 - [ ] Self-hosting (rewrite compiler in VDX)
 - [ ] AI-specific features
 - [ ] Game-specific features
+- [ ] `graph` module: multiple series, legends, colors
+- [ ] `graph` module: log-scale axes
+- [ ] `graph` module: PNG export via third-party lib
+- [ ] `graph` module: cross-platform `show()` (macOS/Linux)

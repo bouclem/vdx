@@ -4,7 +4,7 @@ The programming language of **Voidware** ([voidware.xyz](https://voidware.xyz)).
 
 Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future focus on AI and games.
 
-## Version: 0.0.15
+## Version: 0.1.0
 
 ### Supported Features
 - `class` declarations (recommended but optional — top-level statements work without a class wrapper)
@@ -36,6 +36,7 @@ Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future fo
 - **`continue`** — skip to next loop iteration
 - **`const`** — declare immutable constants: `const PI = 3.14;`
 - **`math` module** — math functions: `sqrt`, `pow`, `abs`, `sin`, `cos`, `tan`, `floor`, `ceil`, `round`, `min`, `max`, `random`, `pi`
+- **`graph` module** — SVG plotting: `graph.scatter(xs, ys)`, `graph.line(xs, ys)`, `graph.bar(labels, values)`, `graph.hist(data, [bins])`, `graph.title()`, `graph.xlabel()`, `graph.ylabel()`, `graph.save(path)`, `graph.show()`
 - **`import`** — import other VDX files: `import "utils.vdx";`
 - **`type()`** — get type name as string: `type(42)` returns `"int"`
 - **`input()`** — read user input: `let name = input("Name: ");`

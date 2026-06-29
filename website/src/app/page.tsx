@@ -3,7 +3,7 @@ export default function Home() {
     <div className="max-w-5xl mx-auto px-6">
       {/* Hero */}
       <section className="pt-24 pb-20">
-        <p className="text-[var(--vdx-muted)] text-sm font-mono mb-4">v0.0.15 — by Voidware</p>
+        <p className="text-[var(--vdx-muted)] text-sm font-mono mb-4">v0.1.0 — by Voidware</p>
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-5 tracking-tight leading-tight">
           The VDX Programming Language
         </h1>
@@ -32,13 +32,13 @@ export default function Home() {
         <div className="border border-[var(--vdx-border)] rounded-lg overflow-hidden bg-[var(--vdx-surface)]">
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--vdx-border)]">
             <span className="text-xs text-[var(--vdx-muted)] font-mono">hello.vdx</span>
-            <span className="text-xs text-[var(--vdx-muted)]">VDX 0.0.15</span>
+            <span className="text-xs text-[var(--vdx-muted)]">VDX 0.1.0</span>
           </div>
           <pre className="p-5 text-[13px] leading-relaxed overflow-x-auto text-zinc-300">
             <code>{`print("Hello, VDX!");
 
 let name = "VDX";
-let version = 0.015;
+let version = 0.1;
 print("Welcome to", name, "v", version);
 
 fn max(a, b) {
@@ -82,6 +82,12 @@ for (lang in langs) {
             <h3 className="text-white font-medium mb-1.5">Object-oriented</h3>
             <p className="text-[var(--vdx-muted)] text-sm leading-relaxed">
               Classes, object instantiation with <code className="text-[var(--vdx-accent)]">new</code>, dot access, and methods.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-white font-medium mb-1.5">Data visualization</h3>
+            <p className="text-[var(--vdx-muted)] text-sm leading-relaxed">
+              Built-in <code className="text-[var(--vdx-accent)]">graph</code> module generates SVG plots — scatter, line, bar, and histogram charts.
             </p>
           </div>
           <div>

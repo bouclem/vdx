@@ -1,0 +1,49 @@
+// demo-graph.vdx — Demonstrates the graph module (v0.1.0)
+// Generates SVG plots and saves them to files.
+
+// ── Scatter plot ──
+let xs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+let ys = [2, 4, 5, 4, 5, 7, 8, 9, 10, 12];
+
+graph.title("Scatter Plot Demo");
+graph.xlabel("X Axis");
+graph.ylabel("Y Axis");
+graph.scatter(xs, ys);
+graph.save("scatter.svg");
+print("Scatter plot saved to scatter.svg");
+
+// ── Line chart ──
+let temps = [10, 12, 15, 18, 22, 25, 28, 27, 24, 20, 16, 12];
+let months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
+graph.title("Monthly Temperature");
+graph.xlabel("Month");
+graph.ylabel("Temperature (C)");
+graph.line(months, temps);
+graph.save("temperature.svg");
+print("Line chart saved to temperature.svg");
+
+// ── Bar chart ──
+let labels = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+let values = [23, 45, 12, 67, 34];
+
+graph.title("Daily Sales");
+graph.xlabel("Day");
+graph.ylabel("Units Sold");
+graph.bar(labels, values);
+graph.save("sales.svg");
+print("Bar chart saved to sales.svg");
+
+// ── Histogram ──
+let data = [1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5,
+            6, 6, 6, 6, 7, 7, 7, 8, 8, 9, 10];
+
+graph.title("Data Distribution");
+graph.xlabel("Value");
+graph.ylabel("Frequency");
+graph.hist(data, 10);
+graph.save("histogram.svg");
+print("Histogram saved to histogram.svg");
+
+print("\nAll plots generated successfully!");
+print("Open the .svg files in any web browser to view them.");

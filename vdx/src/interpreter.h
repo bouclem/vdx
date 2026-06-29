@@ -23,22 +23,22 @@ struct Value {
 
     Value() : type(VOID), intVal(0), floatVal(0.0), boolVal(false) {}
     static Value makeString(const std::string& s) { Value v; v.type = STRING; v.strVal = s; return v; }
-    static Value makeInt(int i) { Value v; v.type = INT; v.intVal = i; return v; }
-    static Value makeFloat(double f) { Value v; v.type = FLOAT; v.floatVal = f; return v; }
-    static Value makeBool(bool b) { Value v; v.type = BOOL; v.boolVal = b; return v; }
-    static Value makeVoid() { return Value(); }
+    static Value makeInt(int i) noexcept { Value v; v.type = INT; v.intVal = i; return v; }
+    static Value makeFloat(double f) noexcept { Value v; v.type = FLOAT; v.floatVal = f; return v; }
+    static Value makeBool(bool b) noexcept { Value v; v.type = BOOL; v.boolVal = b; return v; }
+    static Value makeVoid() noexcept { return Value(); }
     static Value makeArray(const std::vector<Value>& elems) { Value v; v.type = ARRAY; v.arrVal = elems; return v; }
     static Value makeObject(std::shared_ptr<ObjectData> obj) { Value v; v.type = OBJECT; v.objVal = obj; return v; }
     static Value makeDict(const std::unordered_map<std::string, Value>& entries) { Value v; v.type = DICT; v.dictVal = entries; return v; }
 
     // Get numeric value as double (for mixed int/float arithmetic)
-    double toDouble() const {
+    double toDouble() const noexcept {
         if (type == FLOAT) return floatVal;
         if (type == INT) return static_cast<double>(intVal);
         return 0.0;
     }
 
-    bool isNumeric() const { return type == INT || type == FLOAT; }
+    bool isNumeric() const noexcept { return type == INT || type == FLOAT; }
 
     std::string toString() const;
 };
@@ -76,6 +76,7 @@ private:
     std::unordered_set<std::string> importedFiles;
     std::string sourceDirectory;
     std::string currentClassName;
+    std::shared_ptr<ObjectData> currentObject;  // Current object for 'this' binding
     std::vector<std::shared_ptr<Program>> importedPrograms;  // Keep imported AST alive
     std::unordered_map<std::string, ModuleFunc> moduleFunctions;  // C++ module functions
     bool modulesRegistered = false;
@@ -83,7 +84,7 @@ private:
     void pushScope();
     void popScope();
     Value* lookupVar(const std::string& name);
-    bool isVarConst(const std::string& name);
+    bool isVarConst(const std::string& name) const;
     void declareVar(const std::string& name, const Value& val, bool isConst = false);
 
     void execClass(const ClassDecl* cls);
@@ -104,6 +105,6 @@ private:
     Value evalExpr(const Expr* expr);
     Value evalBinary(const BinaryExpr* expr);
     Value execNew(const NewExpr* expr);
-    bool isTruthy(const Value& v);
+    bool isTruthy(const Value& v) const;
     void checkType(const std::string& annotation, const Value& val, int line);
 };

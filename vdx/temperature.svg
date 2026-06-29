@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="white"/>
+  <text x="400" y="25" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold">Monthly Temperature</text>
+  <rect x="70" y="50" width="700" height="490" fill="none" stroke="black" stroke-width="1"/>
+  <line x1="70" y1="540" x2="70" y2="545" stroke="black" stroke-width="1"/>
+  <text x="70" y="558" text-anchor="middle" font-family="sans-serif" font-size="11">1.00</text>
+  <line x1="210" y1="540" x2="210" y2="545" stroke="black" stroke-width="1"/>
+  <text x="210" y="558" text-anchor="middle" font-family="sans-serif" font-size="11">3.20</text>
+  <line x1="350" y1="540" x2="350" y2="545" stroke="black" stroke-width="1"/>
+  <text x="350" y="558" text-anchor="middle" font-family="sans-serif" font-size="11">5.40</text>
+  <line x1="490" y1="540" x2="490" y2="545" stroke="black" stroke-width="1"/>
+  <text x="490" y="558" text-anchor="middle" font-family="sans-serif" font-size="11">7.60</text>
+  <line x1="630" y1="540" x2="630" y2="545" stroke="black" stroke-width="1"/>
+  <text x="630" y="558" text-anchor="middle" font-family="sans-serif" font-size="11">9.80</text>
+  <line x1="770" y1="540" x2="770" y2="545" stroke="black" stroke-width="1"/>
+  <text x="770" y="558" text-anchor="middle" font-family="sans-serif" font-size="11">12.00</text>
+  <line x1="65" y1="540" x2="70" y2="540" stroke="black" stroke-width="1"/>
+  <text x="62" y="544" text-anchor="end" font-family="sans-serif" font-size="11">10.00</text>
+  <line x1="65" y1="442" x2="70" y2="442" stroke="black" stroke-width="1"/>
+  <text x="62" y="446" text-anchor="end" font-family="sans-serif" font-size="11">13.60</text>
+  <line x1="65" y1="344" x2="70" y2="344" stroke="black" stroke-width="1"/>
+  <text x="62" y="348" text-anchor="end" font-family="sans-serif" font-size="11">17.20</text>
+  <line x1="65" y1="246" x2="70" y2="246" stroke="black" stroke-width="1"/>
+  <text x="62" y="250" text-anchor="end" font-family="sans-serif" font-size="11">20.80</text>
+  <line x1="65" y1="148" x2="70" y2="148" stroke="black" stroke-width="1"/>
+  <text x="62" y="152" text-anchor="end" font-family="sans-serif" font-size="11">24.40</text>
+  <line x1="65" y1="50" x2="70" y2="50" stroke="black" stroke-width="1"/>
+  <text x="62" y="54" text-anchor="end" font-family="sans-serif" font-size="11">28.00</text>
+  <text x="420" y="585" text-anchor="middle" font-family="sans-serif" font-size="13">Month</text>
+  <text x="15" y="295" text-anchor="middle" transform="rotate(-90 15 295)" font-family="sans-serif" font-size="13">Temperature (C)</text>
+  <polyline points="70,540 133,486 197,404 260,323 324,214 388,132 451,50 515,78 579,159 642,268 706,377 770,486" fill="none" stroke="steelblue" stroke-width="2"/>
+  <circle cx="70" cy="540" r="2.5" fill="steelblue"/>
+  <circle cx="133" cy="486" r="2.5" fill="steelblue"/>
+  <circle cx="197" cy="404" r="2.5" fill="steelblue"/>
+  <circle cx="260" cy="323" r="2.5" fill="steelblue"/>
+  <circle cx="324" cy="214" r="2.5" fill="steelblue"/>
+  <circle cx="388" cy="132" r="2.5" fill="steelblue"/>
+  <circle cx="451" cy="50" r="2.5" fill="steelblue"/>
+  <circle cx="515" cy="78" r="2.5" fill="steelblue"/>
+  <circle cx="579" cy="159" r="2.5" fill="steelblue"/>
+  <circle cx="642" cy="268" r="2.5" fill="steelblue"/>
+  <circle cx="706" cy="377" r="2.5" fill="steelblue"/>
+  <circle cx="770" cy="486" r="2.5" fill="steelblue"/>
+</svg>

@@ -18,6 +18,7 @@ add_executable(vdx
     src/interpreter.cpp
     src/modules/fs.cpp
     src/modules/math.cpp
+    src/modules/graph.cpp
 )
 
 target_include_directories(vdx PRIVATE src)
@@ -28,10 +29,10 @@ install(TARGETS vdx RUNTIME DESTINATION bin)
 set(CPACK_PACKAGE_NAME "VDX")
 set(CPACK_PACKAGE_VENDOR "Voidware")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VDX Programming Language")
-set(CPACK_PACKAGE_VERSION "0.0.15")
+set(CPACK_PACKAGE_VERSION "0.1.0")
 set(CPACK_PACKAGE_VERSION_MAJOR "0")
-set(CPACK_PACKAGE_VERSION_MINOR "0")
-set(CPACK_PACKAGE_VERSION_PATCH "15")
+set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "VDX")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.txt")
 

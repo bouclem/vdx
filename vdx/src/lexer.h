@@ -14,8 +14,8 @@ private:
     int line;
     int col;
 
-    char cur() const;
-    char peek() const;
+    char cur() const noexcept;
+    char peek() const noexcept;
     void advance();
     void skipWhitespace();
     void skipComment();

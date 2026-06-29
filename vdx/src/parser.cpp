@@ -97,6 +97,32 @@ NodePtr Parser::parseStatement() {
             std::to_string(cur().line));
     }
     if (check(TokenType::KW_WAIT)) return parseWaitStmt();
+    // this.field = value; (dot assignment on this)
+    if (check(TokenType::KW_THIS)) {
+        int ln = cur().line;
+        auto expr = parseExpr();
+        if (check(TokenType::EQUALS)) {
+            advance();
+            auto dotExpr = std::dynamic_pointer_cast<DotExpr>(expr);
+            if (!dotExpr || !std::dynamic_pointer_cast<ThisExpr>(dotExpr->object)) {
+                throw std::runtime_error("[VDX] Invalid assignment target at line " + std::to_string(ln));
+            }
+            auto val = parseExpr();
+            expect(TokenType::SEMICOLON, "Expected ';'");
+            auto stmt = std::make_shared<DotAssignStmt>();
+            stmt->line = ln;
+            stmt->object = dotExpr->object;
+            stmt->field = dotExpr->field;
+            stmt->value = val;
+            return stmt;
+        }
+        // Otherwise it's an expression statement (e.g., this.method();)
+        expect(TokenType::SEMICOLON, "Expected ';'");
+        auto stmt = std::make_shared<ExprStmt>();
+        stmt->line = ln;
+        stmt->expr = expr;
+        return stmt;
+    }
     // assignment, index assignment, or dot assignment
     if (check(TokenType::IDENTIFIER) && pos + 1 < tokens.size()) {
         if (tokens[pos + 1].type == TokenType::LBRACKET) {
@@ -121,7 +147,6 @@ NodePtr Parser::parseStatement() {
         } else if (tokens[pos + 1].type == TokenType::DOT) {
             // Could be dot assignment: obj.field = value;
             // Or dot call / dot access as expression statement
-            size_t saved = pos;
             int ln = cur().line;
             // Parse the left side as an expression
             auto expr = parseExpr();
@@ -737,10 +762,8 @@ ExprPtr Parser::parsePrimary() {
     if (check(TokenType::KW_THIS)) {
         int ln = cur().line;
         advance();
-        expect(TokenType::DOT, "Expected '.' after 'this'");
         auto te = std::make_shared<ThisExpr>();
         te->line = ln;
-        te->field = expect(TokenType::IDENTIFIER, "Expected field name after 'this.'").value;
         return te;
     }
     throw std::runtime_error("[VDX] Expected expression at line " +

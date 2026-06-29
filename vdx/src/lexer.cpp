@@ -4,8 +4,8 @@
 
 Lexer::Lexer(const std::string& source) : src(source), pos(0), line(1), col(1) {}
 
-char Lexer::cur() const { return pos < src.size() ? src[pos] : '\0'; }
-char Lexer::peek() const { return (pos + 1) < src.size() ? src[pos + 1] : '\0'; }
+char Lexer::cur() const noexcept { return pos < src.size() ? src[pos] : '\0'; }
+char Lexer::peek() const noexcept { return (pos + 1) < src.size() ? src[pos + 1] : '\0'; }
 
 void Lexer::advance() {
     if (cur() == '\n') { line++; col = 1; } else { col++; }

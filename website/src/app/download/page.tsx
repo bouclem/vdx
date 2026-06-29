@@ -25,9 +25,24 @@ const versions: {
   notes: string[];
 }[] = [
   {
+    version: "0.1.0",
+    date: "2026-06-29",
+    status: "current",
+    notes: [
+      "this system overhaul — this now returns the actual object",
+      "Fixed this.field assignment and this.method() parse errors",
+      "Fixed method-to-method calls losing object context",
+      "Fixed new re-executing side-effect statements on every instantiation",
+      "Fixed nested imports not being processed recursively",
+      "Fixed math.random(min, max) rejecting min == max",
+      "C++ quality: noexcept and const correctness improvements",
+      "New graph module: SVG plots (scatter, line, bar, histogram)",
+    ],
+  },
+  {
     version: "0.0.15",
     date: "2026-06-28",
-    status: "current",
+    status: "old",
     notes: [
       "class{} wrapper is no longer mandatory — top-level statements allowed",
       "Top-level function declarations supported at file scope",

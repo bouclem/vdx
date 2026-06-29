@@ -1,5 +1,24 @@
 # VDX Changelog
 
+## v0.1.0 — 2026-06-29
+- **`this` system overhaul** — `this` now returns the actual object instead of doing scope lookup, fixing param/field shadowing bugs
+- Fixed `this.field = value` parse error — `this` field assignment now works inside methods
+- Fixed `this.method()` parse error — `this` method calls now work inside methods
+- Fixed method-to-method calls losing object context — calling a bare method name from within another method now properly pushes object fields as scope and syncs them back
+- Fixed `execNew` re-executing side-effect statements (e.g. `print`) on every `new` — only `let` field initializers are executed now
+- Fixed `execClass` executing non-function statements at class declaration time — now only registers methods
+- Fixed nested imports not being processed — imported files' own `import` statements are now resolved recursively with correct relative path resolution
+- Fixed `math.random(min, max)` rejecting `min == max` — now returns `min` instead of erroring
+- **C++ quality improvements**: `noexcept` on simple getters (`toDouble`, `isNumeric`, `makeInt`, `makeFloat`, `makeBool`, `makeVoid`, `Lexer::cur`, `Lexer::peek`), `const` correctness on `isVarConst` and `isTruthy`
+- **`graph` module** — new plotting and data visualization module (SVG vector graphics output):
+  - `graph.scatter(xs, ys)` — scatter plot from two numeric arrays
+  - `graph.line(xs, ys)` — line chart connecting points
+  - `graph.bar(labels, values)` — vertical bar chart
+  - `graph.hist(data, [bins])` — histogram with configurable bin count
+  - `graph.title(text)`, `graph.xlabel(text)`, `graph.ylabel(text)` — plot configuration
+  - `graph.save(path)` — save current plot as SVG file
+  - `graph.show()` — open current plot in default viewer
+
 ## v0.0.15 — 2026-06-28
 - `class{}` wrapper is no longer mandatory — top-level statements (print, let, fn, if, while, for, etc.) can now be written directly without a class wrapper
 - Top-level function declarations are now supported: `fn add(a, b) { ... }` at file scope

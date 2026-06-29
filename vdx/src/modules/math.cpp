@@ -199,8 +199,8 @@ Value random_builtin(const std::vector<Value>& args, int line) {
         checkNumeric(args[1], "random");
         int min_val = static_cast<int>(args[0].toDouble());
         int max_val = static_cast<int>(args[1].toDouble());
-        if (max_val <= min_val) {
-            throw std::runtime_error("[VDX] math.random() max must be greater than min");
+        if (max_val < min_val) {
+            throw std::runtime_error("[VDX] math.random() max must be greater than or equal to min");
         }
         std::uniform_int_distribution<int> dist(min_val, max_val);
         return Value::makeInt(dist(rng));
