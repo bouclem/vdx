@@ -3,6 +3,18 @@ export default function Home() {
     <div className="max-w-5xl mx-auto px-6">
       {/* Hero */}
       <section className="pt-24 pb-20">
+        <svg width="56" height="56" viewBox="0 0 64 64" className="mb-6">
+          <defs>
+            <linearGradient id="heroLogo" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stopColor="#A78BFA"/>
+              <stop offset="1" stopColor="#7C3AED"/>
+            </linearGradient>
+          </defs>
+          <rect width="64" height="64" rx="14" fill="#0a0a0a"/>
+          <path d="M18 12 C13 12 12 15 12 20 L12 28 C12 31 10 32 8 32 C10 32 12 33 12 36 L12 44 C12 49 13 52 18 52" fill="none" stroke="url(#heroLogo)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M46 12 C51 12 52 15 52 20 L52 28 C52 31 54 32 56 32 C54 32 52 33 52 36 L52 44 C52 49 51 52 46 52" fill="none" stroke="url(#heroLogo)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M24 20 L32 44 L40 20" fill="none" stroke="url(#heroLogo)" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
         <p className="text-[var(--vdx-muted)] text-sm font-mono mb-4">v0.1.0 — by Voidware</p>
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-5 tracking-tight leading-tight">
           The VDX Programming Language

@@ -1,0 +1,10 @@
+{
+  "name": "VDX — The Voidware Programming Language",
+  "short_name": "VDX",
+  "description": "A fast, safe programming language built for AI and games. By Voidware.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#a78bfa",
+  "icons": []
+}
