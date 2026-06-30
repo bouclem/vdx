@@ -20,8 +20,7 @@ export default function Home() {
           The VDX Programming Language
         </h1>
         <p className="text-lg text-[var(--vdx-muted)] max-w-xl mb-8 leading-relaxed">
-          A fast, safe language built for AI and games. Class-based, interpreted,
-          with built-in safety and a familiar syntax.
+          A fast, safe language built for AI and games. Simple to write, easy to pick up.
         </p>
         <div className="flex gap-3">
           <a
@@ -91,9 +90,9 @@ for (lang in langs) {
             </p>
           </div>
           <div>
-            <h3 className="text-white font-medium mb-1.5">Object-oriented</h3>
+            <h3 className="text-white font-medium mb-1.5">Object-oriented (optional)</h3>
             <p className="text-[var(--vdx-muted)] text-sm leading-relaxed">
-              Classes, object instantiation with <code className="text-[var(--vdx-accent)]">new</code>, dot access, and methods.
+              Classes are optional — use them for object instantiation with <code className="text-[var(--vdx-accent)]">new</code>, dot access, and methods, or write simple top-level code.
             </p>
           </div>
           <div>
@@ -105,7 +104,7 @@ for (lang in langs) {
           <div>
             <h3 className="text-white font-medium mb-1.5">Familiar syntax</h3>
             <p className="text-[var(--vdx-muted)] text-sm leading-relaxed">
-              If you know Java, C++, or Python, you already know VDX. Minimal learning curve.
+              If you know Python, Java, or C++, you already know VDX. Designed to be simple and easy to pick up.
             </p>
           </div>
           <div>
