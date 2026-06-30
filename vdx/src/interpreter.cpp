@@ -15,6 +15,20 @@
 
 // ── Value::toString ──
 
+static std::string escapeString(const std::string& s) {
+    std::string out;
+    out.reserve(s.size());
+    for (char c : s) {
+        if (c == '\\') out += "\\\\";
+        else if (c == '"') out += "\\\"";
+        else if (c == '\n') out += "\\n";
+        else if (c == '\t') out += "\\t";
+        else if (c == '\r') out += "\\r";
+        else out += c;
+    }
+    return out;
+}
+
 std::string Value::toString() const {
     switch (type) {
         case STRING: return strVal;
@@ -33,7 +47,7 @@ std::string Value::toString() const {
             std::string s = "[";
             for (size_t i = 0; i < arrVal.size(); i++) {
                 if (i > 0) s += ", ";
-                if (arrVal[i].type == STRING) s += "\"" + arrVal[i].toString() + "\"";
+                if (arrVal[i].type == STRING) s += "\"" + escapeString(arrVal[i].strVal) + "\"";
                 else s += arrVal[i].toString();
             }
             s += "]";
@@ -49,7 +63,7 @@ std::string Value::toString() const {
             for (const auto& pair : dictVal) {
                 if (i > 0) s += ", ";
                 s += "\"" + pair.first + "\": ";
-                if (pair.second.type == STRING) s += "\"" + pair.second.toString() + "\"";
+                if (pair.second.type == STRING) s += "\"" + escapeString(pair.second.strVal) + "\"";
                 else s += pair.second.toString();
                 i++;
             }
@@ -830,10 +844,22 @@ Value Interpreter::execCall(const CallExpr* call) {
     } catch (ReturnException& e) {
         result = e.value;
     } catch (BreakException&) {
+        if (pushedObjScope && scopes.size() >= 2) {
+            auto& objScope = scopes[scopes.size() - 2];
+            for (auto& pair : objScope) {
+                currentObject->fields[pair.first] = pair.second.value;
+            }
+        }
         popScope();
         if (pushedObjScope) popScope();
         throw std::runtime_error("[VDX] 'break' used outside of a loop at line " + std::to_string(currentLine));
     } catch (ContinueException&) {
+        if (pushedObjScope && scopes.size() >= 2) {
+            auto& objScope = scopes[scopes.size() - 2];
+            for (auto& pair : objScope) {
+                currentObject->fields[pair.first] = pair.second.value;
+            }
+        }
         popScope();
         if (pushedObjScope) popScope();
         throw std::runtime_error("[VDX] 'continue' used outside of a loop at line " + std::to_string(currentLine));

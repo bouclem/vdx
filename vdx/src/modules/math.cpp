@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <random>
+#include <climits>
 
 // ── Math Module Implementation (v0.0.9) ──
 
@@ -106,7 +107,10 @@ Value floor_builtin(const std::vector<Value>& args, int line) {
     if (args[0].type == Value::INT) {
         return Value::makeInt(args[0].intVal);
     }
-    return Value::makeInt(static_cast<int>(std::floor(args[0].toDouble())));
+    double d = std::floor(args[0].toDouble());
+    if (d > static_cast<double>(INT_MAX) || d < static_cast<double>(INT_MIN))
+        throw std::runtime_error("[VDX] math.floor() result out of int range");
+    return Value::makeInt(static_cast<int>(d));
 }
 
 Value ceil_builtin(const std::vector<Value>& args, int line) {
@@ -118,7 +122,10 @@ Value ceil_builtin(const std::vector<Value>& args, int line) {
     if (args[0].type == Value::INT) {
         return Value::makeInt(args[0].intVal);
     }
-    return Value::makeInt(static_cast<int>(std::ceil(args[0].toDouble())));
+    double d = std::ceil(args[0].toDouble());
+    if (d > static_cast<double>(INT_MAX) || d < static_cast<double>(INT_MIN))
+        throw std::runtime_error("[VDX] math.ceil() result out of int range");
+    return Value::makeInt(static_cast<int>(d));
 }
 
 Value round_builtin(const std::vector<Value>& args, int line) {
@@ -130,7 +137,10 @@ Value round_builtin(const std::vector<Value>& args, int line) {
     if (args[0].type == Value::INT) {
         return Value::makeInt(args[0].intVal);
     }
-    return Value::makeInt(static_cast<int>(std::round(args[0].toDouble())));
+    double d = std::round(args[0].toDouble());
+    if (d > static_cast<double>(INT_MAX) || d < static_cast<double>(INT_MIN))
+        throw std::runtime_error("[VDX] math.round() result out of int range");
+    return Value::makeInt(static_cast<int>(d));
 }
 
 Value min_builtin(const std::vector<Value>& args, int line) {

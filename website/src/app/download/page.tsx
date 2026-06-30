@@ -25,9 +25,24 @@ const versions: {
   notes: string[];
 }[] = [
   {
-    version: "0.1.1",
+    version: "0.1.2",
     date: "2026-06-30",
     status: "current",
+    notes: [
+      "Fixed bare method calls losing field mutations on break/continue",
+      "Fixed graph.bar() drawing bars from vMin instead of zero line for mixed values",
+      "Fixed Value::toString not escaping strings in arrays/dicts",
+      "Fixed graph escXml not escaping control characters",
+      "Fixed graph PlotState shared across threads (now thread_local)",
+      "Fixed lexer not handling \\r and \\0 escape sequences",
+      "Fixed math.floor/ceil/round UB on large float-to-int cast",
+      "Fixed graph.show() TOCTOU race with tmpnam_s",
+    ],
+  },
+  {
+    version: "0.1.1",
+    date: "2026-06-30",
+    status: "old",
     notes: [
       "Fixed for-in iterating over array copy instead of live array",
       "Fixed method calls losing field mutations on break/continue",

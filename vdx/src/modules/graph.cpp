@@ -7,6 +7,8 @@
 #include <sstream>
 #include <iomanip>
 #include <cstdlib>
+#include <random>
+#include <filesystem>
 
 // ── Graph Module Implementation (v0.1.0) ──
 // SVG-based plotting for VDX. No external dependencies.
@@ -29,7 +31,10 @@ struct PlotState {
     bool hasPlot = false;
 };
 
-static PlotState g_state;
+// FIXME: PlotState is thread-local but still shared across multiple Interpreter
+// instances on the same thread. A proper fix requires passing per-interpreter
+// state through the ModuleFunc API, which is a larger architectural change.
+static thread_local PlotState g_state;
 
 // ── SVG helpers ──
 
@@ -43,7 +48,16 @@ static std::string escXml(const std::string& s) {
             case '&': out += "&amp;"; break;
             case '"': out += "&quot;"; break;
             case '\'': out += "&apos;"; break;
-            default: out += c; break;
+            case '\n': out += "&#10;"; break;
+            case '\r': out += "&#13;"; break;
+            case '\t': out += "&#9;"; break;
+            default:
+                if (static_cast<unsigned char>(c) < 0x20) {
+                    out += "&#" + std::to_string(static_cast<unsigned char>(c)) + ";";
+                } else {
+                    out += c;
+                }
+                break;
         }
     }
     return out;
@@ -319,19 +333,31 @@ Value bar_builtin(const std::vector<Value>& args, int line) {
     std::ostringstream svg;
     svg << svgHeader(0, n, vMin, vMax);
 
+    // Compute the zero line position in pixel coordinates
+    int zeroY = MARGIN_T + PLOT_H - static_cast<int>((0.0 - vMin) / (vMax - vMin) * PLOT_H);
+
     for (int i = 0; i < n; i++) {
-        double barH = (values[i] - vMin) / (vMax - vMin) * PLOT_H;
+        // Draw bars from the zero line, not from vMin
+        int valY = MARGIN_T + PLOT_H - static_cast<int>((values[i] - vMin) / (vMax - vMin) * PLOT_H);
         int bx = MARGIN_L + static_cast<int>(i * (barWidth + barGap) + barGap / 2);
-        int by = MARGIN_T + PLOT_H - static_cast<int>(barH);
-        int bh = static_cast<int>(barH);
+        int by, bh;
+        if (values[i] >= 0.0) {
+            by = valY;
+            bh = zeroY - valY;
+        } else {
+            by = zeroY;
+            bh = valY - zeroY;
+        }
+        if (bh < 1) bh = 1;
 
         svg << "  <rect x=\"" << bx << "\" y=\"" << by
             << "\" width=\"" << static_cast<int>(barWidth) << "\" height=\"" << bh
             << "\" fill=\"steelblue\" stroke=\"navy\" stroke-width=\"0.5\"/>\n";
 
-        // Value label above bar
+        // Value label above (for positive) or below (for negative) bar
+        int labelY = (values[i] >= 0.0) ? (by - 5) : (by + bh + 12);
         svg << "  <text x=\"" << (bx + static_cast<int>(barWidth) / 2) << "\" y=\""
-            << (by - 5) << "\" text-anchor=\"middle\""
+            << labelY << "\" text-anchor=\"middle\""
             << " font-family=\"sans-serif\" font-size=\"10\">"
             << fmt(values[i]) << "</text>\n";
 
@@ -495,12 +521,10 @@ Value show_builtin(const std::vector<Value>& args, int line) {
     // Write to a temp file and open it
     // TODO: cross-platform — currently Windows-only
 #ifdef _WIN32
-    char tmpBuf[L_tmpnam];
-    if (tmpnam_s(tmpBuf, L_tmpnam) != 0) {
-        throw std::runtime_error("[VDX] graph.show() cannot generate temp file name at line " +
-            std::to_string(line));
-    }
-    std::string tmpPath = std::string(tmpBuf) + ".svg";
+    std::random_device rd;
+    std::uniform_int_distribution<int> dist(0, 999999);
+    std::string tmpPath = (std::filesystem::temp_directory_path() /
+        ("vdx_plot_" + std::to_string(dist(rd)) + ".svg")).string();
 #else
     std::string tmpPath = "/tmp/vdx_plot.svg";
 #endif

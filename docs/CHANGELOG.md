@@ -1,5 +1,15 @@
 # VDX Changelog
 
+## v0.1.2 — 2026-06-30
+- Fixed bare method calls (called by name from within another method) losing object field mutations when `break` or `continue` is thrown — fields are now synced before the error is raised
+- Fixed `graph.bar()` drawing bars from `vMin` instead of the zero line for mixed positive/negative values — bars now correctly start from zero
+- Fixed `Value::toString` not escaping inner quotes in strings inside arrays and dicts — now properly escapes `\`, `"`, `\n`, `\t`, `\r`
+- Fixed `escXml` in graph module not escaping control characters (`\n`, `\r`, `\t`) — now escapes all control chars as numeric XML entities to prevent malformed SVG
+- Fixed graph module `PlotState` being shared across threads — changed to `thread_local` to isolate state per thread
+- Fixed lexer not handling `\r` and `\0` escape sequences in string literals — now correctly produces carriage return and null character
+- Fixed `math.floor()`, `math.ceil()`, `math.round()` causing undefined behavior on very large float values — now checks `INT_MAX`/`INT_MIN` bounds before casting
+- Fixed `graph.show()` using `tmpnam_s` with a TOCTOU race condition — now uses `std::filesystem::temp_directory_path()` with a random filename
+
 ## v0.1.1 — 2026-06-30
 - Fixed `for-in` iterating over a copy of the array instead of the live array — modifications (push/pop/index assign) during iteration are now reflected
 - Fixed `DotCallExpr` method calls losing object field mutations when `break` or `continue` is thrown inside a method — fields are now synced before the error is raised

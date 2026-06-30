@@ -32,6 +32,8 @@ Token Lexer::readString() {
             advance();
             if (cur() == 'n') val += '\n';
             else if (cur() == 't') val += '\t';
+            else if (cur() == 'r') val += '\r';
+            else if (cur() == '0') val += '\0';
             else if (cur() == '\\') val += '\\';
             else if (cur() == '"') val += '"';
             else val += cur();

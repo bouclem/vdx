@@ -43,6 +43,20 @@ function linkifyCode(text: string): string {
 
 const changelog = [
   {
+    version: "0.1.2",
+    date: "2026-06-30",
+    changes: [
+      "Fixed bare method calls losing object field mutations when `break` or `continue` is thrown inside a method",
+      "Fixed `graph.bar()` drawing bars from `vMin` instead of the zero line for mixed positive/negative values",
+      "Fixed `Value::toString` not escaping inner quotes in strings inside arrays and dicts",
+      "Fixed `graph` module `escXml` not escaping control characters — now escapes all control chars as numeric XML entities",
+      "Fixed graph module `PlotState` being shared across threads — changed to `thread_local`",
+      "Fixed lexer not handling `\\r` and `\\0` escape sequences in string literals",
+      "Fixed `math.floor()`, `math.ceil()`, `math.round()` causing undefined behavior on very large float values — now checks bounds",
+      "Fixed `graph.show()` using `tmpnam_s` with a TOCTOU race condition — now uses `std::filesystem::temp_directory_path()` with random filename",
+    ],
+  },
+  {
     version: "0.1.1",
     date: "2026-06-30",
     changes: [
