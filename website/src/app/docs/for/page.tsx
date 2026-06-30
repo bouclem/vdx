@@ -11,7 +11,8 @@ export default function ForDoc() {
       <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-5 my-4">
         <p className="text-yellow-300 font-semibold mb-2">⚠️ Loop Protection</p>
         <p className="text-yellow-200 text-sm">
-          C-style <code className="text-[#A78BFA]">for</code> loops are subject to the same
+          Both C-style <code className="text-[#A78BFA]">for</code> loops and{" "}
+          <code className="text-[#A78BFA]">for-in</code> loops are subject to the same
           loop safety protection as{" "}
           <a href="/docs/while" className="text-[#A78BFA] hover:underline">while</a> loops.
           Use{" "}
@@ -59,8 +60,9 @@ export default function ForDoc() {
 }`}</code></pre>
       </div>
       <p className="text-sm text-gray-400">
-        The for-in loop does not have loop safety protection since it always
-        terminates (bounded by array length).
+        For-in loops are also subject to loop safety protection. If an iteration
+        takes more than 2 seconds, the loop is halted. Use{" "}
+        <code className="text-[#A78BFA]">@unsafe</code> to bypass this for fast iterations.
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Accumulating with for</h2>

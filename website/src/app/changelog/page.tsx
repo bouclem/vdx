@@ -43,6 +43,16 @@ function linkifyCode(text: string): string {
 
 const changelog = [
   {
+    version: "0.1.3",
+    date: "2026-06-30",
+    changes: [
+      "Fixed `for-in` loops lacking loop safety protection — iterations are now timed and blocked if they exceed 2000ms, matching `while` and C-style `for` loop behavior",
+      "`@unsafe` annotation now correctly applies to `for-in` loops to bypass loop safety protection",
+      "`math` module expanded with 16 new functions: `log`, `log2`, `log10`, `exp`, `cbrt`, `asin`, `acos`, `atan`, `atan2`, `degrees`, `radians`, `gcd`, `sign`, `clamp`, `factorial`, `fibonacci`",
+      "`math.fibonacci(n)` uses fast doubling algorithm — O(log n) instead of O(n)",
+    ],
+  },
+  {
     version: "0.1.2",
     date: "2026-06-30",
     changes: [

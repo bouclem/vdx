@@ -1,5 +1,24 @@
 # VDX Changelog
 
+## v0.1.3 — 2026-06-30
+- Fixed `for-in` loops lacking loop safety protection — iterations are now timed and blocked if they exceed 2000ms, matching `while` and C-style `for` loop behavior
+- `@unsafe` annotation now correctly applies to `for-in` loops to bypass loop safety protection
+- **`math` module expanded** with 16 new functions:
+  - `math.log(x)` — natural logarithm
+  - `math.log2(x)` — base-2 logarithm
+  - `math.log10(x)` — base-10 logarithm
+  - `math.exp(x)` — exponential (e^x)
+  - `math.cbrt(x)` — cube root
+  - `math.asin(x)`, `math.acos(x)`, `math.atan(x)` — inverse trigonometry
+  - `math.atan2(y, x)` — 2-argument arctangent
+  - `math.degrees(x)` — radians to degrees
+  - `math.radians(x)` — degrees to radians
+  - `math.gcd(a, b)` — greatest common divisor
+  - `math.sign(x)` — sign function (-1, 0, 1)
+  - `math.clamp(v, min, max)` — clamp value to range
+  - `math.factorial(n)` — factorial (n!)
+  - `math.fibonacci(n)` — Fibonacci number using fast doubling algorithm (O(log n))
+
 ## v0.1.2 — 2026-06-30
 - Fixed bare method calls (called by name from within another method) losing object field mutations when `break` or `continue` is thrown — fields are now synced before the error is raised
 - Fixed `graph.bar()` drawing bars from `vMin` instead of the zero line for mixed positive/negative values — bars now correctly start from zero

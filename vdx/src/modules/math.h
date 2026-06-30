@@ -7,7 +7,7 @@
 namespace MathModule {
     // Initialize and register all math functions with the interpreter
     void registerMath(Interpreter& interp);
-    
+
     // Math functions
     Value sqrt_builtin(const std::vector<Value>& args, int line);
     Value pow_builtin(const std::vector<Value>& args, int line);
@@ -22,4 +22,22 @@ namespace MathModule {
     Value max_builtin(const std::vector<Value>& args, int line);
     Value random_builtin(const std::vector<Value>& args, int line);
     Value pi_builtin(const std::vector<Value>& args, int line);
+
+    // v0.1.3 additions
+    Value log_builtin(const std::vector<Value>& args, int line);
+    Value log2_builtin(const std::vector<Value>& args, int line);
+    Value log10_builtin(const std::vector<Value>& args, int line);
+    Value exp_builtin(const std::vector<Value>& args, int line);
+    Value cbrt_builtin(const std::vector<Value>& args, int line);
+    Value asin_builtin(const std::vector<Value>& args, int line);
+    Value acos_builtin(const std::vector<Value>& args, int line);
+    Value atan_builtin(const std::vector<Value>& args, int line);
+    Value atan2_builtin(const std::vector<Value>& args, int line);
+    Value degrees_builtin(const std::vector<Value>& args, int line);
+    Value radians_builtin(const std::vector<Value>& args, int line);
+    Value gcd_builtin(const std::vector<Value>& args, int line);
+    Value sign_builtin(const std::vector<Value>& args, int line);
+    Value clamp_builtin(const std::vector<Value>& args, int line);
+    Value factorial_builtin(const std::vector<Value>& args, int line);
+    Value fibonacci_builtin(const std::vector<Value>& args, int line);
 }

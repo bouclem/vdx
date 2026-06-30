@@ -557,21 +557,35 @@ void Interpreter::execForIn(const ForInStmt* stmt) {
     }
     if (arrPtr && arrPtr->type == Value::ARRAY) {
         for (size_t i = 0; i < arrPtr->arrVal.size(); i++) {
+            auto iterStart = std::chrono::steady_clock::now();
+
             pushScope();
             declareVar(stmt->varName, arrPtr->arrVal[i], false);
             try {
                 for (auto& s : stmt->body) execStatement(s);
+                popScope();
             } catch (BreakException&) {
                 popScope();
                 return;
             } catch (ContinueException&) {
                 popScope();
-                continue;
             } catch (ReturnException&) {
                 popScope();
                 throw;
             }
-            popScope();
+
+            if (!stmt->isUnsafe) {
+                auto iterEnd = std::chrono::steady_clock::now();
+                auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(iterEnd - iterStart).count();
+                if (elapsed > 2000) {
+                    throw std::runtime_error(
+                        "[VDX] Loop safety: iteration took " + std::to_string(elapsed) +
+                        "ms (> 2000ms maximum).\n"
+                        "      This loop may be infinite or too slow.\n"
+                        "      Use @unsafe before 'for' to disable this protection:\n"
+                        "      @unsafe for (item in arr) { ... }");
+                }
+            }
         }
         return;
     }
@@ -581,21 +595,35 @@ void Interpreter::execForIn(const ForInStmt* stmt) {
         throw std::runtime_error("[VDX] for-in requires an array at line " + std::to_string(currentLine));
     }
     for (size_t i = 0; i < iterable.arrVal.size(); i++) {
+        auto iterStart = std::chrono::steady_clock::now();
+
         pushScope();
         declareVar(stmt->varName, iterable.arrVal[i], false);
         try {
             for (auto& s : stmt->body) execStatement(s);
+            popScope();
         } catch (BreakException&) {
             popScope();
             return;
         } catch (ContinueException&) {
             popScope();
-            continue;
         } catch (ReturnException&) {
             popScope();
             throw;
         }
-        popScope();
+
+        if (!stmt->isUnsafe) {
+            auto iterEnd = std::chrono::steady_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(iterEnd - iterStart).count();
+            if (elapsed > 2000) {
+                throw std::runtime_error(
+                    "[VDX] Loop safety: iteration took " + std::to_string(elapsed) +
+                    "ms (> 2000ms maximum).\n"
+                    "      This loop may be infinite or too slow.\n"
+                    "      Use @unsafe before 'for' to disable this protection:\n"
+                    "      @unsafe for (item in arr) { ... }");
+            }
+        }
     }
 }
 

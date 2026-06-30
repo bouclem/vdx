@@ -25,9 +25,20 @@ const versions: {
   notes: string[];
 }[] = [
   {
-    version: "0.1.2",
+    version: "0.1.3",
     date: "2026-06-30",
     status: "current",
+    notes: [
+      "Fixed for-in loops lacking loop safety protection — now timed like while and for",
+      "@unsafe annotation now works with for-in loops to bypass protection",
+      "New math functions: log, log2, log10, exp, cbrt, asin, acos, atan, atan2, degrees, radians, gcd, sign, clamp, factorial, fibonacci",
+      "math.fibonacci uses fast doubling algorithm (O(log n))",
+    ],
+  },
+  {
+    version: "0.1.2",
+    date: "2026-06-30",
+    status: "old",
     notes: [
       "Fixed bare method calls losing field mutations on break/continue",
       "Fixed graph.bar() drawing bars from vMin instead of zero line for mixed values",

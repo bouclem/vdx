@@ -90,7 +90,10 @@ NodePtr Parser::parseStatement() {
                 forStmt->isUnsafe = true;
                 return node;
             }
-            // for-in doesn't need @unsafe (no speed check), but allow it
+            auto forInStmt = std::dynamic_pointer_cast<ForInStmt>(node);
+            if (forInStmt) {
+                forInStmt->isUnsafe = true;
+            }
             return node;
         }
         throw std::runtime_error("[VDX] @unsafe can only be used before 'while' or 'for' at line " +

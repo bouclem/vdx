@@ -15,7 +15,7 @@ export default function Home() {
           <path d="M46 12 C51 12 52 15 52 20 L52 28 C52 31 54 32 56 32 C54 32 52 33 52 36 L52 44 C52 49 51 52 46 52" fill="none" stroke="url(#heroLogo)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
           <path d="M24 20 L32 44 L40 20" fill="none" stroke="url(#heroLogo)" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
-        <p className="text-[var(--vdx-muted)] text-sm font-mono mb-4">v0.1.2 — by Voidware</p>
+        <p className="text-[var(--vdx-muted)] text-sm font-mono mb-4">v0.1.3 — by Voidware</p>
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-5 tracking-tight leading-tight">
           The VDX Programming Language
         </h1>
@@ -44,7 +44,7 @@ export default function Home() {
         <div className="border border-[var(--vdx-border)] rounded-lg overflow-hidden bg-[var(--vdx-surface)]">
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--vdx-border)]">
             <span className="text-xs text-[var(--vdx-muted)] font-mono">hello.vdx</span>
-            <span className="text-xs text-[var(--vdx-muted)]">VDX 0.1.2</span>
+            <span className="text-xs text-[var(--vdx-muted)]">VDX 0.1.3</span>
           </div>
           <pre className="p-5 text-[13px] leading-relaxed overflow-x-auto text-zinc-300">
             <code>{`print("Hello, VDX!");

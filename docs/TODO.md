@@ -134,6 +134,20 @@
 - [x] Improved `extractLine` robustness
 - [x] Removed pointless `pushScope`/`popScope` in `execImport`
 
+## v0.1.3
+- [x] Fixed `for-in` loops lacking loop safety protection (BUG-5)
+- [x] `@unsafe` annotation now applies to `for-in` loops
+- [x] `math.log(x)`, `math.log2(x)`, `math.log10(x)` — logarithms
+- [x] `math.exp(x)` — exponential
+- [x] `math.cbrt(x)` — cube root
+- [x] `math.asin(x)`, `math.acos(x)`, `math.atan(x)`, `math.atan2(y, x)` — inverse trig
+- [x] `math.degrees(x)`, `math.radians(x)` — angle conversion
+- [x] `math.gcd(a, b)` — greatest common divisor
+- [x] `math.sign(x)` — sign function
+- [x] `math.clamp(v, min, max)` — clamp to range
+- [x] `math.factorial(n)` — factorial
+- [x] `math.fibonacci(n)` — Fibonacci via fast doubling O(log n)
+
 ## v0.1.0
 - [x] Fixed `this.field = value` parse error (BUG-1)
 - [x] Fixed `this.method()` parse error (BUG-2)

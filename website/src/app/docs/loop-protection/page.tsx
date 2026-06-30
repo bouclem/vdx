@@ -5,8 +5,10 @@ export default function LoopProtectionDoc() {
     <DocPage title="Loop Protection">
       <p>
         VDX includes built-in loop safety. By default, every{" "}
-        <code className="text-[#A78BFA]">while</code> loop is monitored at runtime. If a
-        single iteration completes in less than{" "}
+        <code className="text-[#A78BFA]">while</code>,{" "}
+        <code className="text-[#A78BFA]">for</code>, and{" "}
+        <code className="text-[#A78BFA]">for-in</code> loop is monitored at runtime. If a
+        single iteration takes more than{" "}
         <span className="text-white font-semibold">2000 milliseconds (2 seconds)</span>, the
         loop is immediately halted with an error.
       </p>
@@ -20,14 +22,14 @@ export default function LoopProtectionDoc() {
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">How it works</h2>
       <p>
-        Each time a <code className="text-[#A78BFA]">while</code> loop body finishes one
-        iteration, VDX checks how long that iteration took. If it was under 2
-        seconds, the runtime throws an error:
+        Each time a loop body finishes one iteration, VDX checks how long
+        that iteration took. If it took more than 2 seconds, the runtime
+        throws an error:
       </p>
       <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
-        <pre className="text-sm text-red-400 whitespace-pre-wrap">{`[VDX] Loop safety: iteration completed in 0ms (< 2000ms minimum).
-      This loop may be infinite or too fast.
-      Use @unsafe before 'while' to disable this protection:
+        <pre className="text-sm text-red-400 whitespace-pre-wrap">{`[VDX] Loop safety: iteration took 2500ms (> 2000ms maximum).
+      This loop may be infinite or too slow.
+      Use @unsafe before the loop to disable this protection:
       @unsafe while (condition) { ... }`}</pre>
       </div>
 
@@ -35,10 +37,11 @@ export default function LoopProtectionDoc() {
       <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     let i = 0;
-    // This will be BLOCKED — each iteration is instant (< 2s)
+    // This will be BLOCKED — each iteration takes > 2s
     while (i < 100) {
         print(i);
         i = i + 1;
+        wait(2100);
     }
 }`}</code></pre>
       </div>
@@ -47,11 +50,10 @@ export default function LoopProtectionDoc() {
       <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {
     let i = 0;
-    // This is fine — wait(2100) makes each iteration > 2s
+    // This is fine — each iteration completes in < 2s
     while (i < 5) {
         print(i);
         i = i + 1;
-        wait(2100);
     }
 }`}</code></pre>
       </div>

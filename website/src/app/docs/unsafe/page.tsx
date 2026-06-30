@@ -15,18 +15,27 @@ export default function UnsafeDoc() {
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">What is @unsafe?</h2>
       <p>
         <code className="text-[#A78BFA]">@unsafe</code> is an annotation you place directly
-        before a <code className="text-[#A78BFA]">while</code> loop to disable the built-in{" "}
+        before a <code className="text-[#A78BFA]">while</code>, <code className="text-[#A78BFA]">for</code>, or
+        <code className="text-[#A78BFA]">for-in</code> loop to disable the built-in{" "}
         <a href="/docs/loop-protection" className="text-[#A78BFA] hover:underline">loop protection</a>.
       </p>
       <p>
         Without <code className="text-[#A78BFA]">@unsafe</code>, any loop iteration that
-        completes in under 2 seconds is blocked. With{" "}
+        takes more than 2 seconds is blocked. With{" "}
         <code className="text-[#A78BFA]">@unsafe</code>, the loop runs with no speed checks.
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Syntax</h2>
       <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`@unsafe while (condition) {
+    // loop body — no speed protection
+}
+
+@unsafe for (let i = 0; i < n; i = i + 1) {
+    // loop body — no speed protection
+}
+
+@unsafe for (item in array) {
     // loop body — no speed protection
 }`}</code></pre>
       </div>
@@ -65,8 +74,8 @@ export default function UnsafeDoc() {
         <thead>
           <tr className="bg-[var(--vdx-surface)]">
             <th className="text-left p-3 text-white">Protection</th>
-            <th className="text-left p-3 text-white">Normal while</th>
-            <th className="text-left p-3 text-white">@unsafe while</th>
+            <th className="text-left p-3 text-white">Normal loop</th>
+            <th className="text-left p-3 text-white">@unsafe loop</th>
           </tr>
         </thead>
         <tbody>
@@ -81,13 +90,14 @@ export default function UnsafeDoc() {
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Rules</h2>
       <ul className="list-disc list-inside space-y-2 text-sm">
         <li>
-          <code className="text-[#A78BFA]">@unsafe</code> can only be placed directly before{" "}
-          <code className="text-[#A78BFA]">while</code>
+          <code className="text-[#A78BFA]">@unsafe</code> can be placed directly before{" "}
+          <code className="text-[#A78BFA]">while</code>, <code className="text-[#A78BFA]">for</code>, or
+          <code className="text-[#A78BFA]">for-in</code> loops
         </li>
         <li>It cannot be used on other statements (if, fn, let, etc.)</li>
         <li>
-          Using <code className="text-[#A78BFA]">@unsafe</code> before anything other than{" "}
-          <code className="text-[#A78BFA]">while</code> is a compile error
+          Using <code className="text-[#A78BFA]">@unsafe</code> before anything other than
+          a loop is a compile error
         </li>
       </ul>
     </DocPage>

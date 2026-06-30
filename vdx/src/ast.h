@@ -150,6 +150,7 @@ struct ForInStmt : Node {
     std::string varName;
     ExprPtr iterable;
     std::vector<NodePtr> body;
+    bool isUnsafe = false;
 };
 
 // wait(expr);

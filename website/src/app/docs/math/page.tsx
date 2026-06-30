@@ -121,6 +121,102 @@ export default function MathDoc() {
             <td>int</td>
             <td>Random int min to max (inclusive)</td>
           </tr>
+          <tr>
+            <td><code>math.log(x)</code></td>
+            <td>number</td>
+            <td>float</td>
+            <td>Natural logarithm (requires x &gt; 0)</td>
+          </tr>
+          <tr>
+            <td><code>math.log2(x)</code></td>
+            <td>number</td>
+            <td>float</td>
+            <td>Base-2 logarithm</td>
+          </tr>
+          <tr>
+            <td><code>math.log10(x)</code></td>
+            <td>number</td>
+            <td>float</td>
+            <td>Base-10 logarithm</td>
+          </tr>
+          <tr>
+            <td><code>math.exp(x)</code></td>
+            <td>number</td>
+            <td>float</td>
+            <td>Exponential (e^x)</td>
+          </tr>
+          <tr>
+            <td><code>math.cbrt(x)</code></td>
+            <td>number</td>
+            <td>float</td>
+            <td>Cube root (handles negatives)</td>
+          </tr>
+          <tr>
+            <td><code>math.asin(x)</code></td>
+            <td>number [-1, 1]</td>
+            <td>float</td>
+            <td>Inverse sine (radians)</td>
+          </tr>
+          <tr>
+            <td><code>math.acos(x)</code></td>
+            <td>number [-1, 1]</td>
+            <td>float</td>
+            <td>Inverse cosine (radians)</td>
+          </tr>
+          <tr>
+            <td><code>math.atan(x)</code></td>
+            <td>number</td>
+            <td>float</td>
+            <td>Inverse tangent (radians)</td>
+          </tr>
+          <tr>
+            <td><code>math.atan2(y, x)</code></td>
+            <td>number, number</td>
+            <td>float</td>
+            <td>2-argument arctangent (radians)</td>
+          </tr>
+          <tr>
+            <td><code>math.degrees(x)</code></td>
+            <td>radians</td>
+            <td>float</td>
+            <td>Convert radians to degrees</td>
+          </tr>
+          <tr>
+            <td><code>math.radians(x)</code></td>
+            <td>degrees</td>
+            <td>float</td>
+            <td>Convert degrees to radians</td>
+          </tr>
+          <tr>
+            <td><code>math.gcd(a, b)</code></td>
+            <td>int, int</td>
+            <td>int</td>
+            <td>Greatest common divisor</td>
+          </tr>
+          <tr>
+            <td><code>math.sign(x)</code></td>
+            <td>number</td>
+            <td>int</td>
+            <td>Sign function: -1, 0, or 1</td>
+          </tr>
+          <tr>
+            <td><code>math.clamp(v, min, max)</code></td>
+            <td>number, number, number</td>
+            <td>number</td>
+            <td>Clamp value to [min, max] range</td>
+          </tr>
+          <tr>
+            <td><code>math.factorial(n)</code></td>
+            <td>int</td>
+            <td>int</td>
+            <td>Factorial n! (max 12)</td>
+          </tr>
+          <tr>
+            <td><code>math.fibonacci(n)</code></td>
+            <td>int</td>
+            <td>int</td>
+            <td>Fibonacci number F(n) via fast doubling O(log n) (max 46)</td>
+          </tr>
         </tbody>
       </table>
 
@@ -170,6 +266,34 @@ export default function MathDoc() {
     print(math.random(1, 6));   // e.g., 4
 }`}</code></pre>
 
+      <h3>Logarithms and exponentials</h3>
+      <pre><code>{`print(math.log(2.718281828));  // ~1.0 (natural log)
+print(math.log2(8));           // 3.0
+print(math.log10(1000));       // 3.0
+print(math.exp(1));            // ~2.718... (e^1)
+print(math.cbrt(-27));         // -3.0
+`}</code></pre>
+
+      <h3>Inverse trigonometry and angle conversion</h3>
+      <pre><code>{`print(math.asin(1));           // ~1.5708 (pi/2 radians)
+print(math.acos(-1));          // ~3.14159 (pi radians)
+print(math.atan(1));           // ~0.7854 (pi/4 radians)
+print(math.atan2(1, 1));       // ~0.7854 (45 degrees)
+print(math.degrees(math.pi));  // 180.0
+print(math.radians(180));      // ~3.14159
+`}</code></pre>
+
+      <h3>Number theory and utilities</h3>
+      <pre><code>{`print(math.gcd(48, 18));       // 6
+print(math.sign(-42));         // -1
+print(math.sign(0));           // 0
+print(math.clamp(15, 0, 10));  // 10
+print(math.clamp(-5, 0, 10));  // 0
+print(math.factorial(5));      // 120
+print(math.fibonacci(10));     // 55
+print(math.fibonacci(46));     // 1836311903 (max int-safe)
+`}</code></pre>
+
       <h2>Complete example: Dice roller</h2>
       <pre><code>{`class DiceRoller {
     const SIDES = 6;
@@ -190,8 +314,14 @@ export default function MathDoc() {
       <h2>Error handling</h2>
       <ul>
         <li><code>math.sqrt()</code> of a negative number throws an error</li>
+        <li><code>math.log()</code>, <code>math.log2()</code>, <code>math.log10()</code> require a positive number</li>
+        <li><code>math.asin()</code> and <code>math.acos()</code> require argument in range [-1, 1]</li>
+        <li><code>math.clamp()</code> requires min &le; max</li>
+        <li><code>math.factorial()</code> requires non-negative integer (max 12)</li>
+        <li><code>math.fibonacci()</code> requires non-negative integer (max 46)</li>
+        <li><code>math.gcd(0, 0)</code> is undefined and throws an error</li>
         <li><code>math.random(max)</code> requires max &gt;= 0</li>
-        <li><code>math.random(min, max)</code> requires max &gt; min</li>
+        <li><code>math.random(min, max)</code> requires max &gt;= min</li>
         <li>All math functions require numeric arguments</li>
       </ul>
     </DocPage>
