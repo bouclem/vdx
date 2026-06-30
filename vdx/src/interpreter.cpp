@@ -536,6 +536,32 @@ void Interpreter::execFor(const ForStmt* stmt) {
 }
 
 void Interpreter::execForIn(const ForInStmt* stmt) {
+    // Try to get a pointer to the live array variable so modifications during iteration are reflected
+    Value* arrPtr = nullptr;
+    if (auto id = dynamic_cast<const IdentifierExpr*>(stmt->iterable.get())) {
+        arrPtr = lookupVar(id->name);
+    }
+    if (arrPtr && arrPtr->type == Value::ARRAY) {
+        for (size_t i = 0; i < arrPtr->arrVal.size(); i++) {
+            pushScope();
+            declareVar(stmt->varName, arrPtr->arrVal[i], false);
+            try {
+                for (auto& s : stmt->body) execStatement(s);
+            } catch (BreakException&) {
+                popScope();
+                return;
+            } catch (ContinueException&) {
+                popScope();
+                continue;
+            } catch (ReturnException&) {
+                popScope();
+                throw;
+            }
+            popScope();
+        }
+        return;
+    }
+    // Fallback: evaluate the expression (may not be a simple variable)
     Value iterable = evalExpr(stmt->iterable.get());
     if (iterable.type != Value::ARRAY) {
         throw std::runtime_error("[VDX] for-in requires an array at line " + std::to_string(currentLine));
@@ -547,7 +573,7 @@ void Interpreter::execForIn(const ForInStmt* stmt) {
             for (auto& s : stmt->body) execStatement(s);
         } catch (BreakException&) {
             popScope();
-            break;
+            return;
         } catch (ContinueException&) {
             popScope();
             continue;
@@ -987,12 +1013,26 @@ Value Interpreter::evalExpr(const Expr* expr) {
         } catch (ReturnException& e) {
             result = e.value;
         } catch (BreakException&) {
+            // Sync object fields before popping scopes (field mutations must not be lost)
+            if (scopes.size() >= 2) {
+                auto& objScope = scopes[scopes.size() - 2];
+                for (auto& pair : objScope) {
+                    obj.objVal->fields[pair.first] = pair.second.value;
+                }
+            }
             popScope(); // param scope
             popScope(); // object fields scope
             currentClassName = savedClassName;
             currentObject = savedObject;
             throw std::runtime_error("[VDX] 'break' used outside of a loop at line " + std::to_string(currentLine));
         } catch (ContinueException&) {
+            // Sync object fields before popping scopes (field mutations must not be lost)
+            if (scopes.size() >= 2) {
+                auto& objScope = scopes[scopes.size() - 2];
+                for (auto& pair : objScope) {
+                    obj.objVal->fields[pair.first] = pair.second.value;
+                }
+            }
             popScope(); // param scope
             popScope(); // object fields scope
             currentClassName = savedClassName;
@@ -1058,14 +1098,23 @@ Value Interpreter::evalExpr(const Expr* expr) {
 
         // Update the variable
         if (original.type == Value::INT) {
-            *var = Value::makeInt(static_cast<int64_t>(newVal));
+            int64_t result = static_cast<int64_t>(original.intVal) + static_cast<int64_t>(delta);
+            if (result > INT_MAX || result < INT_MIN)
+                throw std::runtime_error("[VDX] Integer overflow in increment/decrement at line " + std::to_string(currentLine));
+            *var = Value::makeInt(result);
         } else {
             *var = Value::makeFloat(newVal);
         }
 
         // Return original value for postfix, new value for prefix
         if (incDec->isPrefix) {
-            return (original.type == Value::INT) ? Value::makeInt(static_cast<int64_t>(newVal)) : Value::makeFloat(newVal);
+            if (original.type == Value::INT) {
+                int64_t result = static_cast<int64_t>(original.intVal) + static_cast<int64_t>(delta);
+                if (result > INT_MAX || result < INT_MIN)
+                    throw std::runtime_error("[VDX] Integer overflow in increment/decrement at line " + std::to_string(currentLine));
+                return Value::makeInt(result);
+            }
+            return Value::makeFloat(newVal);
         } else {
             return original;
         }

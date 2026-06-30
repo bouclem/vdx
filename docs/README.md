@@ -4,7 +4,7 @@ The programming language of **Voidware** ([voidware.xyz](https://voidware.xyz)).
 
 Inspired by Java, C++, Rust, Python, and C# — built to be fast, with future focus on AI and games.
 
-## Version: 0.1.0
+## Version: 0.1.1
 
 ### Supported Features
 - `class` declarations (recommended but optional — top-level statements work without a class wrapper)

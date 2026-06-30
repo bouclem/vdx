@@ -305,9 +305,12 @@ Value bar_builtin(const std::vector<Value>& args, int line) {
             std::to_string(line));
     }
 
-    double vMin = 0.0; // bars start from 0
+    double vMin = *std::min_element(values.begin(), values.end());
     double vMax = *std::max_element(values.begin(), values.end());
-    if (vMax == vMin) vMax = 1.0;
+    // Ensure bars start from 0 when all values are positive
+    if (vMin > 0.0) vMin = 0.0;
+    if (vMax < 0.0) vMax = 0.0;
+    if (vMax == vMin) vMax = vMin + 1.0;
 
     int n = static_cast<int>(values.size());
     double barWidth = static_cast<double>(PLOT_W) / n * 0.7;

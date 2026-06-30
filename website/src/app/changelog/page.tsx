@@ -43,6 +43,17 @@ function linkifyCode(text: string): string {
 
 const changelog = [
   {
+    version: "0.1.1",
+    date: "2026-06-30",
+    changes: [
+      "Fixed `for-in` iterating over a copy of the array instead of the live array — modifications during iteration are now reflected",
+      "Fixed `DotCallExpr` method calls losing object field mutations when `break` or `continue` is thrown inside a method",
+      "Fixed `graph.bar()` rendering incorrectly with all-negative values — now computes proper axis range from data",
+      "Fixed integer overflow in `++`/`--` operators not being detected — now throws runtime error matching `+`/`-`/`*` checks",
+      "Fixed empty dict literal `{}` causing a parse error — now correctly produces an empty dictionary",
+    ],
+  },
+  {
     version: "0.1.0",
     date: "2026-06-29",
     changes: [

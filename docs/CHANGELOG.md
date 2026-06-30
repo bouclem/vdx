@@ -1,5 +1,12 @@
 # VDX Changelog
 
+## v0.1.1 — 2026-06-30
+- Fixed `for-in` iterating over a copy of the array instead of the live array — modifications (push/pop/index assign) during iteration are now reflected
+- Fixed `DotCallExpr` method calls losing object field mutations when `break` or `continue` is thrown inside a method — fields are now synced before the error is raised
+- Fixed `graph.bar()` rendering incorrectly with all-negative values — now computes proper vMin from data and clamps to 0
+- Fixed integer overflow in `++`/`--` operators not being detected — now throws runtime error matching `+`/`-`/`*` overflow checks
+- Fixed empty dict literal `{}` causing a parse error — now correctly produces an empty dictionary
+
 ## v0.1.0 — 2026-06-29
 - **`this` system overhaul** — `this` now returns the actual object instead of doing scope lookup, fixing param/field shadowing bugs
 - Fixed `this.field = value` parse error — `this` field assignment now works inside methods

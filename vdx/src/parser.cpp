@@ -689,12 +689,19 @@ ExprPtr Parser::parsePrimary() {
         expect(TokenType::RBRACKET, "Expected ']'");
         return arr;
     }
-    // Dictionary literal: {"key": expr, "key2": expr2, ...}
-    if (check(TokenType::LBRACE) && pos + 1 < tokens.size() && tokens[pos + 1].type == TokenType::STRING) {
+    // Dictionary literal: {"key": expr, "key2": expr2, ...} or empty {}
+    if (check(TokenType::LBRACE) && pos + 1 < tokens.size() &&
+        (tokens[pos + 1].type == TokenType::STRING || tokens[pos + 1].type == TokenType::RBRACE)) {
         int ln = cur().line;
         advance(); // skip '{'
         auto dict = std::make_shared<DictLiteral>();
         dict->line = ln;
+        
+        // Handle empty dict {}
+        if (check(TokenType::RBRACE)) {
+            advance();
+            return dict;
+        }
         
         // Parse at least one entry
         do {

@@ -108,6 +108,14 @@ export default function RootLayout({
               <a href="/changelog" className="text-[var(--vdx-muted)] hover:text-white">Changelog</a>
               <a href="/download" className="text-[var(--vdx-muted)] hover:text-white">Download</a>
               <a
+                href="https://discord.gg/7KAkwnrkVW"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--vdx-muted)] hover:text-white"
+              >
+                Discord
+              </a>
+              <a
                 href="/download"
                 className="border border-[var(--vdx-border)] hover:border-[var(--vdx-accent)] text-white px-3.5 py-1.5 rounded-md text-sm font-medium transition-colors"
               >
@@ -122,6 +130,7 @@ export default function RootLayout({
             <span>© 2026 Voidware</span>
             <div className="flex items-center gap-6">
               <a href="/changelog" className="hover:text-white">Changelog</a>
+              <a href="https://discord.gg/7KAkwnrkVW" target="_blank" rel="noopener noreferrer" className="hover:text-white">Discord</a>
               <a href="https://github.com/bouclem/vdx" className="hover:text-white">GitHub</a>
               <a href="https://voidware.xyz" className="hover:text-white">voidware.xyz</a>
             </div>

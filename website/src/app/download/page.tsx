@@ -25,9 +25,21 @@ const versions: {
   notes: string[];
 }[] = [
   {
+    version: "0.1.1",
+    date: "2026-06-30",
+    status: "current",
+    notes: [
+      "Fixed for-in iterating over array copy instead of live array",
+      "Fixed method calls losing field mutations on break/continue",
+      "Fixed graph.bar() with all-negative values",
+      "Fixed integer overflow in ++/-- operators",
+      "Fixed empty dict {} parse error",
+    ],
+  },
+  {
     version: "0.1.0",
     date: "2026-06-29",
-    status: "current",
+    status: "old",
     notes: [
       "this system overhaul — this now returns the actual object",
       "Fixed this.field assignment and this.method() parse errors",
