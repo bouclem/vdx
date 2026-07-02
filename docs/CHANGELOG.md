@@ -1,5 +1,29 @@
 # VDX Changelog
 
+## v0.1.4 — 2026-07-02
+- **Performance**: optimized `math.min()` and `math.max()` to single-pass (track min/max and float flag in one loop instead of two)
+- **`math` module expanded** with 14 new functions:
+  - `math.isPrime(n)` — primality test using 6k±1 trial division (O(√n))
+  - `math.primes(n)` — Sieve of Eratosthenes, returns all primes ≤ n
+  - `math.primeCount(n)` — count primes ≤ n using sieve
+  - `math.sort(arr)` — sort array ascending (returns sorted copy)
+  - `math.sortDesc(arr)` — sort array descending (returns sorted copy)
+  - `math.count(arr, value)` — count occurrences of value in array
+  - `math.lcm(a, b)` — least common multiple
+  - `math.sum(arr)` — sum of numeric array elements
+  - `math.mean(arr)` — arithmetic mean of array
+  - `math.comb(n, k)` — binomial coefficient C(n, k)
+  - `math.hypot(x, y)` — overflow-safe hypotenuse
+  - `math.lerp(a, b, t)` — linear interpolation
+  - `math.e` — Euler's number constant
+  - `math.tau` — 2π constant
+- **`graph` module expanded** with 4 new functions:
+  - `graph.area(xs, ys)` — area chart (line + filled region below)
+  - `graph.grid(bool)` — toggle grid lines on/off for the next plot
+  - `graph.color(name)` — set primary color for the next plot (e.g., `"red"`, `"#ff0000"`)
+  - `graph.legend(labels)` — add a legend to the next plot
+- All existing chart types (`scatter`, `line`, `bar`, `hist`) now respect `graph.color()` instead of hardcoded `steelblue`
+
 ## v0.1.3 — 2026-06-30
 - Fixed `for-in` loops lacking loop safety protection — iterations are now timed and blocked if they exceed 2000ms, matching `while` and C-style `for` loop behavior
 - `@unsafe` annotation now correctly applies to `for-in` loops to bypass loop safety protection

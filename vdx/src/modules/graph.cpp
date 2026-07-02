@@ -28,6 +28,10 @@ struct PlotState {
     std::string title;
     std::string xlabel;
     std::string ylabel;
+    std::string plotColor = "steelblue";
+    std::string plotStroke = "navy";
+    std::vector<std::string> legendLabels;
+    bool showGrid = false;
     bool hasPlot = false;
 };
 
@@ -128,6 +132,22 @@ static std::string svgHeader(double xMin, double xMax, double yMin, double yMax)
             << fmt(yVal) << "</text>\n";
     }
 
+    // Grid lines
+    if (g_state.showGrid) {
+        for (int i = 1; i < 5; i++) {
+            int px = MARGIN_L + PLOT_W * i / 5;
+            svg << "  <line x1=\"" << px << "\" y1=\"" << MARGIN_T
+                << "\" x2=\"" << px << "\" y2=\"" << (MARGIN_T + PLOT_H)
+                << "\" stroke=\"#e0e0e0\" stroke-width=\"1\" stroke-dasharray=\"4,2\"/>\n";
+        }
+        for (int i = 1; i < 5; i++) {
+            int py = MARGIN_T + PLOT_H - PLOT_H * i / 5;
+            svg << "  <line x1=\"" << MARGIN_L << "\" y1=\"" << py
+                << "\" x2=\"" << (MARGIN_L + PLOT_W) << "\" y2=\"" << py
+                << "\" stroke=\"#e0e0e0\" stroke-width=\"1\" stroke-dasharray=\"4,2\"/>\n";
+        }
+    }
+
     // X label
     if (!g_state.xlabel.empty()) {
         svg << "  <text x=\"" << (MARGIN_L + PLOT_W / 2) << "\" y=\""
@@ -143,6 +163,26 @@ static std::string svgHeader(double xMin, double xMax, double yMin, double yMax)
             << (MARGIN_T + PLOT_H / 2) << ")\""
             << " font-family=\"sans-serif\" font-size=\"13\">"
             << escXml(g_state.ylabel) << "</text>\n";
+    }
+
+    // Legend
+    if (!g_state.legendLabels.empty()) {
+        int legendX = MARGIN_L + PLOT_W - 120;
+        int legendY = MARGIN_T + 10;
+        svg << "  <rect x=\"" << legendX << "\" y=\"" << legendY
+            << "\" width=\"110\" height=\"" << (static_cast<int>(g_state.legendLabels.size()) * 18 + 8)
+            << "\" fill=\"white\" fill-opacity=\"0.8\" stroke=\"#ccc\" stroke-width=\"1\"/>\n";
+        for (size_t i = 0; i < g_state.legendLabels.size(); i++) {
+            int ly = legendY + 14 + static_cast<int>(i) * 18;
+            svg << "  <rect x=\"" << (legendX + 5) << "\" y=\"" << (ly - 8)
+                << "\" width=\"10\" height=\"10\" fill=\"" << g_state.plotColor
+                << "\" stroke=\"" << g_state.plotStroke << "\" stroke-width=\"0.5\"/>\n";
+            std::string lbl = g_state.legendLabels[i];
+            if (lbl.size() > 14) lbl = lbl.substr(0, 14);
+            svg << "  <text x=\"" << (legendX + 20) << "\" y=\"" << ly
+                << "\" font-family=\"sans-serif\" font-size=\"11\">"
+                << escXml(lbl) << "</text>\n";
+        }
     }
 
     return svg.str();
@@ -234,7 +274,8 @@ Value scatter_builtin(const std::vector<Value>& args, int line) {
         int px = mapX(xs[i], xMin, xMax);
         int py = mapY(ys[i], yMin, yMax);
         svg << "  <circle cx=\"" << px << "\" cy=\"" << py
-            << "\" r=\"3\" fill=\"steelblue\" stroke=\"navy\" stroke-width=\"0.5\"/>\n";
+            << "\" r=\"3\" fill=\"" << g_state.plotColor
+            << "\" stroke=\"" << g_state.plotStroke << "\" stroke-width=\"0.5\"/>\n";
     }
 
     svg << svgFooter();
@@ -283,14 +324,15 @@ Value line_builtin(const std::vector<Value>& args, int line) {
     }
 
     svg << "  <polyline points=\"" << pts.str()
-        << "\" fill=\"none\" stroke=\"steelblue\" stroke-width=\"2\"/>\n";
+        << "\" fill=\"none\" stroke=\"" << g_state.plotColor
+        << "\" stroke-width=\"2\"/>\n";
 
     // Also draw points
     for (size_t i = 0; i < xs.size(); i++) {
         int px = mapX(xs[i], xMin, xMax);
         int py = mapY(ys[i], yMin, yMax);
         svg << "  <circle cx=\"" << px << "\" cy=\"" << py
-            << "\" r=\"2.5\" fill=\"steelblue\"/>\n";
+            << "\" r=\"2.5\" fill=\"" << g_state.plotColor << "\"/>\n";
     }
 
     svg << svgFooter();
@@ -352,7 +394,8 @@ Value bar_builtin(const std::vector<Value>& args, int line) {
 
         svg << "  <rect x=\"" << bx << "\" y=\"" << by
             << "\" width=\"" << static_cast<int>(barWidth) << "\" height=\"" << bh
-            << "\" fill=\"steelblue\" stroke=\"navy\" stroke-width=\"0.5\"/>\n";
+            << "\" fill=\"" << g_state.plotColor
+            << "\" stroke=\"" << g_state.plotStroke << "\" stroke-width=\"0.5\"/>\n";
 
         // Value label above (for positive) or below (for negative) bar
         int labelY = (values[i] >= 0.0) ? (by - 5) : (by + bh + 12);
@@ -432,8 +475,68 @@ Value hist_builtin(const std::vector<Value>& args, int line) {
 
         svg << "  <rect x=\"" << bx << "\" y=\"" << by
             << "\" width=\"" << static_cast<int>(barW) << "\" height=\"" << bh
-            << "\" fill=\"steelblue\" stroke=\"navy\" stroke-width=\"0.5\"/>\n";
+            << "\" fill=\"" << g_state.plotColor
+            << "\" stroke=\"" << g_state.plotStroke << "\" stroke-width=\"0.5\"/>\n";
     }
+
+    svg << svgFooter();
+    g_state.svg = svg.str();
+    g_state.hasPlot = true;
+    return Value::makeVoid();
+}
+
+// ── Area chart ──
+Value area_builtin(const std::vector<Value>& args, int line) {
+    if (args.size() != 2) {
+        throw std::runtime_error("[VDX] graph.area() expects 2 arguments (xs, ys) at line " +
+            std::to_string(line));
+    }
+    checkNumericArray(args[0], "area", line);
+    checkNumericArray(args[1], "area", line);
+
+    if (args[0].arrVal.size() != args[1].arrVal.size()) {
+        throw std::runtime_error("[VDX] graph.area() xs and ys must have the same length at line " +
+            std::to_string(line));
+    }
+
+    auto xs = toDoubles(args[0]);
+    auto ys = toDoubles(args[1]);
+
+    if (xs.empty()) {
+        throw std::runtime_error("[VDX] graph.area() arrays must not be empty at line " +
+            std::to_string(line));
+    }
+
+    auto [xMin, xMax] = minMax(xs);
+    auto [yMin, yMax] = minMax(ys);
+    if (xMax == xMin) xMax = xMin + 1.0;
+    // Ensure area starts from 0 baseline
+    if (yMin > 0.0) yMin = 0.0;
+    if (yMax < 0.0) yMax = 0.0;
+    if (yMax == yMin) yMax = yMin + 1.0;
+
+    std::ostringstream svg;
+    svg << svgHeader(xMin, xMax, yMin, yMax);
+
+    // Build polygon: line points + baseline closure
+    std::ostringstream pts;
+    int zeroY = mapY(0.0, yMin, yMax);
+    for (size_t i = 0; i < xs.size(); i++) {
+        int px = mapX(xs[i], xMin, xMax);
+        int py = mapY(ys[i], yMin, yMax);
+        if (i > 0) pts << " ";
+        pts << px << "," << py;
+    }
+    // Close polygon to baseline
+    int lastX = mapX(xs[xs.size() - 1], xMin, xMax);
+    int firstX = mapX(xs[0], xMin, xMax);
+    pts << " " << lastX << "," << zeroY;
+    pts << " " << firstX << "," << zeroY;
+
+    svg << "  <polygon points=\"" << pts.str()
+        << "\" fill=\"" << g_state.plotColor
+        << "\" fill-opacity=\"0.3\" stroke=\"" << g_state.plotColor
+        << "\" stroke-width=\"2\"/>\n";
 
     svg << svgFooter();
     g_state.svg = svg.str();
@@ -480,6 +583,59 @@ Value ylabel_builtin(const std::vector<Value>& args, int line) {
             std::to_string(line));
     }
     g_state.ylabel = args[0].strVal;
+    return Value::makeVoid();
+}
+
+// ── v0.1.4 plot configuration ──
+
+Value grid_builtin(const std::vector<Value>& args, int line) {
+    if (args.size() != 1) {
+        throw std::runtime_error("[VDX] graph.grid() expects 1 argument (bool) at line " +
+            std::to_string(line));
+    }
+    if (args[0].type != Value::BOOL) {
+        throw std::runtime_error("[VDX] graph.grid() expects a boolean at line " +
+            std::to_string(line));
+    }
+    g_state.showGrid = args[0].boolVal;
+    return Value::makeVoid();
+}
+
+Value color_builtin(const std::vector<Value>& args, int line) {
+    if (args.size() != 1) {
+        throw std::runtime_error("[VDX] graph.color() expects 1 argument (color name or hex) at line " +
+            std::to_string(line));
+    }
+    if (args[0].type != Value::STRING) {
+        throw std::runtime_error("[VDX] graph.color() expects a string at line " +
+            std::to_string(line));
+    }
+    g_state.plotColor = args[0].strVal;
+    // Auto-derive a darker stroke color
+    if (args[0].strVal == "steelblue") g_state.plotStroke = "navy";
+    else if (args[0].strVal == "red") g_state.plotStroke = "darkred";
+    else if (args[0].strVal == "green") g_state.plotStroke = "darkgreen";
+    else if (args[0].strVal == "blue") g_state.plotStroke = "darkblue";
+    else if (args[0].strVal == "orange") g_state.plotStroke = "darkorange";
+    else if (args[0].strVal == "purple") g_state.plotStroke = "indigo";
+    else if (args[0].strVal == "black") g_state.plotStroke = "black";
+    else g_state.plotStroke = args[0].strVal;
+    return Value::makeVoid();
+}
+
+Value legend_builtin(const std::vector<Value>& args, int line) {
+    if (args.size() != 1) {
+        throw std::runtime_error("[VDX] graph.legend() expects 1 argument (array of labels) at line " +
+            std::to_string(line));
+    }
+    if (args[0].type != Value::ARRAY) {
+        throw std::runtime_error("[VDX] graph.legend() expects an array of strings at line " +
+            std::to_string(line));
+    }
+    g_state.legendLabels.clear();
+    for (const auto& v : args[0].arrVal) {
+        g_state.legendLabels.push_back(v.toString());
+    }
     return Value::makeVoid();
 }
 
@@ -554,9 +710,13 @@ void registerGraph(Interpreter& interp) {
     interp.registerModuleFunc("graph.line", line_builtin);
     interp.registerModuleFunc("graph.bar", bar_builtin);
     interp.registerModuleFunc("graph.hist", hist_builtin);
+    interp.registerModuleFunc("graph.area", area_builtin);
     interp.registerModuleFunc("graph.title", title_builtin);
     interp.registerModuleFunc("graph.xlabel", xlabel_builtin);
     interp.registerModuleFunc("graph.ylabel", ylabel_builtin);
+    interp.registerModuleFunc("graph.grid", grid_builtin);
+    interp.registerModuleFunc("graph.color", color_builtin);
+    interp.registerModuleFunc("graph.legend", legend_builtin);
     interp.registerModuleFunc("graph.show", show_builtin);
     interp.registerModuleFunc("graph.save", save_builtin);
 }

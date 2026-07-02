@@ -149,19 +149,15 @@ Value min_builtin(const std::vector<Value>& args, int line) {
     if (args.size() < 1) {
         throw std::runtime_error("[VDX] math.min() expects at least 1 argument");
     }
+    double min_val = args[0].toDouble();
+    bool anyFloat = false;
     for (size_t i = 0; i < args.size(); i++) {
         checkNumeric(args[i], "min");
+        if (args[i].type == Value::FLOAT) anyFloat = true;
+        double v = args[i].toDouble();
+        if (v < min_val) min_val = v;
     }
-    double min_val = args[0].toDouble();
-    for (size_t i = 1; i < args.size(); i++) {
-        min_val = std::min(min_val, args[i].toDouble());
-    }
-    // Return int if all args are int
-    for (size_t i = 0; i < args.size(); i++) {
-        if (args[i].type == Value::FLOAT) {
-            return Value::makeFloat(min_val);
-        }
-    }
+    if (anyFloat) return Value::makeFloat(min_val);
     return Value::makeInt(static_cast<int>(min_val));
 }
 
@@ -170,19 +166,15 @@ Value max_builtin(const std::vector<Value>& args, int line) {
     if (args.size() < 1) {
         throw std::runtime_error("[VDX] math.max() expects at least 1 argument");
     }
+    double max_val = args[0].toDouble();
+    bool anyFloat = false;
     for (size_t i = 0; i < args.size(); i++) {
         checkNumeric(args[i], "max");
+        if (args[i].type == Value::FLOAT) anyFloat = true;
+        double v = args[i].toDouble();
+        if (v > max_val) max_val = v;
     }
-    double max_val = args[0].toDouble();
-    for (size_t i = 1; i < args.size(); i++) {
-        max_val = std::max(max_val, args[i].toDouble());
-    }
-    // Return int if all args are int
-    for (size_t i = 0; i < args.size(); i++) {
-        if (args[i].type == Value::FLOAT) {
-            return Value::makeFloat(max_val);
-        }
-    }
+    if (anyFloat) return Value::makeFloat(max_val);
     return Value::makeInt(static_cast<int>(max_val));
 }
 
@@ -457,6 +449,253 @@ Value fibonacci_builtin(const std::vector<Value>& args, int line) {
     return Value::makeInt(static_cast<int>(result));
 }
 
+// ── v0.1.4 additions ──
+
+Value isPrime_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
+    if (args.size() != 1) {
+        throw std::runtime_error("[VDX] math.isPrime() expects 1 argument");
+    }
+    checkNumeric(args[0], "isPrime");
+    long long n = static_cast<long long>(args[0].toDouble());
+    if (n < 2) return Value::makeBool(false);
+    if (n < 4) return Value::makeBool(true);
+    if (n % 2 == 0) return Value::makeBool(false);
+    if (n % 3 == 0) return Value::makeBool(false);
+    for (long long i = 5; i * i <= n; i += 6) {
+        if (n % i == 0 || n % (i + 2) == 0) return Value::makeBool(false);
+    }
+    return Value::makeBool(true);
+}
+
+Value primes_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
+    if (args.size() != 1) {
+        throw std::runtime_error("[VDX] math.primes() expects 1 argument");
+    }
+    checkNumeric(args[0], "primes");
+    long long n = static_cast<long long>(args[0].toDouble());
+    if (n < 2) return Value::makeArray({});
+
+    std::vector<bool> sieve(static_cast<size_t>(n + 1), true);
+    sieve[0] = sieve[1] = false;
+    for (long long i = 2; i * i <= n; i++) {
+        if (sieve[static_cast<size_t>(i)]) {
+            for (long long j = i * i; j <= n; j += i) {
+                sieve[static_cast<size_t>(j)] = false;
+            }
+        }
+    }
+
+    std::vector<Value> result;
+    for (long long i = 2; i <= n; i++) {
+        if (sieve[static_cast<size_t>(i)]) {
+            result.push_back(Value::makeInt(static_cast<int>(i)));
+        }
+    }
+    return Value::makeArray(result);
+}
+
+Value primeCount_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
+    if (args.size() != 1) {
+        throw std::runtime_error("[VDX] math.primeCount() expects 1 argument");
+    }
+    checkNumeric(args[0], "primeCount");
+    long long n = static_cast<long long>(args[0].toDouble());
+    if (n < 2) return Value::makeInt(0);
+
+    std::vector<bool> sieve(static_cast<size_t>(n + 1), true);
+    sieve[0] = sieve[1] = false;
+    int count = 0;
+    for (long long i = 2; i * i <= n; i++) {
+        if (sieve[static_cast<size_t>(i)]) {
+            for (long long j = i * i; j <= n; j += i) {
+                sieve[static_cast<size_t>(j)] = false;
+            }
+        }
+    }
+    for (long long i = 2; i <= n; i++) {
+        if (sieve[static_cast<size_t>(i)]) count++;
+    }
+    return Value::makeInt(count);
+}
+
+Value sort_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
+    if (args.size() != 1) {
+        throw std::runtime_error("[VDX] math.sort() expects 1 argument (array)");
+    }
+    if (args[0].type != Value::ARRAY) {
+        throw std::runtime_error("[VDX] math.sort() expects an array argument");
+    }
+    std::vector<Value> result = args[0].arrVal;
+    std::sort(result.begin(), result.end(), [](const Value& a, const Value& b) {
+        return a.toDouble() < b.toDouble();
+    });
+    return Value::makeArray(result);
+}
+
+Value sortDesc_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
+    if (args.size() != 1) {
+        throw std::runtime_error("[VDX] math.sortDesc() expects 1 argument (array)");
+    }
+    if (args[0].type != Value::ARRAY) {
+        throw std::runtime_error("[VDX] math.sortDesc() expects an array argument");
+    }
+    std::vector<Value> result = args[0].arrVal;
+    std::sort(result.begin(), result.end(), [](const Value& a, const Value& b) {
+        return a.toDouble() > b.toDouble();
+    });
+    return Value::makeArray(result);
+}
+
+Value count_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
+    if (args.size() != 2) {
+        throw std::runtime_error("[VDX] math.count() expects 2 arguments (array, value)");
+    }
+    if (args[0].type != Value::ARRAY) {
+        throw std::runtime_error("[VDX] math.count() expects an array as first argument");
+    }
+    int count = 0;
+    for (const auto& v : args[0].arrVal) {
+        if (v.type == args[1].type) {
+            if (v.type == Value::STRING && v.strVal == args[1].strVal) count++;
+            else if (v.type == Value::INT && v.intVal == args[1].intVal) count++;
+            else if (v.type == Value::FLOAT && v.floatVal == args[1].floatVal) count++;
+            else if (v.type == Value::BOOL && v.boolVal == args[1].boolVal) count++;
+        }
+    }
+    return Value::makeInt(count);
+}
+
+Value lcm_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
+    if (args.size() != 2) {
+        throw std::runtime_error("[VDX] math.lcm() expects 2 arguments (a, b)");
+    }
+    checkNumeric(args[0], "lcm");
+    checkNumeric(args[1], "lcm");
+    long long a = static_cast<long long>(args[0].toDouble());
+    long long b = static_cast<long long>(args[1].toDouble());
+    if (a == 0 || b == 0) return Value::makeInt(0);
+    a = std::abs(a);
+    b = std::abs(b);
+    long long g = a;
+    long long t = b;
+    while (t != 0) {
+        long long tmp = g % t;
+        g = t;
+        t = tmp;
+    }
+    long long result = (a / g) * b;
+    if (result > static_cast<long long>(INT_MAX)) {
+        throw std::runtime_error("[VDX] math.lcm() result out of int range");
+    }
+    return Value::makeInt(static_cast<int>(result));
+}
+
+Value sum_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
+    if (args.size() != 1) {
+        throw std::runtime_error("[VDX] math.sum() expects 1 argument (array)");
+    }
+    if (args[0].type != Value::ARRAY) {
+        throw std::runtime_error("[VDX] math.sum() expects an array argument");
+    }
+    double total = 0.0;
+    bool anyFloat = false;
+    for (const auto& v : args[0].arrVal) {
+        checkNumeric(v, "sum");
+        if (v.type == Value::FLOAT) anyFloat = true;
+        total += v.toDouble();
+    }
+    if (anyFloat) return Value::makeFloat(total);
+    return Value::makeInt(static_cast<int>(total));
+}
+
+Value mean_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
+    if (args.size() != 1) {
+        throw std::runtime_error("[VDX] math.mean() expects 1 argument (array)");
+    }
+    if (args[0].type != Value::ARRAY) {
+        throw std::runtime_error("[VDX] math.mean() expects an array argument");
+    }
+    if (args[0].arrVal.empty()) {
+        throw std::runtime_error("[VDX] math.mean() array must not be empty");
+    }
+    double total = 0.0;
+    for (const auto& v : args[0].arrVal) {
+        checkNumeric(v, "mean");
+        total += v.toDouble();
+    }
+    return Value::makeFloat(total / static_cast<double>(args[0].arrVal.size()));
+}
+
+Value comb_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
+    if (args.size() != 2) {
+        throw std::runtime_error("[VDX] math.comb() expects 2 arguments (n, k)");
+    }
+    checkNumeric(args[0], "comb");
+    checkNumeric(args[1], "comb");
+    long long n = static_cast<long long>(args[0].toDouble());
+    long long k = static_cast<long long>(args[1].toDouble());
+    if (n < 0 || k < 0) {
+        throw std::runtime_error("[VDX] math.comb() requires non-negative integers");
+    }
+    if (k > n) return Value::makeInt(0);
+    if (k == 0 || k == n) return Value::makeInt(1);
+    if (k > n - k) k = n - k;
+    long long result = 1;
+    for (long long i = 0; i < k; i++) {
+        result = result * (n - i) / (i + 1);
+        if (result > static_cast<long long>(INT_MAX)) {
+            throw std::runtime_error("[VDX] math.comb() result out of int range");
+        }
+    }
+    return Value::makeInt(static_cast<int>(result));
+}
+
+Value hypot_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
+    if (args.size() != 2) {
+        throw std::runtime_error("[VDX] math.hypot() expects 2 arguments (x, y)");
+    }
+    checkNumeric(args[0], "hypot");
+    checkNumeric(args[1], "hypot");
+    return Value::makeFloat(std::hypot(args[0].toDouble(), args[1].toDouble()));
+}
+
+Value lerp_builtin(const std::vector<Value>& args, int line) {
+    (void)line;
+    if (args.size() != 3) {
+        throw std::runtime_error("[VDX] math.lerp() expects 3 arguments (a, b, t)");
+    }
+    checkNumeric(args[0], "lerp");
+    checkNumeric(args[1], "lerp");
+    checkNumeric(args[2], "lerp");
+    double a = args[0].toDouble();
+    double b = args[1].toDouble();
+    double t = args[2].toDouble();
+    return Value::makeFloat(a + (b - a) * t);
+}
+
+Value e_builtin(const std::vector<Value>& args, int line) {
+    (void)args;
+    (void)line;
+    return Value::makeFloat(2.71828182845904523536);
+}
+
+Value tau_builtin(const std::vector<Value>& args, int line) {
+    (void)args;
+    (void)line;
+    return Value::makeFloat(6.28318530717958647692);
+}
+
 void registerMath(Interpreter& interp) {
     interp.registerModuleFunc("math.sqrt", sqrt_builtin);
     interp.registerModuleFunc("math.pow", pow_builtin);
@@ -488,6 +727,21 @@ void registerMath(Interpreter& interp) {
     interp.registerModuleFunc("math.clamp", clamp_builtin);
     interp.registerModuleFunc("math.factorial", factorial_builtin);
     interp.registerModuleFunc("math.fibonacci", fibonacci_builtin);
+    // v0.1.4
+    interp.registerModuleFunc("math.isPrime", isPrime_builtin);
+    interp.registerModuleFunc("math.primes", primes_builtin);
+    interp.registerModuleFunc("math.primeCount", primeCount_builtin);
+    interp.registerModuleFunc("math.sort", sort_builtin);
+    interp.registerModuleFunc("math.sortDesc", sortDesc_builtin);
+    interp.registerModuleFunc("math.count", count_builtin);
+    interp.registerModuleFunc("math.lcm", lcm_builtin);
+    interp.registerModuleFunc("math.sum", sum_builtin);
+    interp.registerModuleFunc("math.mean", mean_builtin);
+    interp.registerModuleFunc("math.comb", comb_builtin);
+    interp.registerModuleFunc("math.hypot", hypot_builtin);
+    interp.registerModuleFunc("math.lerp", lerp_builtin);
+    interp.registerModuleFunc("math.e", e_builtin);
+    interp.registerModuleFunc("math.tau", tau_builtin);
 }
 
 } // namespace MathModule

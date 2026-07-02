@@ -48,6 +48,11 @@ export default function GraphDoc() {
             <td>array, [int]</td>
             <td>Histogram with configurable bin count (default: 10)</td>
           </tr>
+          <tr>
+            <td><code>graph.area(xs, ys)</code></td>
+            <td>array, array</td>
+            <td>Area chart — line with filled region below (v0.1.4)</td>
+          </tr>
         </tbody>
       </table>
 
@@ -75,6 +80,21 @@ export default function GraphDoc() {
             <td><code>graph.ylabel(text)</code></td>
             <td>string</td>
             <td>Set the y-axis label for the next plot</td>
+          </tr>
+          <tr>
+            <td><code>graph.grid(bool)</code></td>
+            <td>bool</td>
+            <td>Toggle dashed grid lines on/off (v0.1.4)</td>
+          </tr>
+          <tr>
+            <td><code>graph.color(name)</code></td>
+            <td>string</td>
+            <td>Set plot color — named ("red", "blue") or hex ("#ff0000") (v0.1.4)</td>
+          </tr>
+          <tr>
+            <td><code>graph.legend(labels)</code></td>
+            <td>array of strings</td>
+            <td>Add a legend box with color swatches (v0.1.4)</td>
           </tr>
         </tbody>
       </table>
@@ -143,6 +163,19 @@ graph.ylabel("Frequency");
 graph.hist(data, 5);
 graph.save("hist.svg");`}</code></pre>
 
+      <h3>Area chart with color, grid, and legend (v0.1.4)</h3>
+      <pre><code>{`let months = [1, 2, 3, 4, 5, 6];
+let revenue = [10, 15, 13, 20, 25, 30];
+
+graph.title("Monthly Revenue");
+graph.xlabel("Month");
+graph.ylabel("Revenue ($K)");
+graph.color("green");
+graph.grid(true);
+graph.legend(["Revenue"]);
+graph.area(months, revenue);
+graph.save("revenue.svg");`}</code></pre>
+
       <h2>Complete example</h2>
       <pre><code>{`// Generate and save multiple plot types
 let xs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -168,8 +201,11 @@ print("Line chart saved");`}</code></pre>
       <h2>Error handling</h2>
       <ul>
         <li>All plot functions require numeric arrays — non-numeric values throw an error</li>
-        <li><code>graph.scatter()</code> and <code>graph.line()</code> require xs and ys to be the same length</li>
+        <li><code>graph.scatter()</code>, <code>graph.line()</code>, and <code>graph.area()</code> require xs and ys to be the same length</li>
         <li><code>graph.hist()</code> requires bins to be a positive integer</li>
+        <li><code>graph.grid()</code> requires a boolean argument</li>
+        <li><code>graph.color()</code> requires a string (color name or hex)</li>
+        <li><code>graph.legend()</code> requires an array of strings</li>
         <li><code>graph.save()</code> and <code>graph.show()</code> throw an error if no plot has been created</li>
         <li><code>graph.save()</code> throws an error if the file cannot be written</li>
       </ul>

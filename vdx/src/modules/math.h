@@ -40,4 +40,20 @@ namespace MathModule {
     Value clamp_builtin(const std::vector<Value>& args, int line);
     Value factorial_builtin(const std::vector<Value>& args, int line);
     Value fibonacci_builtin(const std::vector<Value>& args, int line);
+
+    // v0.1.4 additions — primes, sort, count, fast math
+    Value isPrime_builtin(const std::vector<Value>& args, int line);
+    Value primes_builtin(const std::vector<Value>& args, int line);
+    Value primeCount_builtin(const std::vector<Value>& args, int line);
+    Value sort_builtin(const std::vector<Value>& args, int line);
+    Value sortDesc_builtin(const std::vector<Value>& args, int line);
+    Value count_builtin(const std::vector<Value>& args, int line);
+    Value lcm_builtin(const std::vector<Value>& args, int line);
+    Value sum_builtin(const std::vector<Value>& args, int line);
+    Value mean_builtin(const std::vector<Value>& args, int line);
+    Value comb_builtin(const std::vector<Value>& args, int line);
+    Value hypot_builtin(const std::vector<Value>& args, int line);
+    Value lerp_builtin(const std::vector<Value>& args, int line);
+    Value e_builtin(const std::vector<Value>& args, int line);
+    Value tau_builtin(const std::vector<Value>& args, int line);
 }

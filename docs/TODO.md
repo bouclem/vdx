@@ -162,6 +162,28 @@
 - [x] `graph` module: `title`, `xlabel`, `ylabel` plot configuration
 - [x] `graph` module: `save(path)` SVG file export, `show()` open in viewer
 
+## v0.1.4
+- [x] Optimized `math.min()` and `math.max()` to single-pass
+- [x] `math.isPrime(n)` — primality test (6k±1 trial division)
+- [x] `math.primes(n)` — Sieve of Eratosthenes
+- [x] `math.primeCount(n)` — count primes via sieve
+- [x] `math.sort(arr)` — sort array ascending
+- [x] `math.sortDesc(arr)` — sort array descending
+- [x] `math.count(arr, value)` — count occurrences in array
+- [x] `math.lcm(a, b)` — least common multiple
+- [x] `math.sum(arr)` — sum of array elements
+- [x] `math.mean(arr)` — arithmetic mean
+- [x] `math.comb(n, k)` — binomial coefficient
+- [x] `math.hypot(x, y)` — overflow-safe hypotenuse
+- [x] `math.lerp(a, b, t)` — linear interpolation
+- [x] `math.e` — Euler's number constant
+- [x] `math.tau` — 2π constant
+- [x] `graph.area(xs, ys)` — area chart
+- [x] `graph.grid(bool)` — toggle grid lines
+- [x] `graph.color(name)` — set plot color
+- [x] `graph.legend(labels)` — add legend
+- [x] All chart types now respect `graph.color()` instead of hardcoded `steelblue`
+
 ## Future
 - [ ] Self-hosting (rewrite compiler in VDX)
 - [ ] AI-specific features

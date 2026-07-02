@@ -76,7 +76,7 @@ export default function DocsPage() {
     <div className="max-w-5xl mx-auto px-6 py-16">
       <h1 className="text-3xl font-bold text-white mb-2">Documentation</h1>
       <p className="text-[var(--vdx-muted)] mb-12">
-        Language reference for VDX v0.1.3.
+        Language reference for VDX v0.1.4.
       </p>
 
       <div className="grid md:grid-cols-2 gap-x-16 gap-y-10">

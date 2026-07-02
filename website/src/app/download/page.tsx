@@ -25,9 +25,21 @@ const versions: {
   notes: string[];
 }[] = [
   {
+    version: "0.1.4",
+    date: "2026-07-02",
+    status: "current",
+    notes: [
+      "Optimized math.min() and math.max() to single-pass",
+      "New math functions: isPrime, primes, primeCount, sort, sortDesc, count, lcm, sum, mean, comb, hypot, lerp, e, tau",
+      "math.primes uses Sieve of Eratosthenes for fast prime generation",
+      "New graph functions: area, grid, color, legend",
+      "All chart types now support custom colors via graph.color()",
+    ],
+  },
+  {
     version: "0.1.3",
     date: "2026-06-30",
-    status: "current",
+    status: "old",
     notes: [
       "Fixed for-in loops lacking loop safety protection — now timed like while and for",
       "@unsafe annotation now works with for-in loops to bypass protection",

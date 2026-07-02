@@ -43,6 +43,22 @@ function linkifyCode(text: string): string {
 
 const changelog = [
   {
+    version: "0.1.4",
+    date: "2026-07-02",
+    changes: [
+      "Optimized `math.min()` and `math.max()` to single-pass (track min/max and float flag in one loop instead of two)",
+      "`math` module expanded with 14 new functions: `isPrime`, `primes`, `primeCount`, `sort`, `sortDesc`, `count`, `lcm`, `sum`, `mean`, `comb`, `hypot`, `lerp`, `e`, `tau`",
+      "`math.primes(n)` uses Sieve of Eratosthenes for fast prime generation",
+      "`math.isPrime(n)` uses 6k±1 trial division — O(√n)",
+      "`graph` module expanded with 4 new functions: `area`, `grid`, `color`, `legend`",
+      "`graph.area(xs, ys)` — area chart with filled region below the line",
+      "`graph.grid(bool)` — toggle dashed grid lines on/off",
+      "`graph.color(name)` — set plot color (named colors or hex strings)",
+      "`graph.legend(labels)` — add a legend box with color swatches",
+      "All chart types (`scatter`, `line`, `bar`, `hist`) now respect `graph.color()` instead of hardcoded steelblue",
+    ],
+  },
+  {
     version: "0.1.3",
     date: "2026-06-30",
     changes: [

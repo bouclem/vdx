@@ -32,6 +32,9 @@ namespace GraphModule {
     // FIXME: bin edge calculation is simplistic — need proper binning algorithm
     Value hist_builtin(const std::vector<Value>& args, int line);
 
+    // graph.area(xs, ys) — area chart (line + filled region below)
+    Value area_builtin(const std::vector<Value>& args, int line);
+
     // ── Plot configuration ──
     // These set labels/title for the next plot created.
 
@@ -43,6 +46,15 @@ namespace GraphModule {
 
     // graph.ylabel(text) — set the y-axis label for the next plot
     Value ylabel_builtin(const std::vector<Value>& args, int line);
+
+    // graph.grid(bool) — toggle grid lines on/off for the next plot
+    Value grid_builtin(const std::vector<Value>& args, int line);
+
+    // graph.color(name) — set the primary color for the next plot
+    Value color_builtin(const std::vector<Value>& args, int line);
+
+    // graph.legend(labels) — add a legend to the next plot
+    Value legend_builtin(const std::vector<Value>& args, int line);
 
     // ── Output ──
 

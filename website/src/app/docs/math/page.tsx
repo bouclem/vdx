@@ -23,6 +23,16 @@ export default function MathDoc() {
             <td>3.14159...</td>
             <td>Ratio of circle circumference to diameter</td>
           </tr>
+          <tr>
+            <td><code>math.e</code></td>
+            <td>2.71828...</td>
+            <td>Euler's number (base of natural logarithm)</td>
+          </tr>
+          <tr>
+            <td><code>math.tau</code></td>
+            <td>6.28318...</td>
+            <td>2π — ratio of circumference to radius</td>
+          </tr>
         </tbody>
       </table>
 
@@ -217,6 +227,78 @@ export default function MathDoc() {
             <td>int</td>
             <td>Fibonacci number F(n) via fast doubling O(log n) (max 46)</td>
           </tr>
+          <tr>
+            <td><code>math.isPrime(n)</code></td>
+            <td>int</td>
+            <td>bool</td>
+            <td>Primality test using 6k±1 trial division — O(√n)</td>
+          </tr>
+          <tr>
+            <td><code>math.primes(n)</code></td>
+            <td>int</td>
+            <td>array</td>
+            <td>All primes ≤ n via Sieve of Eratosthenes</td>
+          </tr>
+          <tr>
+            <td><code>math.primeCount(n)</code></td>
+            <td>int</td>
+            <td>int</td>
+            <td>Count of primes ≤ n via sieve</td>
+          </tr>
+          <tr>
+            <td><code>math.sort(arr)</code></td>
+            <td>array</td>
+            <td>array</td>
+            <td>Sort numeric array ascending (returns copy)</td>
+          </tr>
+          <tr>
+            <td><code>math.sortDesc(arr)</code></td>
+            <td>array</td>
+            <td>array</td>
+            <td>Sort numeric array descending (returns copy)</td>
+          </tr>
+          <tr>
+            <td><code>math.count(arr, value)</code></td>
+            <td>array, any</td>
+            <td>int</td>
+            <td>Count occurrences of value in array</td>
+          </tr>
+          <tr>
+            <td><code>math.lcm(a, b)</code></td>
+            <td>int, int</td>
+            <td>int</td>
+            <td>Least common multiple</td>
+          </tr>
+          <tr>
+            <td><code>math.sum(arr)</code></td>
+            <td>array</td>
+            <td>number</td>
+            <td>Sum of numeric array elements</td>
+          </tr>
+          <tr>
+            <td><code>math.mean(arr)</code></td>
+            <td>array</td>
+            <td>float</td>
+            <td>Arithmetic mean of array</td>
+          </tr>
+          <tr>
+            <td><code>math.comb(n, k)</code></td>
+            <td>int, int</td>
+            <td>int</td>
+            <td>Binomial coefficient C(n, k)</td>
+          </tr>
+          <tr>
+            <td><code>math.hypot(x, y)</code></td>
+            <td>number, number</td>
+            <td>float</td>
+            <td>Overflow-safe hypotenuse √(x² + y²)</td>
+          </tr>
+          <tr>
+            <td><code>math.lerp(a, b, t)</code></td>
+            <td>number, number, number</td>
+            <td>float</td>
+            <td>Linear interpolation: a + (b - a) * t</td>
+          </tr>
         </tbody>
       </table>
 
@@ -294,6 +376,24 @@ print(math.fibonacci(10));     // 55
 print(math.fibonacci(46));     // 1836311903 (max int-safe)
 `}</code></pre>
 
+      <h3>Primes, sorting, and statistics (v0.1.4)</h3>
+      <pre><code>{`print(math.isPrime(17));        // true
+print(math.isPrime(18));        // false
+print(math.primes(20));         // [2, 3, 5, 7, 11, 13, 17, 19]
+print(math.primeCount(100));    // 25
+print(math.sort([3, 1, 4, 1, 5]));  // [1, 1, 3, 4, 5]
+print(math.sortDesc([3, 1, 4]));    // [4, 3, 1]
+print(math.count([1, 2, 1, 3, 1], 1)); // 3
+print(math.lcm(4, 6));          // 12
+print(math.sum([1, 2, 3, 4])); // 10
+print(math.mean([2, 4, 6]));    // 4.0
+print(math.comb(5, 2));         // 10
+print(math.hypot(3, 4));        // 5.0
+print(math.lerp(0, 10, 0.5));   // 5.0
+print(math.e);                  // 2.718281...
+print(math.tau);                // 6.283185...
+`}</code></pre>
+
       <h2>Complete example: Dice roller</h2>
       <pre><code>{`class DiceRoller {
     const SIDES = 6;
@@ -320,6 +420,11 @@ print(math.fibonacci(46));     // 1836311903 (max int-safe)
         <li><code>math.factorial()</code> requires non-negative integer (max 12)</li>
         <li><code>math.fibonacci()</code> requires non-negative integer (max 46)</li>
         <li><code>math.gcd(0, 0)</code> is undefined and throws an error</li>
+        <li><code>math.lcm()</code> result must fit in int range</li>
+        <li><code>math.comb()</code> requires non-negative integers; result must fit in int range</li>
+        <li><code>math.sum()</code> and <code>math.mean()</code> require numeric array elements</li>
+        <li><code>math.mean()</code> throws on empty array</li>
+        <li><code>math.sort()</code> and <code>math.sortDesc()</code> sort by numeric value</li>
         <li><code>math.random(max)</code> requires max &gt;= 0</li>
         <li><code>math.random(min, max)</code> requires max &gt;= min</li>
         <li>All math functions require numeric arguments</li>
