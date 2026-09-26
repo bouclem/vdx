@@ -1,0 +1,7 @@
+// wait() inside loop must not trip loop safety (blocking time excluded)
+let i = 0;
+while (i < 3) {
+    wait(2300);
+    i++;
+}
+print("wait-loop ok");

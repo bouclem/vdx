@@ -23,18 +23,28 @@ add_executable(vdx
 
 target_include_directories(vdx PRIVATE src)
 
+# Enlarge the stack for VDX recursion depth (Windows defaults to 1MB; a VDX
+# call level uses several KB of C++ stack and the depth guard allows 500).
+if(MSVC)
+    target_link_options(vdx PRIVATE /STACK:16777216)
+elseif(MINGW)
+    target_link_options(vdx PRIVATE -Wl,--stack,16777216)
+endif()
+
 # ── Windows MSI Installer (CPack + WiX) ──
 install(TARGETS vdx RUNTIME DESTINATION bin)
 
 set(CPACK_PACKAGE_NAME "VDX")
 set(CPACK_PACKAGE_VENDOR "Voidware")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VDX Programming Language")
-set(CPACK_PACKAGE_VERSION "0.1.4")
+set(CPACK_PACKAGE_VERSION "0.1.5")
 set(CPACK_PACKAGE_VERSION_MAJOR "0")
 set(CPACK_PACKAGE_VERSION_MINOR "1")
-set(CPACK_PACKAGE_VERSION_PATCH "4")
+set(CPACK_PACKAGE_VERSION_PATCH "5")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "VDX")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.txt")
+# MSI filename must match the website download URL: vdx-<version>-win64.msi
+set(CPACK_PACKAGE_FILE_NAME "vdx-${CPACK_PACKAGE_VERSION}-win64")
 
 # WiX 4 settings
 set(CPACK_GENERATOR "WIX")

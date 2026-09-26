@@ -1,0 +1,22 @@
+// v0.1.5 module tests — 'math'/'fs'/'graph' used unshadowed here
+print(math.pi);                    // 3.14159...
+print(math.fibonacci(46));         // 1836311903
+print(math.abs(0 - 5));            // 5
+print(math.sum([1, 2, 3]));        // 6
+print(math.sort([3, 1, 2]));       // [1, 2, 3]
+
+// fs module
+fs.writeFile("tests/v015/tmp_io.txt", "hello");
+print(fs.readFile("tests/v015/tmp_io.txt"));   // hello
+fs.append("tests/v015/tmp_io.txt", " world");
+print(fs.readFile("tests/v015/tmp_io.txt"));   // hello world
+print(fs.exists("tests/v015/tmp_io.txt"));     // true
+print(fs.exists("tests/v015/nope.txt"));       // false
+print(len(fs.listDir("tests/v015")) >= 1);     // true
+
+// fs sandbox
+fs.setRoot("tests/v015");
+fs.writeFile("rooted.txt", "ok");
+print(fs.readFile("rooted.txt"));              // ok
+fs.setRoot("");
+print("done");

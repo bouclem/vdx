@@ -45,14 +45,21 @@ export default function TypesDoc() {
         </tbody>
       </table>
 
-      <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Float literals</h2>
+      <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Number literals</h2>
       <p>
-        Any number with a decimal point is a <code className="text-[#A78BFA]">float</code>:
+        Any number with a decimal point or exponent is a{" "}
+        <code className="text-[#A78BFA]">float</code>. v0.1.5+ also supports hex ints
+        and compact float forms:
       </p>
       <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`let pi = 3.14;
 let half = 0.5;
 let five = 5.0;    // float, not int
+let big = 1e5;     // 100000.0 — exponent (v0.1.5+)
+let small = 1.5e-3; // 0.0015  (v0.1.5+)
+let one = 1.;      // 1.0 — trailing dot (v0.1.5+)
+let frac = .5;     // 0.5 — leading dot (v0.1.5+)
+let hex = 0xFF;    // 255 — hex int (v0.1.5+)
 print(pi);         // 3.14`}</code></pre>
       </div>
 
@@ -82,6 +89,9 @@ let ok: bool = true;`}</code></pre>
       </div>
       <p>
         Type annotations are optional. Without them, variables accept any value.
+        Container annotations work too: <code className="text-[#A78BFA]">let nums: int[] = [1, 2];</code>{" "}
+        and <code className="text-[#A78BFA]">let u: dict = {"{"}"k": 1{"}"};</code> (v0.1.5+ —{" "}
+        <code className="text-[#A78BFA]">int[]</code> actually parses now).
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Type mismatch errors</h2>

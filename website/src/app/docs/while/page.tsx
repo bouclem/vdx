@@ -11,7 +11,8 @@ export default function WhileDoc() {
       <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-5 my-4">
         <p className="text-yellow-300 font-semibold mb-2">⚠️ Loop Protection</p>
         <p className="text-yellow-200 text-sm">
-          By default, VDX blocks loops that iterate faster than 2 seconds. See{" "}
+          By default, VDX halts a loop when an iteration takes more than 2 seconds of
+          real work or the loop passes 1,000,000 iterations. See{" "}
           <a href="/docs/loop-protection" className="text-[#A78BFA] hover:underline">Loop Protection</a>{" "}
           and <a href="/docs/unsafe" className="text-[#A78BFA] hover:underline">@unsafe</a>.
         </p>
@@ -26,9 +27,9 @@ export default function WhileDoc() {
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Example with wait</h2>
       <p>
-        To satisfy the loop protection, use{" "}
-        <a href="/docs/wait" className="text-[#A78BFA] hover:underline">wait()</a> to slow
-        each iteration to at least 2 seconds:
+        Time spent in{" "}
+        <a href="/docs/wait" className="text-[#A78BFA] hover:underline">wait()</a> doesn{"'"}t
+        count toward the 2-second iteration limit — it only measures real work:
       </p>
       <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class App {

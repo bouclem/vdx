@@ -1,0 +1,4 @@
+fn buggy() {
+    let x = undefined_name;
+    return x;
+}

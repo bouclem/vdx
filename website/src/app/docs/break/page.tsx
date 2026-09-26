@@ -68,6 +68,12 @@ export default function BreakDoc() {
     //         2 0
 }`}</code></pre>
 
+      <h2>Outside loops</h2>
+      <p>
+        <code>break</code> outside a loop is a parse error (v0.1.5+) — it must appear
+        inside a <code>while</code>, <code>for</code>, or <code>for-in</code> body.
+      </p>
+
       <h2>See also</h2>
       <ul>
         <li><a href="/docs/continue">continue</a> — skip to next iteration</li>

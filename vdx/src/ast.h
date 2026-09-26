@@ -43,15 +43,27 @@ struct BinaryExpr : Expr {
     ExprPtr right;
 };
 
+// a && b, a || b (short-circuit logical operators)
+struct LogicalExpr : Expr {
+    ExprPtr left;
+    std::string op;        // "&&" or "||"
+    ExprPtr right;
+};
+
+// !x (logical not)
+struct NotExpr : Expr {
+    ExprPtr operand;
+};
+
 // a % b (modulo operator)
 struct ModuloExpr : Expr {
     ExprPtr left;
     ExprPtr right;
 };
 
-// ++x, x++, --x, x-- (increment/decrement)
+// ++x, x++, --x, x--, arr[i]++, obj.n++ (increment/decrement on any lvalue)
 struct IncDecExpr : Expr {
-    std::string name;      // variable name
+    ExprPtr target;        // IdentifierExpr, IndexExpr, or DotExpr
     bool isIncrement;      // true for ++, false for --
     bool isPrefix;         // true for ++x, false for x++
 };
@@ -164,9 +176,9 @@ struct AssignStmt : Node {
     ExprPtr value;
 };
 
-// arr[index] = expr;
+// target[index] = expr;  (target may be arr, obj.field, this.arr, arr[i], ...)
 struct IndexAssignStmt : Node {
-    std::string name;
+    ExprPtr object;
     ExprPtr index;
     ExprPtr value;
 };

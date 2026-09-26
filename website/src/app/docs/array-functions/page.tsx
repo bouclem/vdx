@@ -67,12 +67,15 @@ print(arr);       // [10, 20]`}</code></pre>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Important notes</h2>
       <ul className="list-disc list-inside space-y-2 text-gray-300">
-        <li>Both functions modify the array in-place</li>
+        <li>Both functions modify the array in-place — and arrays are shared on assign (v0.1.5+)</li>
         <li>
           <code className="text-[#A78BFA]">pop()</code> on an empty array throws an error
         </li>
         <li>
-          The array must be a variable (not a literal): <code className="text-red-400">push([1,2], 3)</code> is invalid
+          The array argument must be an lvalue (a variable, index, or field) —{" "}
+          <code className="text-red-400">push([1,2], 3)</code> is invalid, but{" "}
+          <code className="text-[#A78BFA]">push(obj.items, 3)</code> and{" "}
+          <code className="text-[#A78BFA]">push(this.arr, 3)</code> work (v0.1.5+)
         </li>
       </ul>
     </DocPage>

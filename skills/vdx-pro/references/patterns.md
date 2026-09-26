@@ -44,22 +44,19 @@ for (item in items) {
 }
 ```
 
-## Conditional Without Logical Operators
+## Logical Conditions (v0.1.5+)
 
 ```vdx
-// Instead of: if (a && b)
-if (a) {
-    if (b) {
-        // both true
-    }
+if (a && b) {
+    // both true — && and || short-circuit
 }
 
-// Instead of: if (a || b)
-let either = 0;
-if (a) { either = 1; }
-if (b) { either = 1; }
-if (either == 1) {
+if (a || b) {
     // at least one true
+}
+
+if (!done) {
+    // negation
 }
 ```
 
@@ -113,28 +110,35 @@ class Config {
 
 ```vdx
 // utils.vdx — import with: import "utils.vdx";
+// Option A: top-level functions — callable directly after import
+fn add(a, b) {
+    return a + b;
+}
+
+fn isEven(n) {
+    return n % 2 == 0;
+}
+
+// Option B: class of methods — call via an object after import
 class Utils {
-    fn add(a, b) {
-        return a + b;
-    }
-
-    fn isEven(n) {
-        return n % 2 == 0;
-    }
-
     fn clamp(val, minVal, maxVal) {
         if (val < minVal) { return minVal; }
         if (val > maxVal) { return maxVal; }
         return val;
     }
 }
+
+// Importer side:
+//   let x = add(1, 2);              // top-level fn — direct call
+//   let u = new Utils();
+//   let y = u.clamp(5, 0, 3);       // class method — via object
 ```
 
 ## Negative Numbers
 
 ```vdx
-// VDX has no unary minus — use binary subtraction
-let neg = 0 - 42;
+// Unary minus works — or use binary subtraction, both fine
+let neg = -42;
 let absVal = math.abs(neg);
 ```
 
@@ -164,4 +168,25 @@ fn double(x) {
 print("Double of sum:", double(sum));
 ```
 
-For larger programs, wrapping in `class{}` is still recommended for organization.
+For larger programs, wrapping in `class{}` is still recommended for organization — class bodies execute their statements at load, so `class Main { <program> }` works as an entry point.
+
+## Shared Array/Dict Storage (v0.1.5+)
+
+```vdx
+// Arrays and dicts are shared on assignment — pass them "by reference"
+let scores = [1, 2, 3];
+let alias = scores;
+push(alias, 4);
+print(scores);  // [1, 2, 3, 4] — alias and scores are the same array
+
+// To copy, rebuild: 
+let copy = [];
+for (v in scores) { push(copy, v); }
+
+// This is what makes field/nested mutation work:
+class Bag {
+    let items = [];
+}
+let b = new Bag();
+push(b.items, "rock");   // v0.1.5+ — works on lvalues, not just names
+```

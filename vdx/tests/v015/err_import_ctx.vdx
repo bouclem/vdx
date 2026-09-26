@@ -1,0 +1,3 @@
+import "lib_err.vdx";
+print("before");
+buggy();

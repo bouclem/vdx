@@ -5,7 +5,7 @@ export default function ForDoc() {
     <DocPage title="for Loops">
       <p>
         VDX supports two styles of <code className="text-[#A78BFA]">for</code> loop:
-        C-style and for-in (array iteration).
+        C-style and for-in (array/string/dict iteration).
       </p>
 
       <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-5 my-4">
@@ -38,17 +38,21 @@ export default function ForDoc() {
 
       <p>
         The init part can use <code className="text-[#A78BFA]">let</code> to declare a new
-        variable, or assign to an existing one. The update part is an assignment
-        (no semicolon needed).
+        variable, or assign to an existing one. The update part is any assignment or
+        increment/decrement — <code className="text-[#A78BFA]">i++</code>,{" "}
+        <code className="text-[#A78BFA]">arr[i] = v</code>,{" "}
+        <code className="text-[#A78BFA]">obj.n--</code> all work (v0.1.5+; no semicolon
+        needed).
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">for-in loop</h2>
       <p>
-        Iterate over each element in an array:
+        Iterate over an array (elements), a string (characters, v0.1.5+), or a dict
+        (keys in sorted order, v0.1.5+):
       </p>
       <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
-        <pre className="text-sm"><code>{`for (variable in array) {
-    // body — variable holds the current element
+        <pre className="text-sm"><code>{`for (variable in iterable) {
+    // body — variable holds the current element / char / key
 }`}</code></pre>
       </div>
       <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
@@ -57,12 +61,22 @@ export default function ForDoc() {
     for (fruit in fruits) {
         print("fruit:", fruit);
     }
+
+    for (ch in "hi") {          // v0.1.5+ — h, i
+        print("char:", ch);
+    }
+
+    let d = {"b": 2, "a": 1};
+    for (k in d) {              // v0.1.5+ — keys sorted: a, b
+        print(k, "=", d[k]);
+    }
 }`}</code></pre>
       </div>
       <p className="text-sm text-gray-400">
-        For-in loops are also subject to loop safety protection. If an iteration
-        takes more than 2 seconds, the loop is halted. Use{" "}
-        <code className="text-[#A78BFA]">@unsafe</code> to bypass this for fast iterations.
+        For-in loops are also subject to loop safety protection — halted if an
+        iteration takes more than 2s of work or the loop exceeds 1,000,000
+        iterations (v0.1.5+). Use{" "}
+        <code className="text-[#A78BFA]">@unsafe</code> to bypass.
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Accumulating with for</h2>

@@ -31,17 +31,17 @@
   <text x="15" y="295" text-anchor="middle" transform="rotate(-90 15 295)" font-family="sans-serif" font-size="13">Units Sold</text>
   <rect x="91" y="372" width="98" height="168" fill="steelblue" stroke="navy" stroke-width="0.5"/>
   <text x="140" y="367" text-anchor="middle" font-family="sans-serif" font-size="10">23.00</text>
-  <text x="140" y="558" text-anchor="middle" font-family="sans-serif" font-size="10">Mon</text>
+  <text x="140" y="574" text-anchor="middle" font-family="sans-serif" font-size="10">Mon</text>
   <rect x="231" y="211" width="98" height="329" fill="steelblue" stroke="navy" stroke-width="0.5"/>
   <text x="280" y="206" text-anchor="middle" font-family="sans-serif" font-size="10">45.00</text>
-  <text x="280" y="558" text-anchor="middle" font-family="sans-serif" font-size="10">Tue</text>
+  <text x="280" y="574" text-anchor="middle" font-family="sans-serif" font-size="10">Tue</text>
   <rect x="371" y="453" width="98" height="87" fill="steelblue" stroke="navy" stroke-width="0.5"/>
   <text x="420" y="448" text-anchor="middle" font-family="sans-serif" font-size="10">12.00</text>
-  <text x="420" y="558" text-anchor="middle" font-family="sans-serif" font-size="10">Wed</text>
+  <text x="420" y="574" text-anchor="middle" font-family="sans-serif" font-size="10">Wed</text>
   <rect x="511" y="50" width="98" height="490" fill="steelblue" stroke="navy" stroke-width="0.5"/>
   <text x="560" y="45" text-anchor="middle" font-family="sans-serif" font-size="10">67.00</text>
-  <text x="560" y="558" text-anchor="middle" font-family="sans-serif" font-size="10">Thu</text>
+  <text x="560" y="574" text-anchor="middle" font-family="sans-serif" font-size="10">Thu</text>
   <rect x="651" y="292" width="98" height="248" fill="steelblue" stroke="navy" stroke-width="0.5"/>
   <text x="700" y="287" text-anchor="middle" font-family="sans-serif" font-size="10">34.00</text>
-  <text x="700" y="558" text-anchor="middle" font-family="sans-serif" font-size="10">Fri</text>
+  <text x="700" y="574" text-anchor="middle" font-family="sans-serif" font-size="10">Fri</text>
 </svg>

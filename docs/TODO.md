@@ -184,6 +184,35 @@
 - [x] `graph.legend(labels)` — add legend
 - [x] All chart types now respect `graph.color()` instead of hardcoded `steelblue`
 
+## v0.1.5
+- [x] Logical operators `!`, `&&`, `||` with short-circuit evaluation
+- [x] Reference semantics for arrays/dicts (shared storage; `let b = a` aliases)
+- [x] Generalized lvalues: `arr[i][j] = v`, `obj.f[i] = v`, `this.arr[i] = v`, `push(obj.f, x)`, `arr[i]++`, `d["new"] = v`, `s[i] = "c"`
+- [x] String comparisons `<`, `>`, `<=`, `>=`; `for-in` over strings and dicts
+- [x] New builtins: `int()`, `float()`, `str()`, `split`, `substr`, `indexOf`, `upper`, `lower`, `trim`, `replace`, `join`
+- [x] `wait()` accepts float ms; `wait`/`input` blocking excluded from loop safety
+- [x] New number literals: `1e5`, `0xFF`, `1.`, `.5`
+- [x] `fs.append`, `fs.exists`, `fs.listDir`, `fs.setRoot` (opt-in sandbox)
+- [x] CLI `--help` / `--version`
+- [x] Fixed `this.field = v` silently reverted inside methods
+- [x] Fixed `int[]` annotation parse error (documented since v0.0.12)
+- [x] Fixed `math`/`fs`/`graph` module names hijacking user variables
+- [x] Fixed circular import through entry file → misleading duplicate-definition error
+- [x] Fixed `this` leaking into plain functions called from methods
+- [x] Fixed `INT_MIN / -1` crash → clean error
+- [x] Loop safety: 1M-iteration cap catches `while(true) {}`; `wait`/`input` time excluded
+- [x] Recursion/call-depth guard (500) + bounded parser expression depth; 16MB link stack on Windows
+- [x] User-defined `fn` shadows built-ins (was silently unreachable)
+- [x] Nested `fn` in blocks → parse error (was silently dropped); `break`/`continue` placement validated
+- [x] `math.fibonacci(>=47)`/`abs(INT_MIN)`/`sum`/`min`/`max` overflow guards; `sort`/`sortDesc` numeric check
+- [x] Float `toString` no longer appends `.0` to sci-notation/specials
+- [x] Imported-file error attribution (errors show the real file's source lines)
+- [x] `graph.color()` input validation; `graph.bar` label overlap; `graph.show()` temp-file reuse
+- [x] `Interpreter::run()` fully resets state per run
+- [x] Module errors always carry `at line N` → source context
+- [x] Restored: class bodies execute statements (the `class Main { <program> }` idiom was dead since v0.1.0)
+- [x] C++ internals: `shared_ptr` container storage, `Value::typeName()`, `checkLoopSafety`/`callFunction`/`callModule` helpers
+
 ## Future
 - [ ] Self-hosting (rewrite compiler in VDX)
 - [ ] AI-specific features

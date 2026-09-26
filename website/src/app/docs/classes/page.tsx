@@ -23,6 +23,7 @@ export default function ClassesDoc() {
         <li>Class names must start with a letter or underscore</li>
         <li>Code outside a class is allowed — top-level statements run in order</li>
         <li>A file can contain multiple classes — they run in order</li>
+        <li>Class-body statements run once at load; <code className="text-[#A78BFA]">let</code> field initializers additionally run on each <code className="text-[#A78BFA]">new</code> (v0.1.5+)</li>
         <li>If no class is present, a recommendation tip is printed to stderr</li>
       </ul>
 

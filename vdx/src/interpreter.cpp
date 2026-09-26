@@ -12,6 +12,9 @@
 #include <climits>
 #include <fstream>
 #include <filesystem>
+#include <algorithm>
+#include <cctype>
+#include <system_error>
 
 // ── Value::toString ──
 
@@ -37,18 +40,26 @@ std::string Value::toString() const {
             std::ostringstream oss;
             oss << floatVal;
             std::string s = oss.str();
-            // Ensure floats always show a decimal point
-            if (s.find('.') == std::string::npos) s += ".0";
+            // Ensure floats show a decimal point — but not for scientific
+            // notation ("1e+20") or specials ("inf", "-inf", "nan")
+            if (s.find('.') == std::string::npos && s.find('e') == std::string::npos &&
+                s.find('E') == std::string::npos && s.find("inf") == std::string::npos &&
+                s.find("nan") == std::string::npos) {
+                s += ".0";
+            }
             return s;
         }
         case BOOL: return boolVal ? "true" : "false";
         case VOID: return "void";
         case ARRAY: {
             std::string s = "[";
-            for (size_t i = 0; i < arrVal.size(); i++) {
-                if (i > 0) s += ", ";
-                if (arrVal[i].type == STRING) s += "\"" + escapeString(arrVal[i].strVal) + "\"";
-                else s += arrVal[i].toString();
+            if (arrVal) {
+                for (size_t i = 0; i < arrVal->size(); i++) {
+                    if (i > 0) s += ", ";
+                    const Value& el = (*arrVal)[i];
+                    if (el.type == STRING) s += "\"" + escapeString(el.strVal) + "\"";
+                    else s += el.toString();
+                }
             }
             s += "]";
             return s;
@@ -60,7 +71,7 @@ std::string Value::toString() const {
         case DICT: {
             std::string s = "{";
             size_t i = 0;
-            for (const auto& pair : dictVal) {
+            for (const auto& pair : *dictVal) {
                 if (i > 0) s += ", ";
                 s += "\"" + pair.first + "\": ";
                 if (pair.second.type == STRING) s += "\"" + escapeString(pair.second.strVal) + "\"";
@@ -95,6 +106,12 @@ Value* Interpreter::lookupVar(const std::string& name) {
         auto it = scopes[i].find(name);
         if (it != scopes[i].end()) return &it->second.value;
     }
+    // Inside a method, bare names fall through to object fields — so 'x' and
+    // 'this.x' are the same storage and can never diverge.
+    if (currentObject) {
+        auto it = currentObject->fields.find(name);
+        if (it != currentObject->fields.end()) return &it->second;
+    }
     return nullptr;
 }
 
@@ -113,6 +130,147 @@ void Interpreter::declareVar(const std::string& name, const Value& val, bool isC
     scopes.back()[name] = entry;
 }
 
+// ── Lvalue resolution ──
+// evalLValue/fieldLValue/indexLValue return pointers to live storage so
+// assignments work through chains like a.b[i].f = v, this.arr[i] = v, arr[i][j] = v.
+
+// Walks an lvalue chain to its root identifier and rejects writes to consts.
+void Interpreter::checkConstTarget(const Expr* expr) {
+    const Expr* e = expr;
+    while (e) {
+        if (auto id = dynamic_cast<const IdentifierExpr*>(e)) {
+            if (isVarConst(id->name)) {
+                throw std::runtime_error("[VDX] Cannot modify const variable '" + id->name +
+                    "' at line " + std::to_string(currentLine));
+            }
+            return;
+        }
+        if (auto dot = dynamic_cast<const DotExpr*>(e)) { e = dot->object.get(); continue; }
+        if (auto idx = dynamic_cast<const IndexExpr*>(e)) { e = idx->object.get(); continue; }
+        return; // e.g. ThisExpr — 'this' itself is never const-checked
+    }
+}
+
+Value* Interpreter::fieldLValue(const Expr* object, const std::string& field, bool forWrite) {
+    std::shared_ptr<ObjectData> obj;
+    if (dynamic_cast<const ThisExpr*>(object)) {
+        if (!currentObject) {
+            throw std::runtime_error("[VDX] 'this' used outside of object context at line " +
+                std::to_string(currentLine));
+        }
+        obj = currentObject;
+    } else {
+        Value* ov = evalLValue(object, forWrite);
+        if (ov->type != Value::OBJECT || !ov->objVal) {
+            throw std::runtime_error("[VDX] Cannot access field '" + field + "' on " +
+                ov->typeName() + " at line " + std::to_string(currentLine));
+        }
+        obj = ov->objVal;
+    }
+    auto it = obj->fields.find(field);
+    if (it == obj->fields.end()) {
+        if (forWrite) return &obj->fields[field]; // assignment creates new fields
+        throw std::runtime_error("[VDX] Undefined field '" + field + "' on " + obj->className +
+            " at line " + std::to_string(currentLine));
+    }
+    return &it->second;
+}
+
+Value* Interpreter::indexLValue(Value* container, const Value& index, bool create) {
+    if (container->type == Value::ARRAY) {
+        if (index.type != Value::INT) {
+            throw std::runtime_error("[VDX] Array index must be an integer at line " +
+                std::to_string(currentLine));
+        }
+        if (index.intVal < 0 || index.intVal >= (int)container->arrVal->size()) {
+            throw std::runtime_error("[VDX] Array index " + std::to_string(index.intVal) +
+                " out of bounds (size " + std::to_string(container->arrVal->size()) +
+                ") at line " + std::to_string(currentLine));
+        }
+        return &(*container->arrVal)[index.intVal];
+    }
+    if (container->type == Value::DICT) {
+        if (index.type != Value::STRING) {
+            throw std::runtime_error("[VDX] Dictionary key must be a string at line " +
+                std::to_string(currentLine));
+        }
+        auto& map = *container->dictVal;
+        auto it = map.find(index.strVal);
+        if (it == map.end()) {
+            if (!create) {
+                throw std::runtime_error("[VDX] Key '" + index.strVal +
+                    "' not found in dictionary at line " + std::to_string(currentLine));
+            }
+            return &map[index.strVal]; // assignment creates the key
+        }
+        return &it->second;
+    }
+    throw std::runtime_error("[VDX] Cannot index into " + std::string(container->typeName()) +
+        " at line " + std::to_string(currentLine));
+}
+
+Value* Interpreter::evalLValue(const Expr* expr, bool forWrite) {
+    if (expr->line > 0) currentLine = expr->line;
+    if (auto id = dynamic_cast<const IdentifierExpr*>(expr)) {
+        Value* v = lookupVar(id->name);
+        if (!v) {
+            throw std::runtime_error("[VDX] Undefined variable '" + id->name +
+                "' at line " + std::to_string(currentLine));
+        }
+        return v;
+    }
+    if (auto dot = dynamic_cast<const DotExpr*>(expr)) {
+        return fieldLValue(dot->object.get(), dot->field, forWrite);
+    }
+    if (auto idx = dynamic_cast<const IndexExpr*>(expr)) {
+        Value* container = evalLValue(idx->object.get(), false);
+        if (container->type == Value::STRING) {
+            throw std::runtime_error("[VDX] String element is not assignable here; "
+                "use s[i] = \"c\" at line " + std::to_string(currentLine));
+        }
+        Value index = evalExpr(idx->index.get());
+        return indexLValue(container, index, forWrite);
+    }
+    throw std::runtime_error("[VDX] Expression is not assignable at line " +
+        std::to_string(currentLine));
+}
+
+// ── Error context for imported files ──
+
+void Interpreter::recordErrorFile(const Node* decl) {
+    if (!errorFile.empty()) return; // first (deepest) attribution wins
+    auto it = declFiles.find(decl);
+    if (it == declFiles.end()) return;
+    errorFile = it->second;
+    auto src = fileSources.find(it->second);
+    if (src != fileSources.end()) errorSource = src->second;
+}
+
+// ── Loop safety ──
+
+void Interpreter::checkLoopSafety(std::chrono::steady_clock::time_point iterStart,
+                                  long long iteration, bool isUnsafe, const char* loopName) {
+    if (isUnsafe) { ioExcludedMs = 0; return; }
+    if (iteration > MAX_LOOP_ITERATIONS) {
+        throw std::runtime_error(
+            "[VDX] Loop safety: " + std::string(loopName) + " loop exceeded " +
+            std::to_string(MAX_LOOP_ITERATIONS) + " iterations.\n"
+            "      This loop may be infinite.\n"
+            "      Use @unsafe before '" + loopName + "' to disable this protection.");
+    }
+    // Time blocked inside wait()/input() does not count toward the iteration budget
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now() - iterStart).count() - ioExcludedMs;
+    ioExcludedMs = 0;
+    if (elapsed > 2000) {
+        throw std::runtime_error(
+            "[VDX] Loop safety: iteration took " + std::to_string(elapsed) +
+            "ms (> 2000ms maximum).\n"
+            "      This loop may be infinite or too slow.\n"
+            "      Use @unsafe before '" + loopName + "' to disable this protection.");
+    }
+}
+
 // ── Type checking ──
 
 void Interpreter::checkType(const std::string& annotation, const Value& val, int line) {
@@ -128,25 +286,30 @@ void Interpreter::checkType(const std::string& annotation, const Value& val, int
         throw std::runtime_error("[VDX] Unknown type '" + annotation + "' at line " + std::to_string(line));
     }
     if (!ok) {
-        std::string got;
-        switch (val.type) {
-            case Value::INT: got = "int"; break;
-            case Value::FLOAT: got = "float"; break;
-            case Value::STRING: got = "string"; break;
-            case Value::BOOL: got = "bool"; break;
-            case Value::VOID: got = "void"; break;
-            case Value::ARRAY: got = "array"; break;
-            case Value::OBJECT: got = "object"; break;
-            case Value::DICT: got = "dict"; break;
-        }
         throw std::runtime_error("[VDX] Type mismatch: expected '" + annotation +
-            "', got '" + got + "' at line " + std::to_string(line));
+            "', got '" + val.typeName() + "' at line " + std::to_string(line));
     }
 }
 
 // ── Execution ──
 
-void Interpreter::run(const Program& program, const std::string& sourceDir) {
+void Interpreter::run(const Program& program, const std::string& sourceDir, const std::string& mainFile) {
+    // Reset per-run state so an Interpreter instance is safely reusable
+    scopes.clear();
+    functions.clear();
+    classDecls.clear();
+    importedFiles.clear();
+    importedPrograms.clear();
+    declFiles.clear();
+    fileSources.clear();
+    currentObject.reset();
+    currentClassName.clear();
+    currentLine = 0;
+    callDepth = 0;
+    ioExcludedMs = 0;
+    errorFile.clear();
+    errorSource.clear();
+
     sourceDirectory = sourceDir;
 
     // Register built-in modules (only once per Interpreter instance)
@@ -155,6 +318,23 @@ void Interpreter::run(const Program& program, const std::string& sourceDir) {
         MathModule::registerMath(*this);
         GraphModule::registerGraph(*this);
         modulesRegistered = true;
+    }
+
+    // Mark the entry file as imported so a circular import back into it is
+    // skipped like any other duplicate import (instead of re-registering its
+    // declarations and failing with a confusing duplicate-definition error).
+    if (!mainFile.empty() && std::filesystem::exists(mainFile)) {
+        std::error_code ec;
+        auto canon = std::filesystem::canonical(mainFile, ec);
+        if (!ec) {
+            importedFiles.insert(canon.string());
+            std::ifstream f(mainFile);
+            if (f.is_open()) {
+                std::stringstream buf;
+                buf << f.rdbuf();
+                fileSources[canon.string()] = buf.str();
+            }
+        }
     }
 
     // First pass: process imports
@@ -209,9 +389,14 @@ void Interpreter::run(const Program& program, const std::string& sourceDir) {
     } catch (ReturnException&) {
         // 'return' at top level outside a function — ignore
     } catch (BreakException&) {
+        popScope();
         throw std::runtime_error("[VDX] 'break' used outside of a loop at line " + std::to_string(currentLine));
     } catch (ContinueException&) {
+        popScope();
         throw std::runtime_error("[VDX] 'continue' used outside of a loop at line " + std::to_string(currentLine));
+    } catch (...) {
+        popScope();
+        throw;
     }
     popScope();
 }
@@ -244,15 +429,34 @@ void Interpreter::execImport(const ImportStmt* stmt) {
     std::stringstream buf;
     buf << file.rdbuf();
     std::string source = buf.str();
+    fileSources[canonicalPath] = source;
 
-    Lexer lexer(source);
-    auto tokens = lexer.tokenize();
+    std::shared_ptr<Program> importedProgram;
+    try {
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        Parser parser(tokens);
+        importedProgram = std::make_shared<Program>(parser.parse());
+    } catch (const std::runtime_error&) {
+        // Attribute the error to the imported file so the displayed source
+        // context comes from that file, not the entry file
+        errorFile = canonicalPath;
+        errorSource = source;
+        throw;
+    }
 
-    Parser parser(tokens);
-    auto importedProgram = std::make_shared<Program>(parser.parse());
-    
     // Store imported program to keep AST nodes alive
     importedPrograms.push_back(importedProgram);
+
+    // Remember which file each declaration came from (for runtime error context)
+    for (auto& decl : importedProgram->declarations) {
+        declFiles[decl.get()] = canonicalPath;
+        if (auto cls = dynamic_cast<ClassDecl*>(decl.get())) {
+            for (auto& member : cls->body) {
+                declFiles[member.get()] = canonicalPath;
+            }
+        }
+    }
 
     // Import classes and functions from the imported file
     std::string importDir = importPath.parent_path().string();
@@ -261,10 +465,15 @@ void Interpreter::execImport(const ImportStmt* stmt) {
     // Temporarily switch sourceDirectory so relative imports resolve correctly
     std::string savedSourceDir = sourceDirectory;
     sourceDirectory = importDir;
-    for (auto& decl : importedProgram->declarations) {
-        if (auto nestedImport = dynamic_cast<ImportStmt*>(decl.get())) {
-            execImport(nestedImport);
+    try {
+        for (auto& decl : importedProgram->declarations) {
+            if (auto nestedImport = dynamic_cast<ImportStmt*>(decl.get())) {
+                execImport(nestedImport);
+            }
         }
+    } catch (...) {
+        sourceDirectory = savedSourceDir;
+        throw;
     }
     sourceDirectory = savedSourceDir;
 
@@ -312,7 +521,7 @@ void Interpreter::execClass(const ClassDecl* cls) {
     std::string savedClassName = currentClassName;
     currentClassName = cls->name;
     try {
-        // First pass: register functions (namespaced as ClassName::funcName)
+        // First pass: register methods (namespaced as ClassName::funcName)
         for (auto& node : cls->body) {
             if (auto fn = dynamic_cast<FnDecl*>(node.get())) {
                 std::string key = cls->name + "::" + fn->name;
@@ -321,6 +530,14 @@ void Interpreter::execClass(const ClassDecl* cls) {
                 }
                 functions[key] = fn;
             }
+        }
+        // Second pass: execute the class body as program code. Field
+        // declarations (let/const) become variables in this scope; other
+        // statements (print, if, loops, calls) run normally. This is what
+        // makes 'class Main { <program> }' work as the recommended wrapper.
+        for (auto& node : cls->body) {
+            if (dynamic_cast<FnDecl*>(node.get())) continue;
+            execStatement(node);
         }
     } catch (...) {
         currentClassName = savedClassName;
@@ -362,43 +579,28 @@ void Interpreter::execStatement(const NodePtr& node) {
         }
         *v = evalExpr(assign->value.get());
     } else if (auto idxAssign = dynamic_cast<IndexAssignStmt*>(node.get())) {
-        if (isVarConst(idxAssign->name)) {
-            throw std::runtime_error("[VDX] Cannot modify const variable '" + idxAssign->name + "' at line " + std::to_string(currentLine));
-        }
-        Value* v = lookupVar(idxAssign->name);
-        if (!v) {
-            throw std::runtime_error("[VDX] Undefined variable '" + idxAssign->name + "' at line " + std::to_string(currentLine));
-        }
-        if (v->type == Value::ARRAY) {
-            Value idx = evalExpr(idxAssign->index.get());
+        checkConstTarget(idxAssign->object.get());
+        Value* container = evalLValue(idxAssign->object.get(), false);
+        Value idx = evalExpr(idxAssign->index.get());
+        if (container->type == Value::STRING) {
             if (idx.type != Value::INT) {
-                throw std::runtime_error("[VDX] Array index must be an integer at line " + std::to_string(currentLine));
+                throw std::runtime_error("[VDX] String index must be an integer at line " + std::to_string(currentLine));
             }
-            if (idx.intVal < 0 || idx.intVal >= (int)v->arrVal.size()) {
-                throw std::runtime_error("[VDX] Array index " + std::to_string(idx.intVal) +
-                    " out of bounds (size " + std::to_string(v->arrVal.size()) + ") at line " + std::to_string(currentLine));
+            if (idx.intVal < 0 || idx.intVal >= (int)container->strVal.size()) {
+                throw std::runtime_error("[VDX] String index " + std::to_string(idx.intVal) +
+                    " out of bounds (length " + std::to_string(container->strVal.size()) + ") at line " + std::to_string(currentLine));
             }
-            v->arrVal[idx.intVal] = evalExpr(idxAssign->value.get());
-        } else if (v->type == Value::DICT) {
-            Value idx = evalExpr(idxAssign->index.get());
-            if (idx.type != Value::STRING) {
-                throw std::runtime_error("[VDX] Dictionary key must be a string at line " + std::to_string(currentLine));
+            Value val = evalExpr(idxAssign->value.get());
+            if (val.type != Value::STRING || val.strVal.size() != 1) {
+                throw std::runtime_error("[VDX] String index assignment requires a single-character string at line " + std::to_string(currentLine));
             }
-            v->dictVal[idx.strVal] = evalExpr(idxAssign->value.get());
+            container->strVal[idx.intVal] = val.strVal[0];
         } else {
-            throw std::runtime_error("[VDX] Cannot index into variable '" + idxAssign->name + "' at line " + std::to_string(currentLine));
+            *indexLValue(container, idx, true) = evalExpr(idxAssign->value.get());
         }
     } else if (auto dotAssign = dynamic_cast<DotAssignStmt*>(node.get())) {
-        if (auto idExpr = dynamic_cast<const IdentifierExpr*>(dotAssign->object.get())) {
-            if (isVarConst(idExpr->name)) {
-                throw std::runtime_error("[VDX] Cannot modify field on const variable '" + idExpr->name + "' at line " + std::to_string(currentLine));
-            }
-        }
-        Value obj = evalExpr(dotAssign->object.get());
-        if (obj.type != Value::OBJECT || !obj.objVal) {
-            throw std::runtime_error("[VDX] Cannot set field on non-object at line " + std::to_string(currentLine));
-        }
-        obj.objVal->fields[dotAssign->field] = evalExpr(dotAssign->value.get());
+        checkConstTarget(dotAssign->object.get());
+        *fieldLValue(dotAssign->object.get(), dotAssign->field, true) = evalExpr(dotAssign->value.get());
     } else if (auto es = dynamic_cast<ExprStmt*>(node.get())) {
         evalExpr(es->expr.get());
     } else if (auto brk = dynamic_cast<BreakStmt*>(node.get())) {
@@ -415,10 +617,12 @@ void Interpreter::execLet(const LetStmt* stmt) {
 }
 
 void Interpreter::execBreak(const BreakStmt* stmt) {
+    (void)stmt;
     throw BreakException();
 }
 
 void Interpreter::execContinue(const ContinueStmt* stmt) {
+    (void)stmt;
     throw ContinueException();
 }
 
@@ -472,6 +676,7 @@ void Interpreter::execIf(const IfStmt* stmt) {
 }
 
 void Interpreter::execWhile(const WhileStmt* stmt) {
+    long long iteration = 0;
     while (isTruthy(evalExpr(stmt->condition.get()))) {
         auto iterStart = std::chrono::steady_clock::now();
 
@@ -487,118 +692,87 @@ void Interpreter::execWhile(const WhileStmt* stmt) {
         } catch (ReturnException&) {
             popScope();
             throw;
+        } catch (...) {
+            popScope();
+            throw;
         }
 
-        if (!stmt->isUnsafe) {
-            auto iterEnd = std::chrono::steady_clock::now();
-            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(iterEnd - iterStart).count();
-            if (elapsed > 2000) {
-                throw std::runtime_error(
-                    "[VDX] Loop safety: iteration took " + std::to_string(elapsed) +
-                    "ms (> 2000ms maximum).\n"
-                    "      This loop may be infinite or too slow.\n"
-                    "      Use @unsafe before 'while' to disable this protection:\n"
-                    "      @unsafe while (condition) { ... }");
-            }
-        }
+        checkLoopSafety(iterStart, ++iteration, stmt->isUnsafe, "while");
     }
 }
 
 void Interpreter::execFor(const ForStmt* stmt) {
     pushScope(); // scope for the init variable
+    long long iteration = 0;
 
-    // Execute init
-    execStatement(stmt->init);
+    try {
+        // Execute init
+        execStatement(stmt->init);
 
-    while (isTruthy(evalExpr(stmt->condition.get()))) {
-        auto iterStart = std::chrono::steady_clock::now();
+        while (isTruthy(evalExpr(stmt->condition.get()))) {
+            auto iterStart = std::chrono::steady_clock::now();
 
-        pushScope(); // body scope
-        try {
-            for (auto& s : stmt->body) execStatement(s);
-            popScope();
-        } catch (BreakException&) {
-            popScope();
-            popScope(); // pop init scope too
-            return;
-        } catch (ContinueException&) {
-            popScope();
-        } catch (ReturnException&) {
-            popScope();
-            popScope(); // pop init scope too
-            throw;
-        }
-
-        // Execute update
-        execStatement(stmt->update);
-
-        if (!stmt->isUnsafe) {
-            auto iterEnd = std::chrono::steady_clock::now();
-            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(iterEnd - iterStart).count();
-            if (elapsed > 2000) {
-                throw std::runtime_error(
-                    "[VDX] Loop safety: iteration took " + std::to_string(elapsed) +
-                    "ms (> 2000ms maximum).\n"
-                    "      This loop may be infinite or too slow.\n"
-                    "      Use @unsafe before 'for' to disable this protection:\n"
-                    "      @unsafe for (let i = 0; i < n; i = i + 1) { ... }");
+            pushScope(); // body scope
+            try {
+                for (auto& s : stmt->body) execStatement(s);
+                popScope();
+            } catch (BreakException&) {
+                popScope();
+                popScope(); // pop init scope too
+                return;
+            } catch (ContinueException&) {
+                popScope();
+            } catch (...) {
+                popScope();
+                throw;
             }
+
+            // Execute update
+            execStatement(stmt->update);
+
+            checkLoopSafety(iterStart, ++iteration, stmt->isUnsafe, "for");
         }
+    } catch (...) {
+        popScope(); // pop init scope
+        throw;
     }
 
     popScope(); // pop init scope
 }
 
 void Interpreter::execForIn(const ForInStmt* stmt) {
-    // Try to get a pointer to the live array variable so modifications during iteration are reflected
-    Value* arrPtr = nullptr;
-    if (auto id = dynamic_cast<const IdentifierExpr*>(stmt->iterable.get())) {
-        arrPtr = lookupVar(id->name);
-    }
-    if (arrPtr && arrPtr->type == Value::ARRAY) {
-        for (size_t i = 0; i < arrPtr->arrVal.size(); i++) {
-            auto iterStart = std::chrono::steady_clock::now();
-
-            pushScope();
-            declareVar(stmt->varName, arrPtr->arrVal[i], false);
-            try {
-                for (auto& s : stmt->body) execStatement(s);
-                popScope();
-            } catch (BreakException&) {
-                popScope();
-                return;
-            } catch (ContinueException&) {
-                popScope();
-            } catch (ReturnException&) {
-                popScope();
-                throw;
-            }
-
-            if (!stmt->isUnsafe) {
-                auto iterEnd = std::chrono::steady_clock::now();
-                auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(iterEnd - iterStart).count();
-                if (elapsed > 2000) {
-                    throw std::runtime_error(
-                        "[VDX] Loop safety: iteration took " + std::to_string(elapsed) +
-                        "ms (> 2000ms maximum).\n"
-                        "      This loop may be infinite or too slow.\n"
-                        "      Use @unsafe before 'for' to disable this protection:\n"
-                        "      @unsafe for (item in arr) { ... }");
-                }
-            }
-        }
-        return;
-    }
-    // Fallback: evaluate the expression (may not be a simple variable)
     Value iterable = evalExpr(stmt->iterable.get());
-    if (iterable.type != Value::ARRAY) {
-        throw std::runtime_error("[VDX] for-in requires an array at line " + std::to_string(currentLine));
+
+    // Arrays share storage, so iterating a live view reflects push/pop during
+    // iteration. Strings iterate over characters; dicts iterate over sorted keys.
+    std::shared_ptr<std::vector<Value>> liveArr;
+    std::vector<Value> items;
+    if (iterable.type == Value::ARRAY) {
+        liveArr = iterable.arrVal;
+    } else if (iterable.type == Value::STRING) {
+        for (char c : iterable.strVal) {
+            items.push_back(Value::makeString(std::string(1, c)));
+        }
+    } else if (iterable.type == Value::DICT) {
+        std::vector<std::string> keys;
+        keys.reserve(iterable.dictVal->size());
+        for (const auto& pair : *iterable.dictVal) keys.push_back(pair.first);
+        std::sort(keys.begin(), keys.end());
+        for (auto& k : keys) items.push_back(Value::makeString(k));
+    } else {
+        throw std::runtime_error("[VDX] for-in requires an array, string, or dictionary, got '" +
+            std::string(iterable.typeName()) + "' at line " + std::to_string(currentLine));
     }
-    for (size_t i = 0; i < iterable.arrVal.size(); i++) {
+
+    auto count = [&]() -> size_t { return liveArr ? liveArr->size() : items.size(); };
+    auto at = [&](size_t i) -> Value& { return liveArr ? (*liveArr)[i] : items[i]; };
+
+    long long iteration = 0;
+    for (size_t i = 0; i < count(); i++) {
         auto iterStart = std::chrono::steady_clock::now();
 
         pushScope();
-        declareVar(stmt->varName, iterable.arrVal[i], false);
+        declareVar(stmt->varName, at(i), false);
         try {
             for (auto& s : stmt->body) execStatement(s);
             popScope();
@@ -607,35 +781,29 @@ void Interpreter::execForIn(const ForInStmt* stmt) {
             return;
         } catch (ContinueException&) {
             popScope();
-        } catch (ReturnException&) {
+        } catch (...) {
             popScope();
             throw;
         }
 
-        if (!stmt->isUnsafe) {
-            auto iterEnd = std::chrono::steady_clock::now();
-            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(iterEnd - iterStart).count();
-            if (elapsed > 2000) {
-                throw std::runtime_error(
-                    "[VDX] Loop safety: iteration took " + std::to_string(elapsed) +
-                    "ms (> 2000ms maximum).\n"
-                    "      This loop may be infinite or too slow.\n"
-                    "      Use @unsafe before 'for' to disable this protection:\n"
-                    "      @unsafe for (item in arr) { ... }");
-            }
-        }
+        checkLoopSafety(iterStart, ++iteration, stmt->isUnsafe, "for-in");
     }
 }
 
 void Interpreter::execWait(const WaitStmt* stmt) {
     Value dur = evalExpr(stmt->duration.get());
-    if (dur.type != Value::INT) {
-        throw std::runtime_error("[VDX] wait() expects an integer (milliseconds) at line " + std::to_string(currentLine));
+    if (!dur.isNumeric()) {
+        throw std::runtime_error("[VDX] wait() expects a number (milliseconds) at line " + std::to_string(currentLine));
     }
-    if (dur.intVal < 0) {
+    double ms = dur.toDouble();
+    if (ms < 0) {
         throw std::runtime_error("[VDX] wait() duration cannot be negative at line " + std::to_string(currentLine));
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(dur.intVal));
+    if (ms > 0) {
+        // Time spent in wait() is excluded from loop-safety timing
+        ioExcludedMs += static_cast<long long>(ms + 0.5);
+        std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(ms));
+    }
 }
 
 bool Interpreter::isTruthy(const Value& v) const {
@@ -645,9 +813,9 @@ bool Interpreter::isTruthy(const Value& v) const {
         case Value::FLOAT: return v.floatVal != 0.0;
         case Value::STRING: return !v.strVal.empty();
         case Value::VOID: return false;
-        case Value::ARRAY: return !v.arrVal.empty();
+        case Value::ARRAY: return v.arrVal && !v.arrVal->empty();
         case Value::OBJECT: return v.objVal != nullptr;
-        case Value::DICT: return !v.dictVal.empty();
+        case Value::DICT: return v.dictVal && !v.dictVal->empty();
     }
     return false;
 }
@@ -696,6 +864,7 @@ Value Interpreter::execNew(const NewExpr* expr) {
             }
         }
     } catch (...) {
+        recordErrorFile(cls);
         currentClassName = savedClassName;
         currentObject = savedObject;
         popScope();
@@ -709,117 +878,74 @@ Value Interpreter::execNew(const NewExpr* expr) {
     return Value::makeObject(obj);
 }
 
+// Shared function-call machinery used by bare calls and method calls.
+// 'this' is bound only for methods — plain functions never see a stale object.
+Value Interpreter::callFunction(const FnDecl* fn, const std::vector<Value>& args,
+                                std::shared_ptr<ObjectData> obj, const std::string& clsName) {
+    if (callDepth >= MAX_CALL_DEPTH) {
+        throw std::runtime_error("[VDX] Maximum call depth exceeded (" +
+            std::to_string(MAX_CALL_DEPTH) + ") — possible infinite recursion at line " +
+            std::to_string(currentLine));
+    }
+    callDepth++;
+
+    auto savedObject = currentObject;
+    auto savedClassName = currentClassName;
+    currentObject = obj;
+    currentClassName = clsName;
+
+    pushScope();
+    for (size_t i = 0; i < fn->params.size(); i++) {
+        declareVar(fn->params[i], args[i], false);
+    }
+
+    auto cleanup = [&]() {
+        popScope();
+        currentObject = savedObject;
+        currentClassName = savedClassName;
+        callDepth--;
+    };
+
+    Value result = Value::makeVoid();
+    try {
+        for (auto& stmt : fn->body) execStatement(stmt);
+    } catch (ReturnException& e) {
+        result = e.value;
+    } catch (BreakException&) {
+        cleanup();
+        throw std::runtime_error("[VDX] 'break' used outside of a loop at line " + std::to_string(currentLine));
+    } catch (ContinueException&) {
+        cleanup();
+        throw std::runtime_error("[VDX] 'continue' used outside of a loop at line " + std::to_string(currentLine));
+    } catch (std::runtime_error&) {
+        recordErrorFile(fn);
+        cleanup();
+        throw;
+    } catch (...) {
+        cleanup();
+        throw;
+    }
+    cleanup();
+    return result;
+}
+
+// Module-function wrapper: normalizes error format so every module error
+// carries source context (some module errors omit "at line N").
+Value Interpreter::callModule(const ModuleFunc& f, const std::vector<Value>& args, int line) {
+    try {
+        return f(args, line);
+    } catch (const std::runtime_error& e) {
+        std::string msg = e.what();
+        if (line > 0 && msg.find("at line") == std::string::npos) {
+            msg += " at line " + std::to_string(line);
+        }
+        throw std::runtime_error(msg);
+    }
+}
+
 Value Interpreter::execCall(const CallExpr* call) {
-    // Built-in: len(array_or_string_or_object)
-    if (call->name == "len") {
-        if (call->args.size() != 1) {
-            throw std::runtime_error("[VDX] len() expects 1 argument, got " +
-                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
-        }
-        Value arg = evalExpr(call->args[0].get());
-        if (arg.type == Value::ARRAY) return Value::makeInt((int)arg.arrVal.size());
-        if (arg.type == Value::STRING) return Value::makeInt((int)arg.strVal.size());
-        if (arg.type == Value::OBJECT) {
-            if (arg.objVal) {
-                return Value::makeInt((int)arg.objVal->fields.size());
-            }
-            return Value::makeInt(0);
-        }
-        if (arg.type == Value::DICT) return Value::makeInt((int)arg.dictVal.size());
-        throw std::runtime_error("[VDX] len() expects an array, string, object, or dict at line " + std::to_string(currentLine));
-    }
-    // Built-in: push(array, value)
-    if (call->name == "push") {
-        if (call->args.size() != 2) {
-            throw std::runtime_error("[VDX] push() expects 2 arguments, got " +
-                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
-        }
-        auto id = dynamic_cast<const IdentifierExpr*>(call->args[0].get());
-        if (!id) {
-            throw std::runtime_error("[VDX] push() first argument must be a variable at line " + std::to_string(currentLine));
-        }
-        if (isVarConst(id->name)) {
-            throw std::runtime_error("[VDX] Cannot push to const array '" + id->name + "' at line " + std::to_string(currentLine));
-        }
-        Value* arr = lookupVar(id->name);
-        if (!arr || arr->type != Value::ARRAY) {
-            throw std::runtime_error("[VDX] push() first argument must be an array variable at line " + std::to_string(currentLine));
-        }
-        arr->arrVal.push_back(evalExpr(call->args[1].get()));
-        return Value::makeVoid();
-    }
-    // Built-in: pop(array) - removes and returns last element
-    if (call->name == "pop") {
-        if (call->args.size() != 1) {
-            throw std::runtime_error("[VDX] pop() expects 1 argument, got " +
-                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
-        }
-        auto id = dynamic_cast<const IdentifierExpr*>(call->args[0].get());
-        if (!id) {
-            throw std::runtime_error("[VDX] pop() argument must be a variable at line " + std::to_string(currentLine));
-        }
-        if (isVarConst(id->name)) {
-            throw std::runtime_error("[VDX] Cannot pop from const array '" + id->name + "' at line " + std::to_string(currentLine));
-        }
-        Value* arr = lookupVar(id->name);
-        if (!arr || arr->type != Value::ARRAY) {
-            throw std::runtime_error("[VDX] pop() argument must be an array variable at line " + std::to_string(currentLine));
-        }
-        if (arr->arrVal.empty()) {
-            throw std::runtime_error("[VDX] pop() cannot pop from empty array at line " + std::to_string(currentLine));
-        }
-        Value last = arr->arrVal.back();
-        arr->arrVal.pop_back();
-        return last;
-    }
-    // Built-in: type(value) - returns type as string
-    if (call->name == "type") {
-        if (call->args.size() != 1) {
-            throw std::runtime_error("[VDX] type() expects 1 argument, got " +
-                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
-        }
-        Value arg = evalExpr(call->args[0].get());
-        std::string typeName;
-        switch (arg.type) {
-            case Value::INT: typeName = "int"; break;
-            case Value::FLOAT: typeName = "float"; break;
-            case Value::STRING: typeName = "string"; break;
-            case Value::BOOL: typeName = "bool"; break;
-            case Value::VOID: typeName = "void"; break;
-            case Value::ARRAY: typeName = "array"; break;
-            case Value::OBJECT: typeName = "object"; break;
-            case Value::DICT: typeName = "dict"; break;
-        }
-        return Value::makeString(typeName);
-    }
-    // Built-in: input() or input(prompt) - reads user input
-    if (call->name == "input") {
-        if (call->args.size() > 1) {
-            throw std::runtime_error("[VDX] input() expects 0 or 1 arguments, got " +
-                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
-        }
-        // Print prompt if provided
-        if (call->args.size() == 1) {
-            Value prompt = evalExpr(call->args[0].get());
-            std::cout << prompt.toString();
-        }
-        // Read input
-        std::string input;
-        std::getline(std::cin, input);
-        return Value::makeString(input);
-    }
-
-    // Check module functions (C++ built-ins like math.sqrt, fs.readFile)
-    auto modIt = moduleFunctions.find(call->name);
-    if (modIt != moduleFunctions.end()) {
-        std::vector<Value> argVals;
-        for (size_t i = 0; i < call->args.size(); i++) {
-            argVals.push_back(evalExpr(call->args[i].get()));
-        }
-        return modIt->second(argVals, currentLine);
-    }
-
-    // Try namespaced lookup first (currentClassName::funcName), then plain name
+    // User-defined functions resolve first — a user 'fn len(x)' shadows the
+    // built-in rather than being silently unreachable.
     const FnDecl* fn = nullptr;
     bool isMethod = false;
     if (!currentClassName.empty()) {
@@ -831,79 +957,308 @@ Value Interpreter::execCall(const CallExpr* call) {
     }
     if (!fn) {
         auto it = functions.find(call->name);
-        if (it != functions.end()) {
-            fn = it->second;
+        if (it != functions.end()) fn = it->second;
+    }
+    if (fn) {
+        if (call->args.size() != fn->params.size()) {
+            throw std::runtime_error("[VDX] Function '" + fn->name + "' expects " +
+                std::to_string(fn->params.size()) + " args, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
         }
-    }
-    if (!fn) {
-        throw std::runtime_error("[VDX] Undefined function '" + call->name + "' at line " + std::to_string(currentLine));
-    }
-    if (call->args.size() != fn->params.size()) {
-        throw std::runtime_error("[VDX] Function '" + fn->name + "' expects " +
-            std::to_string(fn->params.size()) + " args, got " +
-            std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
-    }
-
-    std::vector<Value> argVals;
-    for (size_t i = 0; i < call->args.size(); i++) {
-        argVals.push_back(evalExpr(call->args[i].get()));
-    }
-
-    // If calling a method via bare name from within a method, push object fields as scope
-    bool pushedObjScope = false;
-    if (isMethod && currentObject) {
-        pushScope();
-        for (auto& pair : currentObject->fields) {
-            declareVar(pair.first, pair.second, false);
+        std::vector<Value> argVals;
+        for (size_t i = 0; i < call->args.size(); i++) {
+            argVals.push_back(evalExpr(call->args[i].get()));
         }
-        pushedObjScope = true;
+        return callFunction(fn, argVals,
+                            isMethod ? currentObject : nullptr,
+                            isMethod ? currentClassName : "");
     }
 
-    pushScope();
-    for (size_t i = 0; i < fn->params.size(); i++) {
-        declareVar(fn->params[i], argVals[i], false);
-    }
+    bool handled = false;
+    Value builtinResult = execBuiltin(call, handled);
+    if (handled) return builtinResult;
 
-    Value result = Value::makeVoid();
-    try {
-        for (auto& stmt : fn->body) {
-            execStatement(stmt);
+    // Module functions (e.g. namespaced C++ built-ins)
+    auto modIt = moduleFunctions.find(call->name);
+    if (modIt != moduleFunctions.end()) {
+        std::vector<Value> argVals;
+        for (size_t i = 0; i < call->args.size(); i++) {
+            argVals.push_back(evalExpr(call->args[i].get()));
         }
-    } catch (ReturnException& e) {
-        result = e.value;
-    } catch (BreakException&) {
-        if (pushedObjScope && scopes.size() >= 2) {
-            auto& objScope = scopes[scopes.size() - 2];
-            for (auto& pair : objScope) {
-                currentObject->fields[pair.first] = pair.second.value;
+        return callModule(modIt->second, argVals, currentLine);
+    }
+
+    throw std::runtime_error("[VDX] Undefined function '" + call->name + "' at line " + std::to_string(currentLine));
+}
+
+Value Interpreter::execBuiltin(const CallExpr* call, bool& handled) {
+    handled = true;
+    const std::string& n = call->name;
+
+    // Built-in: len(array_or_string_or_object)
+    if (n == "len") {
+        if (call->args.size() != 1) {
+            throw std::runtime_error("[VDX] len() expects 1 argument, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        Value arg = evalExpr(call->args[0].get());
+        if (arg.type == Value::ARRAY) return Value::makeInt((int)arg.arrVal->size());
+        if (arg.type == Value::STRING) return Value::makeInt((int)arg.strVal.size());
+        if (arg.type == Value::OBJECT) {
+            if (arg.objVal) return Value::makeInt((int)arg.objVal->fields.size());
+            return Value::makeInt(0);
+        }
+        if (arg.type == Value::DICT) return Value::makeInt((int)arg.dictVal->size());
+        throw std::runtime_error("[VDX] len() expects an array, string, object, or dict at line " + std::to_string(currentLine));
+    }
+    // Built-in: push(array, value) — works on any array lvalue (obj.field, arr[i], this.x)
+    if (n == "push") {
+        if (call->args.size() != 2) {
+            throw std::runtime_error("[VDX] push() expects 2 arguments, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        checkConstTarget(call->args[0].get());
+        Value* arr = evalLValue(call->args[0].get());
+        if (arr->type != Value::ARRAY) {
+            throw std::runtime_error("[VDX] push() first argument must be an array at line " + std::to_string(currentLine));
+        }
+        arr->arrVal->push_back(evalExpr(call->args[1].get()));
+        return Value::makeVoid();
+    }
+    // Built-in: pop(array) — removes and returns last element
+    if (n == "pop") {
+        if (call->args.size() != 1) {
+            throw std::runtime_error("[VDX] pop() expects 1 argument, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        checkConstTarget(call->args[0].get());
+        Value* arr = evalLValue(call->args[0].get());
+        if (arr->type != Value::ARRAY) {
+            throw std::runtime_error("[VDX] pop() argument must be an array at line " + std::to_string(currentLine));
+        }
+        if (arr->arrVal->empty()) {
+            throw std::runtime_error("[VDX] pop() cannot pop from empty array at line " + std::to_string(currentLine));
+        }
+        Value last = arr->arrVal->back();
+        arr->arrVal->pop_back();
+        return last;
+    }
+    // Built-in: type(value) — returns type as string
+    if (n == "type") {
+        if (call->args.size() != 1) {
+            throw std::runtime_error("[VDX] type() expects 1 argument, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        return Value::makeString(evalExpr(call->args[0].get()).typeName());
+    }
+    // Built-in: input() or input(prompt) — reads user input
+    if (n == "input") {
+        if (call->args.size() > 1) {
+            throw std::runtime_error("[VDX] input() expects 0 or 1 arguments, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        if (call->args.size() == 1) {
+            std::cout << evalExpr(call->args[0].get()).toString();
+        }
+        auto t0 = std::chrono::steady_clock::now();
+        std::string input;
+        std::getline(std::cin, input);
+        // Time blocked on input is excluded from loop-safety timing
+        ioExcludedMs += std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - t0).count();
+        return Value::makeString(input);
+    }
+    // Built-in: int(value) — numeric/string conversion
+    if (n == "int") {
+        if (call->args.size() != 1) {
+            throw std::runtime_error("[VDX] int() expects 1 argument, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        Value v = evalExpr(call->args[0].get());
+        if (v.type == Value::INT) return v;
+        if (v.type == Value::BOOL) return Value::makeInt(v.boolVal ? 1 : 0);
+        if (v.type == Value::FLOAT) {
+            if (std::isnan(v.floatVal) || std::isinf(v.floatVal) ||
+                v.floatVal > (double)INT_MAX || v.floatVal < (double)INT_MIN) {
+                throw std::runtime_error("[VDX] int() cannot convert float out of int range at line " + std::to_string(currentLine));
+            }
+            return Value::makeInt(static_cast<int>(v.floatVal));
+        }
+        if (v.type == Value::STRING) {
+            try {
+                size_t pos = 0;
+                int r = std::stoi(v.strVal, &pos);
+                if (pos != v.strVal.size()) throw std::invalid_argument("trailing");
+                return Value::makeInt(r);
+            } catch (const std::exception&) {
+                throw std::runtime_error("[VDX] int() cannot convert '" + v.strVal + "' at line " + std::to_string(currentLine));
             }
         }
-        popScope();
-        if (pushedObjScope) popScope();
-        throw std::runtime_error("[VDX] 'break' used outside of a loop at line " + std::to_string(currentLine));
-    } catch (ContinueException&) {
-        if (pushedObjScope && scopes.size() >= 2) {
-            auto& objScope = scopes[scopes.size() - 2];
-            for (auto& pair : objScope) {
-                currentObject->fields[pair.first] = pair.second.value;
+        throw std::runtime_error("[VDX] int() cannot convert " + std::string(v.typeName()) + " at line " + std::to_string(currentLine));
+    }
+    // Built-in: float(value) — numeric/string conversion
+    if (n == "float") {
+        if (call->args.size() != 1) {
+            throw std::runtime_error("[VDX] float() expects 1 argument, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        Value v = evalExpr(call->args[0].get());
+        if (v.type == Value::FLOAT) return v;
+        if (v.type == Value::INT) return Value::makeFloat((double)v.intVal);
+        if (v.type == Value::BOOL) return Value::makeFloat(v.boolVal ? 1.0 : 0.0);
+        if (v.type == Value::STRING) {
+            try {
+                size_t pos = 0;
+                double r = std::stod(v.strVal, &pos);
+                if (pos != v.strVal.size()) throw std::invalid_argument("trailing");
+                return Value::makeFloat(r);
+            } catch (const std::exception&) {
+                throw std::runtime_error("[VDX] float() cannot convert '" + v.strVal + "' at line " + std::to_string(currentLine));
             }
         }
-        popScope();
-        if (pushedObjScope) popScope();
-        throw std::runtime_error("[VDX] 'continue' used outside of a loop at line " + std::to_string(currentLine));
+        throw std::runtime_error("[VDX] float() cannot convert " + std::string(v.typeName()) + " at line " + std::to_string(currentLine));
     }
-
-    // Sync object fields back from the object scope
-    if (pushedObjScope && scopes.size() >= 2) {
-        auto& objScope = scopes[scopes.size() - 2];
-        for (auto& pair : objScope) {
-            currentObject->fields[pair.first] = pair.second.value;
+    // Built-in: str(value) — string representation of any value
+    if (n == "str") {
+        if (call->args.size() != 1) {
+            throw std::runtime_error("[VDX] str() expects 1 argument, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
         }
+        return Value::makeString(evalExpr(call->args[0].get()).toString());
     }
 
-    popScope();
-    if (pushedObjScope) popScope();
-    return result;
+    // ── String builtins ──
+    auto strArg = [&](size_t i, const char* which) -> std::string {
+        Value v = evalExpr(call->args[i].get());
+        if (v.type != Value::STRING) {
+            throw std::runtime_error("[VDX] " + n + "() argument " + which +
+                " must be a string at line " + std::to_string(currentLine));
+        }
+        return v.strVal;
+    };
+    auto intArg = [&](size_t i, const char* which) -> int {
+        Value v = evalExpr(call->args[i].get());
+        if (v.type != Value::INT) {
+            throw std::runtime_error("[VDX] " + n + "() argument " + which +
+                " must be an integer at line " + std::to_string(currentLine));
+        }
+        return v.intVal;
+    };
+
+    // Built-in: split(str, sep) — returns array of parts
+    if (n == "split") {
+        if (call->args.size() != 2) {
+            throw std::runtime_error("[VDX] split() expects 2 arguments, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        std::string s = strArg(0, "1"), sep = strArg(1, "2");
+        if (sep.empty()) {
+            throw std::runtime_error("[VDX] split() separator cannot be empty at line " + std::to_string(currentLine));
+        }
+        std::vector<Value> parts;
+        size_t pos = 0;
+        while (true) {
+            size_t found = s.find(sep, pos);
+            if (found == std::string::npos) {
+                parts.push_back(Value::makeString(s.substr(pos)));
+                break;
+            }
+            parts.push_back(Value::makeString(s.substr(pos, found - pos)));
+            pos = found + sep.size();
+        }
+        return Value::makeArray(std::move(parts));
+    }
+    // Built-in: substr(str, start[, len])
+    if (n == "substr") {
+        if (call->args.size() < 2 || call->args.size() > 3) {
+            throw std::runtime_error("[VDX] substr() expects 2 or 3 arguments, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        std::string s = strArg(0, "1");
+        int start = intArg(1, "2");
+        if (start < 0 || start > (int)s.size()) {
+            throw std::runtime_error("[VDX] substr() start out of range at line " + std::to_string(currentLine));
+        }
+        size_t len = s.size() - (size_t)start;
+        if (call->args.size() == 3) {
+            int l = intArg(2, "3");
+            if (l < 0) {
+                throw std::runtime_error("[VDX] substr() length cannot be negative at line " + std::to_string(currentLine));
+            }
+            len = std::min(len, (size_t)l);
+        }
+        return Value::makeString(s.substr((size_t)start, len));
+    }
+    // Built-in: indexOf(str, sub) — position or -1
+    if (n == "indexOf") {
+        if (call->args.size() != 2) {
+            throw std::runtime_error("[VDX] indexOf() expects 2 arguments, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        std::string s = strArg(0, "1"), sub = strArg(1, "2");
+        size_t pos = s.find(sub);
+        return Value::makeInt(pos == std::string::npos ? -1 : (int)pos);
+    }
+    // Built-in: upper(str) / lower(str)
+    if (n == "upper" || n == "lower") {
+        if (call->args.size() != 1) {
+            throw std::runtime_error("[VDX] " + n + "() expects 1 argument, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        std::string s = strArg(0, "1");
+        for (auto& c : s) {
+            c = (char)(n == "upper" ? std::toupper((unsigned char)c) : std::tolower((unsigned char)c));
+        }
+        return Value::makeString(s);
+    }
+    // Built-in: trim(str) — strips leading/trailing whitespace
+    if (n == "trim") {
+        if (call->args.size() != 1) {
+            throw std::runtime_error("[VDX] trim() expects 1 argument, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        std::string s = strArg(0, "1");
+        size_t b = s.find_first_not_of(" \t\n\r");
+        if (b == std::string::npos) return Value::makeString("");
+        return Value::makeString(s.substr(b, s.find_last_not_of(" \t\n\r") - b + 1));
+    }
+    // Built-in: replace(str, from, to) — replaces all occurrences
+    if (n == "replace") {
+        if (call->args.size() != 3) {
+            throw std::runtime_error("[VDX] replace() expects 3 arguments, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        std::string s = strArg(0, "1"), from = strArg(1, "2"), to = strArg(2, "3");
+        if (from.empty()) {
+            throw std::runtime_error("[VDX] replace() 'from' cannot be empty at line " + std::to_string(currentLine));
+        }
+        size_t pos = 0;
+        while ((pos = s.find(from, pos)) != std::string::npos) {
+            s.replace(pos, from.size(), to);
+            pos += to.size();
+        }
+        return Value::makeString(s);
+    }
+    // Built-in: join(array, sep) — joins element strings
+    if (n == "join") {
+        if (call->args.size() != 2) {
+            throw std::runtime_error("[VDX] join() expects 2 arguments, got " +
+                std::to_string(call->args.size()) + " at line " + std::to_string(currentLine));
+        }
+        Value arr = evalExpr(call->args[0].get());
+        if (arr.type != Value::ARRAY) {
+            throw std::runtime_error("[VDX] join() first argument must be an array at line " + std::to_string(currentLine));
+        }
+        std::string sep = strArg(1, "2"), out;
+        for (size_t i = 0; i < arr.arrVal->size(); i++) {
+            if (i > 0) out += sep;
+            out += (*arr.arrVal)[i].toString();
+        }
+        return Value::makeString(out);
+    }
+
+    handled = false;
+    return Value::makeVoid();
 }
 
 Value Interpreter::evalExpr(const Expr* expr) {
@@ -934,7 +1289,7 @@ Value Interpreter::evalExpr(const Expr* expr) {
     if (auto call = dynamic_cast<const CallExpr*>(expr)) {
         return execCall(call);
     }
-    if (auto te = dynamic_cast<const ThisExpr*>(expr)) {
+    if (dynamic_cast<const ThisExpr*>(expr)) {
         if (!currentObject) {
             throw std::runtime_error("[VDX] 'this' used outside of object context at line " + std::to_string(currentLine));
         }
@@ -961,11 +1316,11 @@ Value Interpreter::evalExpr(const Expr* expr) {
             if (index.type != Value::INT) {
                 throw std::runtime_error("[VDX] Array index must be an integer at line " + std::to_string(currentLine));
             }
-            if (index.intVal < 0 || index.intVal >= (int)obj.arrVal.size()) {
+            if (index.intVal < 0 || index.intVal >= (int)obj.arrVal->size()) {
                 throw std::runtime_error("[VDX] Array index " + std::to_string(index.intVal) +
-                    " out of bounds (size " + std::to_string(obj.arrVal.size()) + ") at line " + std::to_string(currentLine));
+                    " out of bounds (size " + std::to_string(obj.arrVal->size()) + ") at line " + std::to_string(currentLine));
             }
-            return obj.arrVal[index.intVal];
+            return (*obj.arrVal)[index.intVal];
         }
         if (obj.type == Value::STRING) {
             if (index.type != Value::INT) {
@@ -981,24 +1336,27 @@ Value Interpreter::evalExpr(const Expr* expr) {
             if (index.type != Value::STRING) {
                 throw std::runtime_error("[VDX] Dictionary key must be a string at line " + std::to_string(currentLine));
             }
-            auto it = obj.dictVal.find(index.strVal);
-            if (it == obj.dictVal.end()) {
+            auto it = obj.dictVal->find(index.strVal);
+            if (it == obj.dictVal->end()) {
                 throw std::runtime_error("[VDX] Key '" + index.strVal + "' not found in dictionary at line " + std::to_string(currentLine));
             }
             return it->second;
         }
-        throw std::runtime_error("[VDX] Cannot index into this type at line " + std::to_string(currentLine));
+        throw std::runtime_error("[VDX] Cannot index into " + std::string(obj.typeName()) + " at line " + std::to_string(currentLine));
     }
     if (auto ne = dynamic_cast<const NewExpr*>(expr)) {
         return execNew(ne);
     }
     if (auto dot = dynamic_cast<const DotExpr*>(expr)) {
-        // Check if this is a module constant (e.g. math.pi)
+        // Module constants (e.g. math.pi) only apply when no user variable
+        // shadows the module name — a variable named 'math' wins.
         if (auto ident = dynamic_cast<const IdentifierExpr*>(dot->object.get())) {
-            std::string fullFuncName = ident->name + "." + dot->field;
-            auto modIt = moduleFunctions.find(fullFuncName);
-            if (modIt != moduleFunctions.end()) {
-                return modIt->second({}, currentLine);
+            if (!lookupVar(ident->name)) {
+                std::string fullFuncName = ident->name + "." + dot->field;
+                auto modIt = moduleFunctions.find(fullFuncName);
+                if (modIt != moduleFunctions.end()) {
+                    return callModule(modIt->second, {}, currentLine);
+                }
             }
         }
         Value obj = evalExpr(dot->object.get());
@@ -1012,16 +1370,19 @@ Value Interpreter::evalExpr(const Expr* expr) {
         return it->second;
     }
     if (auto dc = dynamic_cast<const DotCallExpr*>(expr)) {
-        // Check if this is a module function call (e.g. math.sqrt, fs.readFile)
+        // Module functions (e.g. math.sqrt) only apply when no user variable
+        // shadows the module name — a variable named 'math' wins.
         if (auto ident = dynamic_cast<const IdentifierExpr*>(dc->object.get())) {
-            std::string fullFuncName = ident->name + "." + dc->method;
-            auto modIt = moduleFunctions.find(fullFuncName);
-            if (modIt != moduleFunctions.end()) {
-                std::vector<Value> argVals;
-                for (size_t i = 0; i < dc->args.size(); i++) {
-                    argVals.push_back(evalExpr(dc->args[i].get()));
+            if (!lookupVar(ident->name)) {
+                std::string fullFuncName = ident->name + "." + dc->method;
+                auto modIt = moduleFunctions.find(fullFuncName);
+                if (modIt != moduleFunctions.end()) {
+                    std::vector<Value> argVals;
+                    for (size_t i = 0; i < dc->args.size(); i++) {
+                        argVals.push_back(evalExpr(dc->args[i].get()));
+                    }
+                    return callModule(modIt->second, argVals, currentLine);
                 }
-                return modIt->second(argVals, currentLine);
             }
         }
         Value obj = evalExpr(dc->object.get());
@@ -1043,71 +1404,7 @@ Value Interpreter::evalExpr(const Expr* expr) {
         for (size_t i = 0; i < dc->args.size(); i++) {
             argVals.push_back(evalExpr(dc->args[i].get()));
         }
-
-        // Push object fields as scope, then function params
-        pushScope();
-        for (auto& pair : obj.objVal->fields) {
-            declareVar(pair.first, pair.second, false);
-        }
-        pushScope();
-        for (size_t i = 0; i < fn->params.size(); i++) {
-            declareVar(fn->params[i], argVals[i], false);
-        }
-
-        std::string savedClassName = currentClassName;
-        std::shared_ptr<ObjectData> savedObject = currentObject;
-        currentClassName = obj.objVal->className;
-        currentObject = obj.objVal;
-
-        Value result = Value::makeVoid();
-        try {
-            for (auto& stmt : fn->body) {
-                execStatement(stmt);
-            }
-        } catch (ReturnException& e) {
-            result = e.value;
-        } catch (BreakException&) {
-            // Sync object fields before popping scopes (field mutations must not be lost)
-            if (scopes.size() >= 2) {
-                auto& objScope = scopes[scopes.size() - 2];
-                for (auto& pair : objScope) {
-                    obj.objVal->fields[pair.first] = pair.second.value;
-                }
-            }
-            popScope(); // param scope
-            popScope(); // object fields scope
-            currentClassName = savedClassName;
-            currentObject = savedObject;
-            throw std::runtime_error("[VDX] 'break' used outside of a loop at line " + std::to_string(currentLine));
-        } catch (ContinueException&) {
-            // Sync object fields before popping scopes (field mutations must not be lost)
-            if (scopes.size() >= 2) {
-                auto& objScope = scopes[scopes.size() - 2];
-                for (auto& pair : objScope) {
-                    obj.objVal->fields[pair.first] = pair.second.value;
-                }
-            }
-            popScope(); // param scope
-            popScope(); // object fields scope
-            currentClassName = savedClassName;
-            currentObject = savedObject;
-            throw std::runtime_error("[VDX] 'continue' used outside of a loop at line " + std::to_string(currentLine));
-        }
-
-        // Update object fields from the object scope (methods may modify fields)
-        // The object scope is now at scopes[scopes.size() - 2] (under the param scope)
-        if (scopes.size() >= 2) {
-            auto& objScope = scopes[scopes.size() - 2];
-            for (auto& pair : objScope) {
-                obj.objVal->fields[pair.first] = pair.second.value;
-            }
-        }
-
-        popScope(); // param scope
-        popScope(); // object fields scope
-        currentClassName = savedClassName;
-        currentObject = savedObject;
-        return result;
+        return callFunction(fn, argVals, obj.objVal, obj.objVal->className);
     }
     // Modulo: a % b
     if (auto mod = dynamic_cast<const ModuloExpr*>(expr)) {
@@ -1125,53 +1422,49 @@ Value Interpreter::evalExpr(const Expr* expr) {
         double result = std::fmod(l, r);
         // Return int if both operands were int, otherwise float
         if (left.type == Value::INT && right.type == Value::INT) {
-            return Value::makeInt(static_cast<int64_t>(result));
+            return Value::makeInt(static_cast<int>(result));
         }
         return Value::makeFloat(result);
     }
-    // Increment/decrement: ++x, x++, --x, x--
+    // Logical: a && b (short-circuit)
+    if (auto log = dynamic_cast<const LogicalExpr*>(expr)) {
+        Value left = evalExpr(log->left.get());
+        if (log->op == "&&") {
+            if (!isTruthy(left)) return Value::makeBool(false);
+            return Value::makeBool(isTruthy(evalExpr(log->right.get())));
+        }
+        // "||"
+        if (isTruthy(left)) return Value::makeBool(true);
+        return Value::makeBool(isTruthy(evalExpr(log->right.get())));
+    }
+    // Logical not: !x
+    if (auto ne = dynamic_cast<const NotExpr*>(expr)) {
+        return Value::makeBool(!isTruthy(evalExpr(ne->operand.get())));
+    }
+    // Increment/decrement on any lvalue: ++x, x++, obj.n++, arr[i]++
     if (auto incDec = dynamic_cast<const IncDecExpr*>(expr)) {
-        if (isVarConst(incDec->name)) {
-            throw std::runtime_error("[VDX] Cannot increment/decrement const variable '" + incDec->name + "' at line " + std::to_string(currentLine));
-        }
-        Value* var = lookupVar(incDec->name);
-        if (!var) {
-            throw std::runtime_error("[VDX] Undefined variable '" + incDec->name + "' at line " + std::to_string(currentLine));
-        }
+        checkConstTarget(incDec->target.get());
+        Value* var = evalLValue(incDec->target.get());
         if (!var->isNumeric()) {
             throw std::runtime_error("[VDX] Cannot increment/decrement non-numeric value at line " + std::to_string(currentLine));
         }
 
-        // Get original value
         Value original = *var;
         double origVal = original.toDouble();
-
-        // Calculate new value
         double delta = incDec->isIncrement ? 1.0 : -1.0;
         double newVal = origVal + delta;
 
-        // Update the variable
         if (original.type == Value::INT) {
             int64_t result = static_cast<int64_t>(original.intVal) + static_cast<int64_t>(delta);
             if (result > INT_MAX || result < INT_MIN)
                 throw std::runtime_error("[VDX] Integer overflow in increment/decrement at line " + std::to_string(currentLine));
-            *var = Value::makeInt(result);
+            *var = Value::makeInt(static_cast<int>(result));
+            if (incDec->isPrefix) return Value::makeInt(static_cast<int>(result));
         } else {
             *var = Value::makeFloat(newVal);
+            if (incDec->isPrefix) return Value::makeFloat(newVal);
         }
-
-        // Return original value for postfix, new value for prefix
-        if (incDec->isPrefix) {
-            if (original.type == Value::INT) {
-                int64_t result = static_cast<int64_t>(original.intVal) + static_cast<int64_t>(delta);
-                if (result > INT_MAX || result < INT_MIN)
-                    throw std::runtime_error("[VDX] Integer overflow in increment/decrement at line " + std::to_string(currentLine));
-                return Value::makeInt(result);
-            }
-            return Value::makeFloat(newVal);
-        } else {
-            return original;
-        }
+        return original;
     }
     throw std::runtime_error("[VDX] Unknown expression type at line " + std::to_string(currentLine));
 }
@@ -1227,6 +1520,9 @@ Value Interpreter::evalBinary(const BinaryExpr* expr) {
         }
         if (expr->op == "/") {
             if (r == 0) throw std::runtime_error("[VDX] Division by zero at line " + std::to_string(currentLine));
+            if (l == INT_MIN && r == -1) {
+                throw std::runtime_error("[VDX] Integer overflow in division (INT_MIN / -1) at line " + std::to_string(currentLine));
+            }
             return Value::makeInt(l / r);
         }
         if (expr->op == "==") return Value::makeBool(l == r);
@@ -1237,10 +1533,14 @@ Value Interpreter::evalBinary(const BinaryExpr* expr) {
         if (expr->op == ">=") return Value::makeBool(l >= r);
     }
 
-    // String equality
+    // String equality and lexicographic ordering
     if (left.type == Value::STRING && right.type == Value::STRING) {
         if (expr->op == "==") return Value::makeBool(left.strVal == right.strVal);
         if (expr->op == "!=") return Value::makeBool(left.strVal != right.strVal);
+        if (expr->op == "<") return Value::makeBool(left.strVal < right.strVal);
+        if (expr->op == ">") return Value::makeBool(left.strVal > right.strVal);
+        if (expr->op == "<=") return Value::makeBool(left.strVal <= right.strVal);
+        if (expr->op == ">=") return Value::makeBool(left.strVal >= right.strVal);
     }
 
     // Bool equality
@@ -1250,5 +1550,6 @@ Value Interpreter::evalBinary(const BinaryExpr* expr) {
     }
 
     throw std::runtime_error("[VDX] Invalid operator '" + expr->op +
-        "' for given types at line " + std::to_string(currentLine));
+        "' for types '" + left.typeName() + "' and '" + right.typeName() +
+        "' at line " + std::to_string(currentLine));
 }

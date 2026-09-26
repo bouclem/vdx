@@ -1,0 +1,7 @@
+// @unsafe disables the iteration cap
+let i = 0;
+@unsafe while (true) {
+    i++;
+    if (i > 2000000) { break; }
+}
+print("unsafe ok");

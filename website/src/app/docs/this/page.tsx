@@ -61,6 +61,8 @@ export default function ThisDoc() {
         <li><code className="text-[#A78BFA]">this</code> must be followed by <code className="text-[#A78BFA]">.</code> and a field name</li>
         <li>Using <code className="text-[#A78BFA]">this</code> alone is a syntax error</li>
         <li>Accessing an undefined field throws a runtime error</li>
+        <li><code className="text-[#A78BFA]">this</code> outside an object/class context is a runtime error (v0.1.5+)</li>
+        <li>Inside a method, bare <code className="text-[#A78BFA]">x</code> and <code className="text-[#A78BFA]">this.x</code> are the same storage — <code className="text-[#A78BFA]">this.x = v</code> persists (v0.1.5+)</li>
       </ul>
     </DocPage>
   );

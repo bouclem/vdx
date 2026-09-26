@@ -65,7 +65,13 @@ NodePtr Parser::parseClassDecl() {
 }
 
 NodePtr Parser::parseStatement() {
-    if (check(TokenType::KW_FN)) return parseFnDecl();
+    if (check(TokenType::KW_FN)) {
+        if (blockDepth > 0) {
+            throw std::runtime_error("[VDX] Nested function declarations are not supported; 'fn' is only allowed at top level or in a class body at line " +
+                std::to_string(cur().line));
+        }
+        return parseFnDecl();
+    }
     if (check(TokenType::KW_LET)) return parseLetStmt();
     if (check(TokenType::KW_CONST)) return parseConstStmt();
     if (check(TokenType::KW_BREAK)) return parseBreakStmt();
@@ -100,93 +106,49 @@ NodePtr Parser::parseStatement() {
             std::to_string(cur().line));
     }
     if (check(TokenType::KW_WAIT)) return parseWaitStmt();
-    // this.field = value; (dot assignment on this)
-    if (check(TokenType::KW_THIS)) {
-        int ln = cur().line;
-        auto expr = parseExpr();
-        if (check(TokenType::EQUALS)) {
-            advance();
-            auto dotExpr = std::dynamic_pointer_cast<DotExpr>(expr);
-            if (!dotExpr || !std::dynamic_pointer_cast<ThisExpr>(dotExpr->object)) {
-                throw std::runtime_error("[VDX] Invalid assignment target at line " + std::to_string(ln));
-            }
-            auto val = parseExpr();
-            expect(TokenType::SEMICOLON, "Expected ';'");
-            auto stmt = std::make_shared<DotAssignStmt>();
+    return parseAssignOrExprStmt();
+}
+
+// Parses an expression statement, or an assignment when the expression is an
+// lvalue (identifier, index, or dot chain) followed by '='.
+// Handles: x = v | arr[i] = v | arr[i][j] = v | obj.f = v | a.b[i] = v | this.f = v | ...
+NodePtr Parser::parseAssignOrExprStmt() {
+    int ln = cur().line;
+    auto expr = parseExpr();
+    if (check(TokenType::EQUALS)) {
+        advance(); // skip '='
+        auto val = parseExpr();
+        expect(TokenType::SEMICOLON, "Expected ';' after assignment");
+        if (auto id = std::dynamic_pointer_cast<IdentifierExpr>(expr)) {
+            auto stmt = std::make_shared<AssignStmt>();
             stmt->line = ln;
-            stmt->object = dotExpr->object;
-            stmt->field = dotExpr->field;
+            stmt->name = id->name;
             stmt->value = val;
             return stmt;
         }
-        // Otherwise it's an expression statement (e.g., this.method();)
-        expect(TokenType::SEMICOLON, "Expected ';'");
-        auto stmt = std::make_shared<ExprStmt>();
-        stmt->line = ln;
-        stmt->expr = expr;
-        return stmt;
-    }
-    // assignment, index assignment, or dot assignment
-    if (check(TokenType::IDENTIFIER) && pos + 1 < tokens.size()) {
-        if (tokens[pos + 1].type == TokenType::LBRACKET) {
-            size_t saved = pos;
-            int ln = cur().line;
-            std::string name = advance().value;
-            advance(); // skip '['
-            auto idx = parseExpr();
-            expect(TokenType::RBRACKET, "Expected ']'");
-            if (check(TokenType::EQUALS)) {
-                advance(); // skip '='
-                auto val = parseExpr();
-                expect(TokenType::SEMICOLON, "Expected ';'");
-                auto stmt = std::make_shared<IndexAssignStmt>();
-                stmt->line = ln;
-                stmt->name = name;
-                stmt->index = idx;
-                stmt->value = val;
-                return stmt;
-            }
-            pos = saved;
-        } else if (tokens[pos + 1].type == TokenType::DOT) {
-            // Could be dot assignment: obj.field = value;
-            // Or dot call / dot access as expression statement
-            int ln = cur().line;
-            // Parse the left side as an expression
-            auto expr = parseExpr();
-            if (check(TokenType::EQUALS)) {
-                // dot assignment: obj.field = value;
-                advance(); // skip '='
-                auto dotExpr = std::dynamic_pointer_cast<DotExpr>(expr);
-                if (!dotExpr) {
-                    throw std::runtime_error("[VDX] Invalid assignment target at line " + std::to_string(ln));
-                }
-                auto val = parseExpr();
-                expect(TokenType::SEMICOLON, "Expected ';'");
-                auto stmt = std::make_shared<DotAssignStmt>();
-                stmt->line = ln;
-                stmt->object = dotExpr->object;
-                stmt->field = dotExpr->field;
-                stmt->value = val;
-                return stmt;
-            }
-            // Otherwise it's an expression statement (e.g., obj.method();)
-            expect(TokenType::SEMICOLON, "Expected ';'");
-            auto stmt = std::make_shared<ExprStmt>();
+        if (auto dot = std::dynamic_pointer_cast<DotExpr>(expr)) {
+            auto stmt = std::make_shared<DotAssignStmt>();
             stmt->line = ln;
-            stmt->expr = expr;
-            return stmt;
-        } else if (tokens[pos + 1].type == TokenType::EQUALS) {
-            int ln = cur().line;
-            auto stmt = std::make_shared<AssignStmt>();
-            stmt->line = ln;
-            stmt->name = advance().value;
-            advance(); // skip '='
-            stmt->value = parseExpr();
-            expect(TokenType::SEMICOLON, "Expected ';'");
+            stmt->object = dot->object;
+            stmt->field = dot->field;
+            stmt->value = val;
             return stmt;
         }
+        if (auto idx = std::dynamic_pointer_cast<IndexExpr>(expr)) {
+            auto stmt = std::make_shared<IndexAssignStmt>();
+            stmt->line = ln;
+            stmt->object = idx->object;
+            stmt->index = idx->index;
+            stmt->value = val;
+            return stmt;
+        }
+        throw std::runtime_error("[VDX] Invalid assignment target at line " + std::to_string(ln));
     }
-    return parseExprStmt();
+    expect(TokenType::SEMICOLON, "Expected ';'");
+    auto stmt = std::make_shared<ExprStmt>();
+    stmt->line = ln;
+    stmt->expr = expr;
+    return stmt;
 }
 
 NodePtr Parser::parseFnDecl() {
@@ -205,9 +167,11 @@ NodePtr Parser::parseFnDecl() {
     }
     expect(TokenType::RPAREN, "Expected ')'");
     expect(TokenType::LBRACE, "Expected '{'");
+    blockDepth++;
     while (!check(TokenType::RBRACE) && !check(TokenType::EOF_TOKEN)) {
         fn->body.push_back(parseStatement());
     }
+    blockDepth--;
     expect(TokenType::RBRACE, "Expected '}'");
     return fn;
 }
@@ -218,10 +182,15 @@ NodePtr Parser::parseLetStmt() {
     auto stmt = std::make_shared<LetStmt>();
     stmt->line = ln;
     stmt->name = expect(TokenType::IDENTIFIER, "Expected variable name").value;
-    // Optional type annotation: let x: int = ...
+    // Optional type annotation: let x: int = ..., let a: int[] = ..., let m: int[][] = ...
     if (check(TokenType::COLON)) {
         advance(); // skip ':'
         stmt->typeAnnotation = expect(TokenType::IDENTIFIER, "Expected type name after ':'").value;
+        while (check(TokenType::LBRACKET)) {
+            advance();
+            expect(TokenType::RBRACKET, "Expected ']' in array type annotation");
+            stmt->typeAnnotation += "[]";
+        }
     }
     expect(TokenType::EQUALS, "Expected '='");
     stmt->value = parseExpr();
@@ -236,10 +205,15 @@ NodePtr Parser::parseConstStmt() {
     stmt->line = ln;
     stmt->isConst = true;
     stmt->name = expect(TokenType::IDENTIFIER, "Expected variable name").value;
-    // Optional type annotation: const x: int = ...
+    // Optional type annotation: const x: int = ..., const a: int[] = ...
     if (check(TokenType::COLON)) {
         advance(); // skip ':'
         stmt->typeAnnotation = expect(TokenType::IDENTIFIER, "Expected type name after ':'").value;
+        while (check(TokenType::LBRACKET)) {
+            advance();
+            expect(TokenType::RBRACKET, "Expected ']' in array type annotation");
+            stmt->typeAnnotation += "[]";
+        }
     }
     expect(TokenType::EQUALS, "Expected '='");
     stmt->value = parseExpr();
@@ -249,6 +223,9 @@ NodePtr Parser::parseConstStmt() {
 
 NodePtr Parser::parseBreakStmt() {
     int ln = cur().line;
+    if (loopDepth == 0) {
+        throw std::runtime_error("[VDX] 'break' used outside of a loop at line " + std::to_string(ln));
+    }
     expect(TokenType::KW_BREAK, "Expected 'break'");
     auto stmt = std::make_shared<BreakStmt>();
     stmt->line = ln;
@@ -258,6 +235,9 @@ NodePtr Parser::parseBreakStmt() {
 
 NodePtr Parser::parseContinueStmt() {
     int ln = cur().line;
+    if (loopDepth == 0) {
+        throw std::runtime_error("[VDX] 'continue' used outside of a loop at line " + std::to_string(ln));
+    }
     expect(TokenType::KW_CONTINUE, "Expected 'continue'");
     auto stmt = std::make_shared<ContinueStmt>();
     stmt->line = ln;
@@ -304,9 +284,11 @@ NodePtr Parser::parseIfStmt() {
     stmt->condition = parseExpr();
     expect(TokenType::RPAREN, "Expected ')'");
     expect(TokenType::LBRACE, "Expected '{'");
+    blockDepth++;
     while (!check(TokenType::RBRACE) && !check(TokenType::EOF_TOKEN)) {
         stmt->thenBody.push_back(parseStatement());
     }
+    blockDepth--;
     expect(TokenType::RBRACE, "Expected '}'");
 
     while (check(TokenType::KW_ELIF)) {
@@ -316,9 +298,11 @@ NodePtr Parser::parseIfStmt() {
         elif.condition = parseExpr();
         expect(TokenType::RPAREN, "Expected ')'");
         expect(TokenType::LBRACE, "Expected '{'");
+        blockDepth++;
         while (!check(TokenType::RBRACE) && !check(TokenType::EOF_TOKEN)) {
             elif.body.push_back(parseStatement());
         }
+        blockDepth--;
         expect(TokenType::RBRACE, "Expected '}'");
         stmt->elifs.push_back(std::move(elif));
     }
@@ -326,9 +310,11 @@ NodePtr Parser::parseIfStmt() {
     if (check(TokenType::KW_ELSE)) {
         advance();
         expect(TokenType::LBRACE, "Expected '{'");
+        blockDepth++;
         while (!check(TokenType::RBRACE) && !check(TokenType::EOF_TOKEN)) {
             stmt->elseBody.push_back(parseStatement());
         }
+        blockDepth--;
         expect(TokenType::RBRACE, "Expected '}'");
     }
 
@@ -344,9 +330,13 @@ NodePtr Parser::parseWhileStmt() {
     stmt->condition = parseExpr();
     expect(TokenType::RPAREN, "Expected ')'");
     expect(TokenType::LBRACE, "Expected '{'");
+    blockDepth++;
+    loopDepth++;
     while (!check(TokenType::RBRACE) && !check(TokenType::EOF_TOKEN)) {
         stmt->body.push_back(parseStatement());
     }
+    loopDepth--;
+    blockDepth--;
     expect(TokenType::RBRACE, "Expected '}'");
     return stmt;
 }
@@ -365,9 +355,13 @@ NodePtr Parser::parseForStmt() {
         stmt->iterable = parseExpr();
         expect(TokenType::RPAREN, "Expected ')'");
         expect(TokenType::LBRACE, "Expected '{'");
+        blockDepth++;
+        loopDepth++;
         while (!check(TokenType::RBRACE) && !check(TokenType::EOF_TOKEN)) {
             stmt->body.push_back(parseStatement());
         }
+        loopDepth--;
+        blockDepth--;
         expect(TokenType::RBRACE, "Expected '}'");
         return stmt;
     }
@@ -394,37 +388,53 @@ NodePtr Parser::parseForStmt() {
     stmt->condition = parseExpr();
     expect(TokenType::SEMICOLON, "Expected ';' after for condition");
 
-    // update: assignment (name = expr) or increment/decrement (i++ / ++i / i-- / --i)
+    // update: expression or assignment (i++, arr[i] = v, obj.n = v, f(), ...)
     {
         int aln = cur().line;
-        std::string name = expect(TokenType::IDENTIFIER, "Expected variable name in for update").value;
-        if (check(TokenType::PLUS_PLUS) || check(TokenType::MINUS_MINUS)) {
-            bool isIncrement = check(TokenType::PLUS_PLUS);
-            advance();
-            auto incDec = std::make_shared<IncDecExpr>();
-            incDec->line = aln;
-            incDec->name = name;
-            incDec->isIncrement = isIncrement;
-            incDec->isPrefix = false;
+        auto expr = parseExpr();
+        if (check(TokenType::EQUALS)) {
+            advance(); // skip '='
+            auto val = parseExpr();
+            if (auto id = std::dynamic_pointer_cast<IdentifierExpr>(expr)) {
+                auto assign = std::make_shared<AssignStmt>();
+                assign->line = aln;
+                assign->name = id->name;
+                assign->value = val;
+                stmt->update = assign;
+            } else if (auto dot = std::dynamic_pointer_cast<DotExpr>(expr)) {
+                auto assign = std::make_shared<DotAssignStmt>();
+                assign->line = aln;
+                assign->object = dot->object;
+                assign->field = dot->field;
+                assign->value = val;
+                stmt->update = assign;
+            } else if (auto idx = std::dynamic_pointer_cast<IndexExpr>(expr)) {
+                auto assign = std::make_shared<IndexAssignStmt>();
+                assign->line = aln;
+                assign->object = idx->object;
+                assign->index = idx->index;
+                assign->value = val;
+                stmt->update = assign;
+            } else {
+                throw std::runtime_error("[VDX] Invalid assignment target at line " + std::to_string(aln));
+            }
+        } else {
             auto exprStmt = std::make_shared<ExprStmt>();
             exprStmt->line = aln;
-            exprStmt->expr = incDec;
+            exprStmt->expr = expr;
             stmt->update = exprStmt;
-        } else {
-            expect(TokenType::EQUALS, "Expected '=' or '++'/'--' in for update");
-            auto assign = std::make_shared<AssignStmt>();
-            assign->line = aln;
-            assign->name = name;
-            assign->value = parseExpr();
-            stmt->update = assign;
         }
     }
 
     expect(TokenType::RPAREN, "Expected ')'");
     expect(TokenType::LBRACE, "Expected '{'");
+    blockDepth++;
+    loopDepth++;
     while (!check(TokenType::RBRACE) && !check(TokenType::EOF_TOKEN)) {
         stmt->body.push_back(parseStatement());
     }
+    loopDepth--;
+    blockDepth--;
     expect(TokenType::RBRACE, "Expected '}'");
     return stmt;
 }
@@ -441,19 +451,54 @@ NodePtr Parser::parseWaitStmt() {
     return stmt;
 }
 
-NodePtr Parser::parseExprStmt() {
-    int ln = cur().line;
-    auto stmt = std::make_shared<ExprStmt>();
-    stmt->line = ln;
-    stmt->expr = parseExpr();
-    expect(TokenType::SEMICOLON, "Expected ';'");
-    return stmt;
-}
-
 // ── Expression parsing with precedence ──
 
+// RAII guard: limits recursion depth for nested expressions (parens, calls, unary chains)
+struct ExprDepthGuard {
+    int& depth;
+    ExprDepthGuard(int& d, int max, int line) : depth(d) {
+        if (++depth > max) {
+            throw std::runtime_error("[VDX] Expression too deeply nested at line " + std::to_string(line));
+        }
+    }
+    ~ExprDepthGuard() { depth--; }
+};
+
 ExprPtr Parser::parseExpr() {
-    return parseEquality();
+    ExprDepthGuard guard(exprDepth, MAX_EXPR_DEPTH, cur().line);
+    return parseOr();
+}
+
+ExprPtr Parser::parseOr() {
+    auto left = parseAnd();
+    while (check(TokenType::OROR)) {
+        int ln = cur().line;
+        advance();
+        auto right = parseAnd();
+        auto bin = std::make_shared<LogicalExpr>();
+        bin->line = ln;
+        bin->left = left;
+        bin->op = "||";
+        bin->right = right;
+        left = bin;
+    }
+    return left;
+}
+
+ExprPtr Parser::parseAnd() {
+    auto left = parseEquality();
+    while (check(TokenType::ANDAND)) {
+        int ln = cur().line;
+        advance();
+        auto right = parseEquality();
+        auto bin = std::make_shared<LogicalExpr>();
+        bin->line = ln;
+        bin->left = left;
+        bin->op = "&&";
+        bin->right = right;
+        left = bin;
+    }
+    return left;
 }
 
 ExprPtr Parser::parseEquality() {
@@ -532,16 +577,24 @@ ExprPtr Parser::parseMulDiv() {
 }
 
 ExprPtr Parser::parseUnary() {
-    // Prefix ++ and --
+    ExprDepthGuard guard(exprDepth, MAX_EXPR_DEPTH, cur().line);
+    // Logical not: !expr
+    if (check(TokenType::BANG)) {
+        int ln = cur().line;
+        advance();
+        auto ne = std::make_shared<NotExpr>();
+        ne->line = ln;
+        ne->operand = parseUnary();
+        return ne;
+    }
+    // Prefix ++ and -- on any lvalue (++x, ++arr[i], ++obj.n)
     if (check(TokenType::PLUS_PLUS) || check(TokenType::MINUS_MINUS)) {
         int ln = cur().line;
         bool isIncrement = check(TokenType::PLUS_PLUS);
         advance();
-        // Expect an identifier after prefix ++/--
-        std::string name = expect(TokenType::IDENTIFIER, "Expected variable name after " + std::string(isIncrement ? "++" : "--")).value;
         auto incDec = std::make_shared<IncDecExpr>();
         incDec->line = ln;
-        incDec->name = name;
+        incDec->target = parseUnary(); // lvalue checked at runtime
         incDec->isIncrement = isIncrement;
         incDec->isPrefix = true;
         return incDec;
@@ -606,18 +659,13 @@ ExprPtr Parser::parsePostfix(ExprPtr left) {
             expect(TokenType::RBRACKET, "Expected ']'");
             left = idx;
         } else if (check(TokenType::PLUS_PLUS) || check(TokenType::MINUS_MINUS)) {
-            // Postfix ++ and -- (e.g., x++ or x--)
+            // Postfix ++ and -- on any lvalue (x++, arr[i]++, obj.n++, this.n--)
             int ln = cur().line;
             bool isIncrement = check(TokenType::PLUS_PLUS);
             advance();
-            // Get identifier from the left expression
-            auto idExpr = std::dynamic_pointer_cast<IdentifierExpr>(left);
-            if (!idExpr) {
-                throw std::runtime_error("[VDX] Expected variable name before " + std::string(isIncrement ? "++" : "--") + " at line " + std::to_string(ln));
-            }
             auto incDec = std::make_shared<IncDecExpr>();
             incDec->line = ln;
-            incDec->name = idExpr->name;
+            incDec->target = left; // lvalue checked at runtime
             incDec->isIncrement = isIncrement;
             incDec->isPrefix = false;
             left = incDec;
@@ -642,7 +690,10 @@ ExprPtr Parser::parsePrimary() {
         auto lit = std::make_shared<IntLiteral>();
         lit->line = ln;
         try {
-            lit->value = std::stoi(val);
+            // Hex literals (0x...) use base 16; everything else is base 10
+            lit->value = (val.size() > 2 && val[0] == '0' && (val[1] == 'x' || val[1] == 'X'))
+                ? std::stoi(val, nullptr, 16)
+                : std::stoi(val);
         } catch (const std::out_of_range&) {
             throw std::runtime_error("Integer literal '" + val + "' is out of range at line " + std::to_string(ln));
         }

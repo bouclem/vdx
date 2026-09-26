@@ -59,6 +59,12 @@ export default function ContinueDoc() {
     }
 }`}</code></pre>
 
+      <h2>Outside loops</h2>
+      <p>
+        <code>continue</code> outside a loop is a parse error (v0.1.5+) — it must appear
+        inside a <code>while</code>, <code>for</code>, or <code>for-in</code> body.
+      </p>
+
       <h2>Difference from break</h2>
       <table>
         <thead>

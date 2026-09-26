@@ -156,7 +156,8 @@ class BankAccount {
 // ── Main test runner ──
 class Main {
     let assert = new Assert();
-    let math = new MathUtils();
+    // Named 'mu' not 'math' — a variable named math/fs/graph shadows the module (v0.1.5+)
+    let mu = new MathUtils();
 
     print("========================================");
     print("  VDX Test Suite — Examples for AI");
@@ -164,50 +165,50 @@ class Main {
 
     // ── Factorial tests ──
     print("--- Factorial ---");
-    assert.equal(math.factorial(0), 1, "factorial(0)");
-    assert.equal(math.factorial(1), 1, "factorial(1)");
-    assert.equal(math.factorial(5), 120, "factorial(5)");
-    assert.equal(math.factorial(10), 3628800, "factorial(10)");
+    assert.equal(mu.factorial(0), 1, "factorial(0)");
+    assert.equal(mu.factorial(1), 1, "factorial(1)");
+    assert.equal(mu.factorial(5), 120, "factorial(5)");
+    assert.equal(mu.factorial(10), 3628800, "factorial(10)");
 
     // ── Fibonacci tests ──
     print("\n--- Fibonacci ---");
-    assert.equal(math.fibonacci(0), 0, "fibonacci(0)");
-    assert.equal(math.fibonacci(1), 1, "fibonacci(1)");
-    assert.equal(math.fibonacci(2), 1, "fibonacci(2)");
-    assert.equal(math.fibonacci(10), 55, "fibonacci(10)");
-    assert.equal(math.fibonacci(20), 6765, "fibonacci(20)");
+    assert.equal(mu.fibonacci(0), 0, "fibonacci(0)");
+    assert.equal(mu.fibonacci(1), 1, "fibonacci(1)");
+    assert.equal(mu.fibonacci(2), 1, "fibonacci(2)");
+    assert.equal(mu.fibonacci(10), 55, "fibonacci(10)");
+    assert.equal(mu.fibonacci(20), 6765, "fibonacci(20)");
 
     // ── Prime tests ──
     print("\n--- Prime ---");
-    assert.isFalse(math.isPrime(0), "0 is not prime");
-    assert.isFalse(math.isPrime(1), "1 is not prime");
-    assert.isTrue(math.isPrime(2), "2 is prime");
-    assert.isTrue(math.isPrime(3), "3 is prime");
-    assert.isFalse(math.isPrime(4), "4 is not prime");
-    assert.isTrue(math.isPrime(7), "7 is prime");
-    assert.isFalse(math.isPrime(9), "9 is not prime");
-    assert.isTrue(math.isPrime(13), "13 is prime");
+    assert.isFalse(mu.isPrime(0), "0 is not prime");
+    assert.isFalse(mu.isPrime(1), "1 is not prime");
+    assert.isTrue(mu.isPrime(2), "2 is prime");
+    assert.isTrue(mu.isPrime(3), "3 is prime");
+    assert.isFalse(mu.isPrime(4), "4 is not prime");
+    assert.isTrue(mu.isPrime(7), "7 is prime");
+    assert.isFalse(mu.isPrime(9), "9 is not prime");
+    assert.isTrue(mu.isPrime(13), "13 is prime");
 
     // ── GCD tests ──
     print("\n--- GCD ---");
-    assert.equal(math.gcd(12, 8), 4, "gcd(12, 8)");
-    assert.equal(math.gcd(17, 5), 1, "gcd(17, 5)");
-    assert.equal(math.gcd(100, 50), 50, "gcd(100, 50)");
-    assert.equal(math.gcd(7, 7), 7, "gcd(7, 7)");
+    assert.equal(mu.gcd(12, 8), 4, "gcd(12, 8)");
+    assert.equal(mu.gcd(17, 5), 1, "gcd(17, 5)");
+    assert.equal(mu.gcd(100, 50), 50, "gcd(100, 50)");
+    assert.equal(mu.gcd(7, 7), 7, "gcd(7, 7)");
 
     // ── String tests ──
     print("\n--- String ---");
-    assert.equal(math.reverseString("hello"), "olleh", "reverse(hello)");
-    assert.equal(math.reverseString("VDX"), "XDV", "reverse(VDX)");
-    assert.equal(math.reverseString("a"), "a", "reverse(single char)");
-    assert.equal(math.reverseString(""), "", "reverse(empty)");
+    assert.equal(mu.reverseString("hello"), "olleh", "reverse(hello)");
+    assert.equal(mu.reverseString("VDX"), "XDV", "reverse(VDX)");
+    assert.equal(mu.reverseString("a"), "a", "reverse(single char)");
+    assert.equal(mu.reverseString(""), "", "reverse(empty)");
 
     // ── Array tests ──
     print("\n--- Array ---");
-    assert.equal(math.sumArray([1, 2, 3, 4, 5]), 15, "sumArray(1-5)");
-    assert.equal(math.sumArray([10]), 10, "sumArray(single)");
-    assert.equal(math.maxInArray([3, 7, 2, 9, 1]), 9, "maxInArray");
-    assert.equal(math.maxInArray([0 - 5, 0 - 1, 0 - 10]), 0 - 1, "maxInArray(negatives)");
+    assert.equal(mu.sumArray([1, 2, 3, 4, 5]), 15, "sumArray(1-5)");
+    assert.equal(mu.sumArray([10]), 10, "sumArray(single)");
+    assert.equal(mu.maxInArray([3, 7, 2, 9, 1]), 9, "maxInArray");
+    assert.equal(mu.maxInArray([0 - 5, 0 - 1, 0 - 10]), 0 - 1, "maxInArray(negatives)");
 
     // ── BankAccount tests ──
     print("\n--- BankAccount ---");

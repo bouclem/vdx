@@ -1,0 +1,2 @@
+fs.setRoot("tests/v015");
+fs.readFile("../outside.txt");

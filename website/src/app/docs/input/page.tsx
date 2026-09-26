@@ -24,13 +24,11 @@ print("Hello,", name);`}</code></pre>
       <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
         <pre className="text-sm"><code>{`class Calculator {
     print("Simple Calculator");
-    
-    let aStr = input("Enter first number: ");
-    let bStr = input("Enter second number: ");
-    
-    // Note: input always returns strings
-    // You would need to parse to int/float for math
-    print("You entered:", aStr, "and", bStr);
+
+    // input() returns a string — int()/float() convert it (v0.1.5+)
+    let a = float(input("Enter first number: "));
+    let b = float(input("Enter second number: "));
+    print("Sum:", a + b);
 }`}</code></pre>
       </div>
 
@@ -45,8 +43,9 @@ print("You typed:", secret);`}</code></pre>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Return value</h2>
       <p>
-        Always returns a <code className="text-[#A78BFA]">string</code>. The trailing newline is stripped. 
-        To convert to numbers, you would need to implement parsing functions (coming in future versions).
+        Always returns a <code className="text-[#A78BFA]">string</code>. The trailing newline is stripped.
+        Convert to numbers with <code className="text-[#A78BFA]">int()</code> or{" "}
+        <code className="text-[#A78BFA]">float()</code> (v0.1.5+).
       </p>
     </DocPage>
   );

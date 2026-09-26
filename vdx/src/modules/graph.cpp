@@ -7,8 +7,10 @@
 #include <sstream>
 #include <iomanip>
 #include <cstdlib>
+#include <cctype>
 #include <random>
 #include <filesystem>
+#include <system_error>
 
 // ── Graph Module Implementation (v0.1.0) ──
 // SVG-based plotting for VDX. No external dependencies.
@@ -31,6 +33,7 @@ struct PlotState {
     std::string plotColor = "steelblue";
     std::string plotStroke = "navy";
     std::vector<std::string> legendLabels;
+    std::string lastTmpPath;   // temp file from the previous graph.show()
     bool showGrid = false;
     bool hasPlot = false;
 };
@@ -212,7 +215,7 @@ static void checkArray(const Value& arg, const std::string& funcName, int line) 
 
 static void checkNumericArray(const Value& arr, const std::string& funcName, int line) {
     checkArray(arr, funcName, line);
-    for (const auto& v : arr.arrVal) {
+    for (const auto& v : *arr.arrVal) {
         if (!v.isNumeric()) {
             throw std::runtime_error("[VDX] graph." + funcName +
                 "() array must contain only numeric values at line " + std::to_string(line));
@@ -222,8 +225,8 @@ static void checkNumericArray(const Value& arr, const std::string& funcName, int
 
 static std::vector<double> toDoubles(const Value& arr) {
     std::vector<double> result;
-    result.reserve(arr.arrVal.size());
-    for (const auto& v : arr.arrVal) {
+    result.reserve(arr.arrVal->size());
+    for (const auto& v : *arr.arrVal) {
         result.push_back(v.toDouble());
     }
     return result;
@@ -248,7 +251,7 @@ Value scatter_builtin(const std::vector<Value>& args, int line) {
     checkNumericArray(args[0], "scatter", line);
     checkNumericArray(args[1], "scatter", line);
 
-    if (args[0].arrVal.size() != args[1].arrVal.size()) {
+    if (args[0].arrVal->size() != args[1].arrVal->size()) {
         throw std::runtime_error("[VDX] graph.scatter() xs and ys must have the same length at line " +
             std::to_string(line));
     }
@@ -293,7 +296,7 @@ Value line_builtin(const std::vector<Value>& args, int line) {
     checkNumericArray(args[0], "line", line);
     checkNumericArray(args[1], "line", line);
 
-    if (args[0].arrVal.size() != args[1].arrVal.size()) {
+    if (args[0].arrVal->size() != args[1].arrVal->size()) {
         throw std::runtime_error("[VDX] graph.line() xs and ys must have the same length at line " +
             std::to_string(line));
     }
@@ -350,7 +353,7 @@ Value bar_builtin(const std::vector<Value>& args, int line) {
     checkArray(args[0], "bar", line);
     checkNumericArray(args[1], "bar", line);
 
-    if (args[0].arrVal.size() != args[1].arrVal.size()) {
+    if (args[0].arrVal->size() != args[1].arrVal->size()) {
         throw std::runtime_error("[VDX] graph.bar() labels and values must have the same length at line " +
             std::to_string(line));
     }
@@ -404,11 +407,12 @@ Value bar_builtin(const std::vector<Value>& args, int line) {
             << " font-family=\"sans-serif\" font-size=\"10\">"
             << fmt(values[i]) << "</text>\n";
 
-        // Category label below bar
-        std::string lbl = args[0].arrVal[i].toString();
+        // Category label below bar — offset past the numeric tick labels
+        // drawn at MARGIN_T + PLOT_H + 18 by svgHeader so they don't overlap
+        std::string lbl = (*args[0].arrVal)[i].toString();
         if (lbl.size() > 12) lbl = lbl.substr(0, 12);
         svg << "  <text x=\"" << (bx + static_cast<int>(barWidth) / 2) << "\" y=\""
-            << (MARGIN_T + PLOT_H + 18) << "\" text-anchor=\"middle\""
+            << (MARGIN_T + PLOT_H + 34) << "\" text-anchor=\"middle\""
             << " font-family=\"sans-serif\" font-size=\"10\">"
             << escXml(lbl) << "</text>\n";
     }
@@ -494,7 +498,7 @@ Value area_builtin(const std::vector<Value>& args, int line) {
     checkNumericArray(args[0], "area", line);
     checkNumericArray(args[1], "area", line);
 
-    if (args[0].arrVal.size() != args[1].arrVal.size()) {
+    if (args[0].arrVal->size() != args[1].arrVal->size()) {
         throw std::runtime_error("[VDX] graph.area() xs and ys must have the same length at line " +
             std::to_string(line));
     }
@@ -610,6 +614,16 @@ Value color_builtin(const std::vector<Value>& args, int line) {
         throw std::runtime_error("[VDX] graph.color() expects a string at line " +
             std::to_string(line));
     }
+    // The color is written raw into SVG fill/stroke attributes — restrict to
+    // safe characters (names like "red", hex like "#ff8800") so a quote or
+    // '<' can't break out of the attribute and inject markup.
+    for (char c : args[0].strVal) {
+        unsigned char uc = static_cast<unsigned char>(c);
+        if (!std::isalnum(uc) && c != '#' && c != '-') {
+            throw std::runtime_error("[VDX] graph.color() invalid character in color '" +
+                args[0].strVal + "' at line " + std::to_string(line));
+        }
+    }
     g_state.plotColor = args[0].strVal;
     // Auto-derive a darker stroke color
     if (args[0].strVal == "steelblue") g_state.plotStroke = "navy";
@@ -633,7 +647,7 @@ Value legend_builtin(const std::vector<Value>& args, int line) {
             std::to_string(line));
     }
     g_state.legendLabels.clear();
-    for (const auto& v : args[0].arrVal) {
+    for (const auto& v : *args[0].arrVal) {
         g_state.legendLabels.push_back(v.toString());
     }
     return Value::makeVoid();
@@ -668,22 +682,27 @@ Value save_builtin(const std::vector<Value>& args, int line) {
 }
 
 Value show_builtin(const std::vector<Value>& args, int line) {
-    (void)args;
+    if (!args.empty()) {
+        throw std::runtime_error("[VDX] graph.show() expects no arguments at line " +
+            std::to_string(line));
+    }
     if (!g_state.hasPlot) {
         throw std::runtime_error("[VDX] graph.show() no plot has been created yet at line " +
             std::to_string(line));
     }
 
-    // Write to a temp file and open it
-    // TODO: cross-platform — currently Windows-only
-#ifdef _WIN32
+    // Reuse temp files rather than leaking one per call: remove the previous
+    // show() temp file before writing a new uniquely-named one.
+    if (!g_state.lastTmpPath.empty()) {
+        std::error_code ec;
+        std::filesystem::remove(g_state.lastTmpPath, ec);
+        g_state.lastTmpPath.clear();
+    }
     std::random_device rd;
     std::uniform_int_distribution<int> dist(0, 999999);
     std::string tmpPath = (std::filesystem::temp_directory_path() /
         ("vdx_plot_" + std::to_string(dist(rd)) + ".svg")).string();
-#else
-    std::string tmpPath = "/tmp/vdx_plot.svg";
-#endif
+
     std::ofstream file(tmpPath);
     if (!file.is_open()) {
         throw std::runtime_error("[VDX] graph.show() cannot create temp file at line " +
@@ -691,12 +710,12 @@ Value show_builtin(const std::vector<Value>& args, int line) {
     }
     file << g_state.svg;
     file.close();
+    g_state.lastTmpPath = tmpPath;
 
 #ifdef _WIN32
     std::string cmd = "start \"\" \"" + tmpPath + "\"";
     std::system(cmd.c_str());
 #else
-    // TODO: support macOS (open) and Linux (xdg-open)
     std::string cmd = "open \"" + tmpPath + "\" 2>/dev/null || xdg-open \"" + tmpPath + "\" 2>/dev/null &";
     std::system(cmd.c_str());
 #endif

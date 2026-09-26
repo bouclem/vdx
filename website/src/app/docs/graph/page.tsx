@@ -204,7 +204,7 @@ print("Line chart saved");`}</code></pre>
         <li><code>graph.scatter()</code>, <code>graph.line()</code>, and <code>graph.area()</code> require xs and ys to be the same length</li>
         <li><code>graph.hist()</code> requires bins to be a positive integer</li>
         <li><code>graph.grid()</code> requires a boolean argument</li>
-        <li><code>graph.color()</code> requires a string (color name or hex)</li>
+        <li><code>graph.color()</code> requires a string color name or hex — only letters, digits, and <code>#</code> are accepted (v0.1.5+)</li>
         <li><code>graph.legend()</code> requires an array of strings</li>
         <li><code>graph.save()</code> and <code>graph.show()</code> throw an error if no plot has been created</li>
         <li><code>graph.save()</code> throws an error if the file cannot be written</li>

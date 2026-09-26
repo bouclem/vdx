@@ -27,6 +27,7 @@ export default function TypeDoc() {
           <tr className="border-b border-white/5"><td className="py-2">String</td><td className="py-2">"string"</td></tr>
           <tr className="border-b border-white/5"><td className="py-2">Boolean</td><td className="py-2">"bool"</td></tr>
           <tr className="border-b border-white/5"><td className="py-2">Array</td><td className="py-2">"array"</td></tr>
+          <tr className="border-b border-white/5"><td className="py-2">Dictionary</td><td className="py-2">"dict"</td></tr>
           <tr className="border-b border-white/5"><td className="py-2">Object</td><td className="py-2">"object"</td></tr>
           <tr><td className="py-2">Void</td><td className="py-2">"void"</td></tr>
         </tbody>

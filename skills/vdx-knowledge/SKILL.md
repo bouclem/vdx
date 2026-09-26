@@ -19,7 +19,7 @@ VDX is a class-based interpreted programming language built in C++17. It runs vi
 - **Website**: [voidwarelang.xyz](https://voidwarelang.xyz)
 - **Repository**: bouclem/vdx
 - **File extension**: `.vdx`
-- **Current version**: 0.0.15
+- **Current version**: 0.1.5
 
 ## Architecture
 
@@ -35,29 +35,30 @@ VDX is a class-based interpreted programming language built in C++17. It runs vi
 - Exceptions for control flow: `ReturnException`, `BreakException`, `ContinueException`
 - Functions namespaced internally as `ClassName::funcName` to prevent cross-class collisions
 - Module functions stored in separate `moduleFunctions` map (C++ built-ins)
-- `Value` struct holds all possible type fields simultaneously (~100+ bytes per value)
+- `Value` struct holds all type fields; arrays/dicts use `shared_ptr` storage (reference semantics, v0.1.5+)
 
 ## Key Behaviors
 
-- **Function resolution**: built-ins → module functions → namespaced (`ClassName::funcName`) → plain name
+- **Function resolution**: namespaced (`ClassName::funcName`) → plain user functions → built-ins (`len`, `push`, …) → module functions (v0.1.5+: user functions shadow built-ins)
 - **Scope**: stack of unordered_maps; `if`/`while`/`for`/`for-in` each push a scope; exceptions pop before propagating
-- **Module dispatch**: `math.*` and `fs.*` checked via `DotCallExpr`/`DotExpr` before object method lookup
-- **Imports**: relative to source dir; namespaced as `ClassName::funcName`; circular detection; no transitive imports; top-level functions are importable (v0.0.15+)
+- **Module dispatch**: `math.*`/`fs.*`/`graph.*` only reached when the name is not bound to a variable — a user variable named `math`/`fs`/`graph` wins (v0.1.5+)
+- **Class bodies execute**: `fn` registers, `let` runs its initializer (also at `new`), other statements run once at load — the `class Main { <program> }` wrapper idiom works (restored in v0.1.5)
+- **Reference semantics**: `let b = a` shares array/dict storage — mutations via `b` are visible through `a` (v0.1.5+)
+- **Imports**: relative to source dir; classes registered, methods namespaced `ClassName::funcName`, top-level fns plain; entry file marked imported (circular through main is now a clean skip); no transitive imports; imported methods need `new` + dot-call
+- **Safety guards (v0.1.5+)**: call depth ≤ 500, loop iterations ≤ 1,000,000 per loop (plus >2s/iteration check; `wait`/`input` blocking time excluded), parser expression depth bounded
 - **Truthiness**: `0`, `0.0`, `false`, `""`, `[]` are falsy; everything else truthy
 - **Type promotion**: int + float → float; int / int → int (truncates)
 
-## Known Limitations (as of v0.0.15)
+## Known Limitations (as of v0.1.5)
 
-- No unary minus (`-x`) — use `0 - x`
-- No logical operators (`&&`, `||`, `!`)
-- No empty dict literal (`{}`)
-- `for-in` only iterates arrays (not dicts or strings)
-- No recursion depth limit (deep recursion → C++ stack overflow)
-- No user-defined function can override built-ins (`len`, `push`, etc.)
+- No dot access on dicts: `d["k"]` works, `d.k` does not (`.field` is for objects/modules)
+- `print("x: " + n)` throws — use `print("x:", n)` or `str(n)`
 - `input()` doesn't flush prompt or handle EOF
-- Dict iteration order is non-deterministic
-- No string escape for `\0`, `\r`
 - No null/nil type — use `void` or empty string
+- Transitive imports not processed — import each file directly
+- Imported class methods are not global functions — use `let u = new Utils(); u.add(a, b)`
+- `wait()`/`input()`-only blocking excluded from loop timing, but the 1M-iteration cap still applies (use `@unsafe` for long loops)
+- No `try`/`catch` — any runtime error terminates the program
 
 ## Running VDX
 
@@ -71,6 +72,8 @@ cmake --build build
 ./build/vdx examples/hello.vdx
 # or after MSI install:
 vdx file.vdx
+vdx --help      # usage (v0.1.5+)
+vdx --version   # prints "vdx 0.1.5" (v0.1.5+)
 ```
 
 ## Build Configuration

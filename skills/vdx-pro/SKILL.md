@@ -10,7 +10,7 @@ description: VDX coding standards, best practices, and production-quality code g
 - Writing new VDX programs
 - Reviewing or refactoring VDX code
 - Setting up project structure and naming conventions
-- Solving VDX-specific syntax issues (no unary minus, no logical operators, etc.)
+- Solving VDX-specific syntax issues (dict dot-access, module shadowing, etc.)
 
 ## Language Overview
 
@@ -69,27 +69,28 @@ class ClassName {
 - `if` / `elif` / `else`: standard syntax with `{ }` blocks
 - `while (condition) { ... }`
 - C-style `for`: `for (let i = 0; i < n; i = i + 1) { ... }` or `for (let i = 0; i < n; i++) { ... }`
-- `for-in`: `for (item in arr) { ... }` (arrays only, not dicts or strings)
-- `break` — exit loop
-- `continue` — skip to next iteration
-- `wait(ms)` — pause execution (integer milliseconds)
+- `for-in`: `for (item in arr) { ... }` — arrays (elements), strings (characters, v0.1.5+), dicts (keys in sorted order, v0.1.5+)
+- `break` — exit loop (parse error outside a loop, v0.1.5+)
+- `continue` — skip to next iteration (parse error outside a loop, v0.1.5+)
+- `wait(ms)` — pause execution; accepts int and float (v0.1.5+): `wait(0.5)`
 
 ### Loop Safety
-- Iterations taking >2000ms trigger an error by default
-- Use `@unsafe` before `while` or `for` to bypass: `@unsafe while (true) { ... }`
-- `for-in` loops do NOT have safety checks — be cautious with large arrays
+- An iteration taking >2000ms triggers an error by default (all loop types: `while`, `for`, `for-in`)
+- A loop exceeding 1,000,000 iterations errors too — catches `while(true) {}` (v0.1.5+)
+- `wait()`/`input()` blocking time is NOT counted against the 2s/iteration budget (v0.1.5+)
+- Use `@unsafe` before `while`, `for`, or `for-in` to disable both checks: `@unsafe while (true) { ... }`
 
 ### Operators
-- Arithmetic: `+`, `-`, `*`, `/`, `%`
-- Comparison: `==`, `!=`, `<`, `>`, `<=`, `>=`
-- Increment/Decrement: `++x`, `x++`, `--x`, `x--`
-- String concatenation: `+` (string + string only; string + int/float variable throws — use comma-separated `print` args instead)
-- NO unary minus — use `0 - x` instead of `-x`
-- NO logical operators (`&&`, `||`, `!`) — use nested if or arithmetic tricks
+- Arithmetic: `+`, `-`, `*`, `/`, `%` (unary `-x`/`+x` supported)
+- Comparison: `==`, `!=`, `<`, `>`, `<=`, `>=` (v0.1.5+: works on strings too — lexicographic)
+- Logical (v0.1.5+): `!`, `&&`, `||` — short-circuit; operands use truthiness rules
+- Increment/Decrement: `++x`, `x++`, `--x`, `x--` — v0.1.5+: works on any lvalue (`arr[i]++`, `obj.n--`, `this.count++`)
+- String concatenation: `+` (string + string only; string + int/float variable throws — use comma-separated `print` args or `str(n)`)
+- Assignment targets (v0.1.5+): `name = v`, `arr[i] = v`, `arr[i][j] = v`, `obj.f = v`, `obj.f[i] = v`, `this.arr[i] = v`, `s[i] = "c"` (string char assign), `d["newKey"] = v` (creates the key)
 
 ### Types
-- `int` — integer literals: `42`, `0`, `999`
-- `float` — decimal literals: `3.14`, `5.0`
+- `int` — integer literals: `42`, `0`, `999`; hex `0xFF` (v0.1.5+)
+- `float` — decimal literals: `3.14`, `5.0`; also `1.`, `.5`, `1e5`, `1.5e-3` (v0.1.5+)
 - `string` — double-quoted: `"hello"`, escapes: `\n`, `\t`, `\\`, `\"`
 - `bool` — `true` / `false`
 - `array` — `[1, 2, 3]`, `["a", "b"]`, mixed types allowed
@@ -117,10 +118,11 @@ class ClassName {
 - Index: `arr[0]` (0-based)
 - Index assign: `arr[0] = 99;`
 - `len(arr)` — length
-- `push(arr, value)` — append (first arg must be variable name, not expression)
-- `pop(arr)` — remove and return last element (first arg must be variable name)
-- String indexing: `str[0]` returns single-character string
+- `push(arr, value)` — append; v0.1.5+: first arg can be any lvalue (`push(obj.items, x)`, `push(this.arr, x)`)
+- `pop(arr)` — remove and return last element (same lvalue support)
+- String indexing: `str[0]` returns single-character string; `str[i] = "c"` assigns (v0.1.5+)
 - Empty array `[]` is falsy; non-empty is truthy
+- **Reference semantics (v0.1.5+)**: `let b = arr` shares storage — `push(b, x)` also changes `arr`
 
 ### Dictionaries
 - Literal: `let d = {"name": "Alice", "age": 30};`
@@ -128,16 +130,20 @@ class ClassName {
 - Assign: `d["city"] = "Paris";`
 - `len(d)` — number of keys
 - Keys must be strings
-- Empty dict `{}` is NOT supported — use `{"": 0}` as workaround or declare with at least one entry
-- Iteration order is non-deterministic (backing is unordered_map)
+- `d["newKey"] = v` creates the key if missing (v0.1.5+)
+- `for (k in d)` iterates keys in sorted order (v0.1.5+)
+- No dot access — use `d["k"]`, not `d.k`
 
 ### Built-in Functions
 - `print(args...)` — print space-separated
 - `len(x)` — array/string/dict/object field count
-- `push(arr, val)` — append to array
-- `pop(arr)` — remove and return last
+- `push(arr, val)` — append to array (lvalue arg)
+- `pop(arr)` — remove and return last (lvalue arg)
 - `type(x)` — return type name string: "int", "float", "string", "bool", "array", "object", "dict", "void"
 - `input(prompt?)` — read line from stdin, optional prompt string
+- Conversions (v0.1.5+): `int(v)`, `float(v)`, `str(v)` — e.g., `int("42")`, `str(3.14)`
+- String functions (v0.1.5+): `split(s, sep)`, `substr(s, i, len)`, `indexOf(s, sub)`, `upper(s)`, `lower(s)`, `trim(s)`, `replace(s, old, new)`, `join(arr, sep)`
+- User-defined `fn` may reuse built-in names — the user function wins (v0.1.5+)
 
 ### Modules
 - `math.sqrt(x)`, `math.pow(base, exp)`, `math.abs(x)`
@@ -145,15 +151,23 @@ class ClassName {
 - `math.floor(x)`, `math.ceil(x)`, `math.round(x)`
 - `math.min(a, b, ...)`, `math.max(a, b, ...)`
 - `math.random()`, `math.random(max)`, `math.random(min, max)`
-- `math.pi` — constant
+- `math.pi`, `math.e`, `math.tau` — constants (many more in v0.1.3/v0.1.4: log, exp, gcd, fibonacci, sort, mean, ...)
 - `fs.readFile(path)` — read file as string
 - `fs.writeFile(path, content)` — write string to file
+- `fs.append(path, content)` — append to file (v0.1.5+)
+- `fs.exists(path)` — check path exists (v0.1.5+)
+- `fs.listDir(path)` — list directory entries (v0.1.5+)
+- `fs.setRoot(dir)` — opt-in sandbox: all fs paths must stay inside `dir` once set (v0.1.5+; unrestricted by default)
+- `graph.scatter/line/bar/hist/area`, `graph.title/xlabel/ylabel`, `graph.save/show`, `graph.color/grid/legend` — SVG plotting
+- **Module shadowing**: a variable named `math`, `fs`, or `graph` wins over the module (v0.1.5+) — `math.x` then looks up field `x` on YOUR variable. Name things `mu`, `filesys`, etc.
 
 ### Imports
 - `import "filename.vdx";` — imports classes and functions from another file
-- Imported functions are namespaced as `ClassName::funcName` internally
-- Circular imports are detected and prevented
+- Imported top-level functions are callable directly: `import "utils.vdx"; let x = add(1, 2);`
+- Imported class methods are namespaced — call via an object: `let u = new Utils(); u.add(1, 2);`
+- Circular imports are detected and prevented (including back through the entry file, v0.1.5+)
 - Transitive imports are NOT processed (A imports B, B imports C → C not available to A)
+- Top-level statements in imported files do NOT execute — declarations only
 
 ## Coding Standards
 
@@ -173,20 +187,23 @@ class ClassName {
 ### Safety
 - Use `const` for values that should never change
 - Use type annotations for clarity in public APIs
-- Use `@unsafe` only when legitimate slow operations are needed
-- Avoid infinite loops without `@unsafe` — killed after 2s
+- Use `@unsafe` only when legitimate slow/long loops are needed
+- Loops are capped at 1M iterations and 2s/iteration — long-running loops need `@unsafe`
+- Keep recursion under 500 calls — deeper recursion throws
+- `fs.setRoot()` before file ops keeps scripts inside a sandbox directory
 
 ## Common Pitfalls
 
-- **No unary minus**: `let x = -5;` → syntax error. Use `let x = 0 - 5;`
-- **No empty dict**: `{}` → parse error. Use `{"": 0}`
-- **for-in only works on arrays**: Not dicts or strings
-- **push/pop first arg must be a variable**: `push(arr, 1)` works, `push([1,2], 1)` does not
-- **Integer division truncates**: `7 / 2 = 3`. Use `7.0 / 2.0` for float
-- **No logical operators**: No `&&`, `||`, `!`. Use nested if
+- **Arrays/dicts are shared on assign (v0.1.5+)**: `let b = a; push(b, x)` changes `a` too. Copy elements manually if you need an independent list
+- **Module names get shadowed (v0.1.5+)**: `let math = new Foo();` makes `math.sqrt` fail — your variable wins. Avoid `math`/`fs`/`graph` as variable names
+- **No dict dot-access**: `d.key` is for objects/modules — use `d["key"]`
+- **push/pop need an lvalue**: `push([1,2], 1)` fails (literal isn't assignable); `push(obj.items, 1)` works
+- **Integer division truncates**: `7 / 2 = 3`. Use `7.0 / 2.0` or `float(x) / y` for float
+- **Imported class methods aren't global**: `import "utils.vdx"` with `class Utils { fn add... }` requires `new Utils()` + `u.add(...)`, not `add(...)`
 - **Class is optional but recommended**: No `class{}` needed for simple scripts; a stderr tip is printed if no class is present
-- **String + int variable throws**: Use `print("count:", x)` not `print("count: " + x)`
-- **Dict key order is non-deterministic**: Don't rely on insertion order
+- **String + int variable throws**: Use `print("count:", x)` or `print("count: " + str(x))` not `print("count: " + x)`
+- **`break`/`continue` outside loops = parse error (v0.1.5+)**; `fn` nested inside `if`/loops/`fn` = parse error — declare functions at top level or in class bodies
+- **Deep nesting caps**: recursion >500 calls or absurd expression depth throws — flatten deep recursion
 - **Transitive imports don't work**: Import each file directly
 
 ## References

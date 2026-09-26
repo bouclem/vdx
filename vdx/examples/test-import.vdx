@@ -2,14 +2,14 @@ import "test-utils.vdx";
 
 class Main {
     print("=== Testing import ===");
-    
-    // Use the imported add function
-    let result = add(5, 3);
+
+    // Use the imported class's methods via an object
+    let u = new Utils();
+    let result = u.add(5, 3);
     print("add(5, 3):", result);
-    
-    // Use the imported greet function
-    let msg = greet("VDX");
+
+    let msg = u.greet("VDX");
     print(msg);
-    
+
     print("\nImport feature working!");
 }

@@ -1,0 +1,9 @@
+// test-error-nested-fn.vdx — Should error: fn cannot be declared inside a block (v0.1.5+)
+// Run: vdx test-error-nested-fn.vdx
+// Expected: exit code 1, parse error about nested function declaration
+class Test {
+    if (true) {
+        fn sneaky() { return 1; }
+    }
+    print("should not reach");
+}

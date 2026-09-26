@@ -418,16 +418,22 @@ print(math.tau);                // 6.283185...
         <li><code>math.asin()</code> and <code>math.acos()</code> require argument in range [-1, 1]</li>
         <li><code>math.clamp()</code> requires min &le; max</li>
         <li><code>math.factorial()</code> requires non-negative integer (max 12)</li>
-        <li><code>math.fibonacci()</code> requires non-negative integer (max 46)</li>
+        <li><code>math.fibonacci()</code> requires non-negative integer (max 46 — F(47) exceeds int range)</li>
+        <li><code>math.abs(INT_MIN)</code> throws — result out of int range (v0.1.5+)</li>
         <li><code>math.gcd(0, 0)</code> is undefined and throws an error</li>
         <li><code>math.lcm()</code> result must fit in int range</li>
         <li><code>math.comb()</code> requires non-negative integers; result must fit in int range</li>
         <li><code>math.sum()</code> and <code>math.mean()</code> require numeric array elements</li>
+        <li><code>math.sum()</code>, <code>math.min()</code>, <code>math.max()</code> throw when the result doesn't fit int (v0.1.5+)</li>
         <li><code>math.mean()</code> throws on empty array</li>
-        <li><code>math.sort()</code> and <code>math.sortDesc()</code> sort by numeric value</li>
+        <li><code>math.sort()</code> and <code>math.sortDesc()</code> sort by numeric value — non-numeric elements throw (v0.1.5+)</li>
         <li><code>math.random(max)</code> requires max &gt;= 0</li>
         <li><code>math.random(min, max)</code> requires max &gt;= min</li>
         <li>All math functions require numeric arguments</li>
+        <li>
+          A variable named <code>math</code> shadows the module (v0.1.5+) —{" "}
+          <code>math.x</code> then looks up <code>x</code> on your variable
+        </li>
       </ul>
     </DocPage>
   );

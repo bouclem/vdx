@@ -5,7 +5,7 @@ export default function LenDoc() {
     <DocPage title="len()">
       <p>
         The <code className="text-[#A78BFA]">len()</code> built-in function returns the length or size of a value. 
-        It works with arrays, strings, and objects.
+        It works with arrays, strings, dicts, and objects.
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Syntax</h2>
@@ -31,6 +31,13 @@ print(len(s));        // 5
 
 let empty = "";
 print(len(empty));    // 0`}</code></pre>
+      </div>
+
+      <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Dict key count</h2>
+      <p>Returns the number of key-value pairs in a dict:</p>
+      <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
+        <pre className="text-sm"><code>{`let d = {"a": 1, "b": 2};
+print(len(d));        // 2`}</code></pre>
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Object field count</h2>

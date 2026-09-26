@@ -82,6 +82,23 @@ export default function FunctionsDoc() {
     }
 }`}</code></pre>
       </div>
+
+      <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Rules</h2>
+      <ul className="list-disc list-inside space-y-2 text-sm">
+        <li>
+          Functions must be declared at top level or inside a class body — a{" "}
+          <code className="text-[#A78BFA]">fn</code> inside <code>if</code>, loops, or
+          another function is a parse error (v0.1.5+)
+        </li>
+        <li>
+          A user function may reuse a built-in name — your function wins
+          (v0.1.5+; it used to be silently unreachable)
+        </li>
+        <li>
+          Recursion is capped at 500 nested calls (v0.1.5+) — deeper recursion throws
+          &quot;Maximum call depth exceeded&quot;
+        </li>
+      </ul>
     </DocPage>
   );
 }

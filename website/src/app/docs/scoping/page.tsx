@@ -15,6 +15,7 @@ export default function ScopingDoc() {
         <li>Function body</li>
         <li><code className="text-[#A78BFA]">if</code> / <code className="text-[#A78BFA]">elif</code> / <code className="text-[#A78BFA]">else</code> blocks</li>
         <li><code className="text-[#A78BFA]">while</code> loop body (new scope per iteration)</li>
+        <li><code className="text-[#A78BFA]">for</code> / <code className="text-[#A78BFA]">for-in</code> loop body (new scope per iteration)</li>
       </ul>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Inner scopes can read outer variables</h2>

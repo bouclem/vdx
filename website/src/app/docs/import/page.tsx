@@ -16,11 +16,13 @@ export default function ImportDoc() {
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Example</h2>
       <p>Create a utils file (<code className="text-[#A78BFA]">utils.vdx</code>):</p>
       <div className="bg-[var(--vdx-surface)] rounded-lg p-0 my-4">
-        <pre className="text-sm"><code>{`class Utils {
-    fn add(a, b) {
-        return a + b;
-    }
-    
+        <pre className="text-sm"><code>{`// Top-level functions are callable directly after import
+fn add(a, b) {
+    return a + b;
+}
+
+// Classes can also be imported — use them via new + dot-call
+class Utils {
     fn greet(name) {
         return "Hello, " + name;
     }
@@ -33,24 +35,26 @@ export default function ImportDoc() {
 
 class Main {
     let sum = add(5, 3);
-    print(sum);           // 8
+    print(sum);           // 8 — top-level fn is callable directly
     
-    let msg = greet("VDX");
-    print(msg);           // Hello, VDX
+    let u = new Utils();
+    print(u.greet("VDX")); // Hello, VDX — class method via object
 }`}</code></pre>
       </div>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">What gets imported</h2>
       <ul className="list-disc list-inside space-y-2 text-gray-300">
-        <li>All functions from imported classes become available globally</li>
-        <li>All class definitions become available for <code className="text-[#A78BFA]">new</code> instantiation</li>
+        <li>Top-level functions become callable directly by name</li>
+        <li>All class definitions become available for <code className="text-[#A78BFA]">new</code> instantiation — call their methods on an object (<code className="text-[#A78BFA]">u.greet(...)</code>), not as bare functions</li>
         <li>Top-level statements in imported files are not executed</li>
+        <li>Errors inside imported files report the imported file's name and lines (v0.1.5+)</li>
       </ul>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Circular imports</h2>
       <p>
         VDX automatically prevents circular imports. If file A imports file B, and file B imports file A, 
-        the second import is silently skipped to prevent infinite loops.
+        the second import is silently skipped to prevent infinite loops — including a loop
+        back through the entry file (v0.1.5+).
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">File paths</h2>

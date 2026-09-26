@@ -1,5 +1,60 @@
 # VDX Changelog
 
+## v0.1.5 — 2026-09-26
+
+### New language features
+- **Logical operators**: `!`, `&&`, `||` with short-circuit evaluation (e.g., `if (!done && i < n)`)
+- **Reference semantics for arrays and dicts**: `let b = a;` shares storage — `push(b, x)` now also affects `a` (standard dynamic-language behavior)
+- **Generalized lvalue support**: `arr[i][j] = v`, `obj.field[i] = v`, `this.arr[i] = v`, `push(obj.items, x)`, `push(this.arr, x)`, `arr[i]++`, `obj.n--` — all work now
+- **Dict key creation on assign**: `d["newKey"] = v` inserts the key (previously errored)
+- **String index assignment**: `s[i] = "c"` mutates a character in place
+- **String comparisons**: `<`, `>`, `<=`, `>=` compare strings lexicographically
+- **`for-in` over strings** (iterates characters) **and dicts** (iterates keys in sorted order)
+- **`wait()` accepts float** durations: `wait(0.5)` — and `wait()`/`input()` blocking time is no longer counted against loop safety
+- **New number literals**: exponent `1e5` / `1.5e-3`, hexadecimal `0xFF`, trailing dot `1.`, leading dot `.5`
+- **`for` update clause** now accepts any assignment/incdec: `for (...; a.b = v)`, `for (...; arr[i]--)`, etc.
+- **CLI**: `vdx --help` and `vdx --version`
+
+### New builtins
+- **Conversions**: `int(v)`, `float(v)`, `str(v)` — e.g., `int("42")`, `float(input("n? "))`
+- **String functions**: `split(s, sep)`, `substr(s, i, len)`, `indexOf(s, sub)`, `upper(s)`, `lower(s)`, `trim(s)`, `replace(s, old, new)`, `join(arr, sep)`
+- **`type(v)`** now returns `"dict"` for dictionaries (was `"array"`)
+
+### fs module additions
+- `fs.append(path, content)` — append text to a file
+- `fs.exists(path)` — check whether a path exists
+- `fs.listDir(path)` — list directory entries as an array of strings
+- `fs.setRoot(dir)` — opt-in sandbox: when set, every fs path must resolve inside `dir` (canonicalization prevents `..` escapes; unrestricted by default for backwards compatibility)
+
+### Bug fixes
+- **`this.field = value` inside methods silently reverted** — the field-scope copy mechanism overwrote `this` writes at method exit. Fields are now looked up directly on the object, so bare `x` and `this.x` are always the same storage
+- **`int[]` type annotations couldn't be parsed** — the parser rejected `let a: int[] = [1]` even though it was documented and checked at runtime since v0.0.12
+- **Variables named `math`/`fs`/`graph` were hijacked by module dispatch** — user variables now win; module calls only happen when no variable shadows the module name
+- **Circular imports through the entry file** produced misleading "already defined" errors — the entry file is now marked imported up front
+- **`this` leaked into plain functions called from methods** — `currentObject`/`currentClassName` are now saved/restored on every call
+- **`INT_MIN / -1` crashed the process** — now throws a runtime error (guarded alongside division-by-zero)
+- **Loop safety never caught fast infinite loops** — it only measured per-iteration time; `while(true) {}` ran forever. Loops now also fail after 1,000,000 iterations
+- **`wait()`/`input()` inside loops falsely tripped loop safety** — their blocking time is excluded from the 2s/iteration budget
+- **Unguarded recursion segfaulted** — interpreter call depth is now capped at 500 (and parser expression depth is bounded); Windows link stack raised to 16MB so the guard fires before the C++ stack does
+- **Built-in names silently shadowed user functions** — user-defined `fn len(x)` etc. now takes precedence
+- **Nested `fn` declarations were silently dropped** — declaring a function inside a block (`if`, loop, another `fn`) is now a parse error
+- **`math.fibonacci(n>=47)` had signed-overflow UB** before its range check — n > 46 is now rejected upfront
+- **`math.abs(INT_MIN)` UB** — now throws "result out of int range"
+- **`math.sum`/`math.min`/`math.max` silently truncated** results that didn't fit `int` — now throw
+- **`math.sort`/`math.sortDesc` treated non-numeric elements as 0** — now throw a type error
+- **Float `toString` appended `.0` to scientific notation and specials** — `1e+20.0` and `inf.0` are gone
+- **Errors in imported files showed the main file's source lines as context** — errors now report the file they actually came from
+- **`graph.color()` interpolated unvalidated text into SVG attributes** (broke output / injection) — only `[a-zA-Z0-9#]` names are accepted
+- **`graph.bar` category labels overlapped the numeric tick labels** — labels are drawn below them
+- **`graph.show()` leaked temp files and used a fixed `/tmp/vdx_plot.svg`** — the previous temp file is now cleaned up when a new one is generated
+- **`Interpreter::run()` wasn't safely reusable** — interpreter state (functions, classes, imports, current file, call depth, object context, scopes) is fully reset per run
+- **Module errors lacked `at line N`** — all `math`/`fs`/`graph` errors now carry the call-site line, so source context is always shown
+- **Scope/context leaks on error paths** — `pushScope` in `run()` is now properly unwound when a statement throws
+
+### Other
+- **Restored**: class bodies execute their statements again — the documented `class Main { <program> }` wrapper idiom (used by every example) had been silently dead since v0.1.0; `fn` still only registers, `let` still only runs its initializer at `new` time
+- **C++ internals**: shared `shared_ptr` storage for arrays/dicts (no more deep copies per access), single `Value::typeName()` helper replaces repeated enum→string switches, loop-safety block extracted to `checkLoopSafety()`, `callFunction`/`callModule` helpers
+
 ## v0.1.4 — 2026-07-02
 - **Performance**: optimized `math.min()` and `math.max()` to single-pass (track min/max and float flag in one loop instead of two)
 - **`math` module expanded** with 14 new functions:

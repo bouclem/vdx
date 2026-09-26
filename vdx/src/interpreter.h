@@ -6,20 +6,23 @@
 #include <vector>
 #include <memory>
 #include <stdexcept>
+#include <chrono>
 
 struct ObjectData;
 
 struct Value {
-    //NOTE: This struct contains all type fields simultaneously (~100+ bytes). A future refactor to std::variant would reduce memory and copy cost.
     enum Type { STRING, INT, FLOAT, BOOL, VOID, ARRAY, OBJECT, DICT };
     Type type;
     std::string strVal;
     int intVal;
     double floatVal;
     bool boolVal;
-    std::vector<Value> arrVal;
+    // Arrays and dicts use shared storage: assignment copies the handle, not the
+    // contents. `let b = a` makes b alias a (reference semantics), which also
+    // enables nested/indexed writes like arr[i][j] = v and obj.field[i] = v.
+    std::shared_ptr<std::vector<Value>> arrVal;
     std::shared_ptr<ObjectData> objVal;
-    std::unordered_map<std::string, Value> dictVal;
+    std::shared_ptr<std::unordered_map<std::string, Value>> dictVal;
 
     Value() : type(VOID), intVal(0), floatVal(0.0), boolVal(false) {}
     static Value makeString(const std::string& s) { Value v; v.type = STRING; v.strVal = s; return v; }
@@ -27,9 +30,9 @@ struct Value {
     static Value makeFloat(double f) noexcept { Value v; v.type = FLOAT; v.floatVal = f; return v; }
     static Value makeBool(bool b) noexcept { Value v; v.type = BOOL; v.boolVal = b; return v; }
     static Value makeVoid() noexcept { return Value(); }
-    static Value makeArray(const std::vector<Value>& elems) { Value v; v.type = ARRAY; v.arrVal = elems; return v; }
+    static Value makeArray(std::vector<Value> elems) { Value v; v.type = ARRAY; v.arrVal = std::make_shared<std::vector<Value>>(std::move(elems)); return v; }
     static Value makeObject(std::shared_ptr<ObjectData> obj) { Value v; v.type = OBJECT; v.objVal = obj; return v; }
-    static Value makeDict(const std::unordered_map<std::string, Value>& entries) { Value v; v.type = DICT; v.dictVal = entries; return v; }
+    static Value makeDict(std::unordered_map<std::string, Value> entries) { Value v; v.type = DICT; v.dictVal = std::make_shared<std::unordered_map<std::string, Value>>(std::move(entries)); return v; }
 
     // Get numeric value as double (for mixed int/float arithmetic)
     double toDouble() const noexcept {
@@ -39,6 +42,21 @@ struct Value {
     }
 
     bool isNumeric() const noexcept { return type == INT || type == FLOAT; }
+
+    static const char* typeName(Type t) noexcept {
+        switch (t) {
+            case STRING: return "string";
+            case INT: return "int";
+            case FLOAT: return "float";
+            case BOOL: return "bool";
+            case VOID: return "void";
+            case ARRAY: return "array";
+            case OBJECT: return "object";
+            case DICT: return "dict";
+        }
+        return "unknown";
+    }
+    const char* typeName() const noexcept { return typeName(type); }
 
     std::string toString() const;
 };
@@ -58,9 +76,14 @@ struct ContinueException {};
 
 class Interpreter {
 public:
-    void run(const Program& program, const std::string& sourceDir = "");
+    // mainFile is used to mark the entry file as imported (circular-import
+    // detection) and to provide correct error context for imported code.
+    void run(const Program& program, const std::string& sourceDir = "", const std::string& mainFile = "");
     int currentLine = 0;
-    
+    // Error context for the file where the last runtime error originated
+    std::string errorFile;
+    std::string errorSource;
+
     // Module function registration
     using ModuleFunc = Value(*)(const std::vector<Value>& args, int line);
     void registerModuleFunc(const std::string& name, ModuleFunc func);
@@ -81,11 +104,37 @@ private:
     std::unordered_map<std::string, ModuleFunc> moduleFunctions;  // C++ module functions
     bool modulesRegistered = false;
 
+    // File attribution for errors raised inside imported code
+    std::unordered_map<const Node*, std::string> declFiles;   // FnDecl*/ClassDecl* -> canonical path
+    std::unordered_map<std::string, std::string> fileSources; // canonical path -> source text
+
+    // Safety limits
+    int callDepth = 0;
+    static const int MAX_CALL_DEPTH = 500;
+    static const long long MAX_LOOP_ITERATIONS = 1000000;
+    long long ioExcludedMs = 0; // wait()/input() blocking time, excluded from loop timing
+
     void pushScope();
     void popScope();
     Value* lookupVar(const std::string& name);
     bool isVarConst(const std::string& name) const;
     void declareVar(const std::string& name, const Value& val, bool isConst = false);
+
+    // Lvalue resolution: returns a pointer to the storage a target expression
+    // refers to (identifier, obj.field, arr[i], dict[k]).
+    Value* evalLValue(const Expr* expr, bool forWrite = false);
+    Value* fieldLValue(const Expr* object, const std::string& field, bool forWrite);
+    Value* indexLValue(Value* container, const Value& index, bool create);
+    // Walks an lvalue chain to its root identifier and rejects writes to consts
+    void checkConstTarget(const Expr* expr);
+    void recordErrorFile(const Node* decl);
+    void checkLoopSafety(std::chrono::steady_clock::time_point iterStart,
+                         long long iteration, bool isUnsafe, const char* loopName);
+    Value callFunction(const FnDecl* fn, const std::vector<Value>& args,
+                       std::shared_ptr<ObjectData> obj, const std::string& clsName);
+    Value execBuiltin(const CallExpr* call, bool& handled);
+    // Calls a module function, appending "at line N" to errors that lack it
+    Value callModule(const ModuleFunc& f, const std::vector<Value>& args, int line);
 
     void execClass(const ClassDecl* cls);
     void execImport(const ImportStmt* stmt);

@@ -60,7 +60,11 @@ export default function ErrorReportingDoc() {
           </tr>
           <tr className="border-t border-white/10">
             <td className="p-3">Loop safety</td>
-            <td className="p-3">A <code className="text-[#A78BFA]">while</code> loop iterating too fast without <code className="text-[#A78BFA]">@unsafe</code></td>
+            <td className="p-3">A loop exceeding 1,000,000 iterations or doing &gt;2s of work in one iteration without <code className="text-[#A78BFA]">@unsafe</code></td>
+          </tr>
+          <tr className="border-t border-white/10">
+            <td className="p-3">Recursion depth</td>
+            <td className="p-3">Function calls nested deeper than 500 levels (v0.1.5+)</td>
           </tr>
         </tbody>
       </table>

@@ -34,30 +34,46 @@ Check all mutation paths on `const` variables:
 - `math.floor(3.7)` returns `3` (int), `math.round(3.5)` returns `4` (int) — all rounding functions return int (v0.0.15+)
 - String indexing returns single-character string, not char/int
 
-#### 4. Missing Language Features
-- Unary minus not supported: `-5` is a parse error
-- No logical operators: `&&`, `||`, `!` are parse errors
-- Empty dict `{}` is a parse error
-- `for-in` only works on arrays, not dicts or strings
+#### 4. Module Name Shadowing (v0.1.5+)
+- A variable named `math`, `fs`, or `graph` shadows the built-in module
+- `let math = new MathUtils();` then `math.sqrt(16)` → "Undefined method 'sqrt' on MathUtils" — the variable wins
+- Legacy code that relied on `math.*` hitting the module despite a `math` variable breaks — rename the variable
 
-#### 5. Import Issues
+#### 5. Reference Semantics Surprises (v0.1.5+)
+- `let b = arr; push(b, x)` mutates `arr` too — shared storage
+- Functions mutating an array param mutate the caller's array
+- `arr[i][j] = v`, `obj.field[i] = v`, `d["new"] = v` all work now — check code that assumed they'd fail
+
+#### 6. Import Issues
 - Transitive imports not processed — import each file directly
 - Import path is relative to source file directory
-- Circular imports are detected and throw clean error
+- Circular imports are detected and skipped cleanly (including back through the entry file, v0.1.5+)
+- Imported class methods are NOT global functions — `import` + `add(1,2)` fails if `add` lives inside `class Utils`; use `new Utils()` + `u.add(1,2)`
+- Errors inside imported files report the imported file's name/lines (v0.1.5+)
 
-#### 6. Loop Safety
-- `while` and `for` iterations >2000ms trigger error
-- `for-in` has NO safety check — can hang on large arrays
-- `@unsafe` disables the check for `while` and `for` only
+#### 7. Loop Safety (v0.1.5+)
+- Any iteration >2000ms triggers error (all loop types incl. `for-in`)
+- Any loop exceeding 1,000,000 iterations triggers error — `while(true) {}` now dies
+- `wait()`/`input()` blocking time is excluded from the per-iteration budget
+- `@unsafe` before the loop disables both checks
 
-#### 7. Array/String Bounds
+#### 8. Array/String Bounds
 - Negative indices not allowed: `arr[-1]` throws
 - Index >= length throws; `pop()` on empty array throws
+- `d["missing"]` read throws, but `d["missing"] = v` CREATES the key (v0.1.5+)
+- `s[i] = "c"` mutates a string char in place (v0.1.5+) — strings are no longer read-only
 
-#### 8. Object Method Issues
+#### 9. Object Method Issues
 - Methods can call sibling methods by bare name within class body
 - Method-to-method calls resolve via `currentClassName::funcName`
-- `new ClassName()` executes all non-function statements in class body as constructor
+- `new ClassName()` runs only `let` field initializers; other class-body statements execute once at class LOAD time (v0.1.5+)
+- `this.x = v` inside methods persists (v0.1.5+; pre-0.1.5 it was silently reverted for pre-existing fields)
+- `this` does NOT leak into plain functions called from methods (v0.1.5+)
+
+#### 10. Parser-Rejected Constructs (v0.1.5+ — previously silent dead code or confusing errors)
+- `fn` inside `if`/loops/`fn` bodies → parse error (was silently dropped)
+- `break`/`continue` outside a loop → parse error
+- Recursion beyond 500 calls → runtime error (was segfault)
 
 ### Phase 2: Dynamic Testing (Run Code)
 
@@ -187,7 +203,8 @@ See these files in the `examples/` directory:
   vdx examples/test-error-break-method.vdx    # "'break' used outside of a loop"
   vdx examples/test-error-div-zero.vdx        # "Division by zero"
   vdx examples/test-error-index-oob.vdx       # "Array index out of bounds"
-  vdx examples/test-error-unary-minus.vdx     # "Expected expression" (got '-')
+  vdx examples/test-error-nested-fn.vdx       # parse error: fn nested in a block (v0.1.5+)
   vdx examples/test-error-int-overflow.vdx    # "Integer literal is out of range"
   vdx examples/test-error-pop-empty.vdx       # "pop() cannot pop from empty array"
   ```
+- New error cases to cover (v0.1.5): `INT_MIN / -1` (int overflow error, not crash), recursion >500 calls, loop >1M iterations, `fn` nested in a block (parse error), `fs.setRoot()` sandbox escapes, `this` outside method context, `math.fibonacci(47)` (out-of-range guard), imported-file error attribution

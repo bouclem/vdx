@@ -51,14 +51,57 @@ Token Lexer::readString() {
 Token Lexer::readNumber() {
     int sl = line, sc = col;
     std::string val;
-    while (pos < src.size() && isdigit(static_cast<unsigned char>(cur()))) { val += cur(); advance(); }
-    // Check for float: digits followed by '.' and more digits
-    if (pos < src.size() && cur() == '.' && (pos + 1) < src.size() && isdigit(static_cast<unsigned char>(peek()))) {
-        val += cur(); advance(); // consume '.'
-        while (pos < src.size() && isdigit(static_cast<unsigned char>(cur()))) { val += cur(); advance(); }
-        return Token(TokenType::FLOAT, val, sl, sc);
+
+    // Hexadecimal: 0x1f, 0X2A
+    if (cur() == '0' && (peek() == 'x' || peek() == 'X')) {
+        val += cur(); advance();
+        val += cur(); advance();
+        if (pos >= src.size() || !isxdigit(static_cast<unsigned char>(cur()))) {
+            throw std::runtime_error("Expected hex digit after '" + val + "' at line " +
+                std::to_string(sl) + ":" + std::to_string(sc));
+        }
+        while (pos < src.size() && isxdigit(static_cast<unsigned char>(cur()))) { val += cur(); advance(); }
+        return Token(TokenType::INTEGER, val, sl, sc); // parser uses base-0 stoi
     }
-    return Token(TokenType::INTEGER, val, sl, sc);
+
+    bool isFloat = false;
+
+    // Leading-dot float: .5
+    if (cur() == '.') {
+        isFloat = true;
+        val += cur(); advance();
+    }
+
+    while (pos < src.size() && isdigit(static_cast<unsigned char>(cur()))) { val += cur(); advance(); }
+
+    // Fractional part: '.' followed by a digit, or '.' not followed by an identifier char ("1." but not "1.foo")
+    if (pos < src.size() && cur() == '.' && !isFloat) {
+        char next = peek();
+        if (isdigit(static_cast<unsigned char>(next)) ||
+            !(isalpha(static_cast<unsigned char>(next)) || next == '_')) {
+            isFloat = true;
+            val += cur(); advance();
+            while (pos < src.size() && isdigit(static_cast<unsigned char>(cur()))) { val += cur(); advance(); }
+        }
+    }
+
+    // Exponent: 1e5, 1.5e-3, 2E+10
+    if (pos < src.size() && (cur() == 'e' || cur() == 'E')) {
+        char next = peek();
+        bool hasExp = isdigit(static_cast<unsigned char>(next));
+        if (!hasExp && (next == '+' || next == '-') &&
+            (pos + 2) < src.size() && isdigit(static_cast<unsigned char>(src[pos + 2]))) {
+            hasExp = true;
+        }
+        if (hasExp) {
+            isFloat = true;
+            val += cur(); advance(); // 'e'/'E'
+            if (pos < src.size() && (cur() == '+' || cur() == '-')) { val += cur(); advance(); }
+            while (pos < src.size() && isdigit(static_cast<unsigned char>(cur()))) { val += cur(); advance(); }
+        }
+    }
+
+    return Token(isFloat ? TokenType::FLOAT : TokenType::INTEGER, val, sl, sc);
 }
 
 Token Lexer::readWord() {
@@ -116,6 +159,8 @@ std::vector<Token> Lexer::tokenize() {
                 std::to_string(sl) + ":" + std::to_string(sc));
         }
         if (isdigit(static_cast<unsigned char>(cur()))) { tokens.push_back(readNumber()); continue; }
+        if (cur() == '.' && (pos + 1) < src.size() &&
+            isdigit(static_cast<unsigned char>(peek()))) { tokens.push_back(readNumber()); continue; }
         if (isalpha(static_cast<unsigned char>(cur())) || cur() == '_') { tokens.push_back(readWord()); continue; }
 
         int sl = line, sc = col;
@@ -129,6 +174,8 @@ std::vector<Token> Lexer::tokenize() {
         if (c == '>' && cur() == '=') { advance(); tokens.push_back(Token(TokenType::GTEQ, ">=", sl, sc)); continue; }
         if (c == '+' && cur() == '+') { advance(); tokens.push_back(Token(TokenType::PLUS_PLUS, "++", sl, sc)); continue; }
         if (c == '-' && cur() == '-') { advance(); tokens.push_back(Token(TokenType::MINUS_MINUS, "--", sl, sc)); continue; }
+        if (c == '&' && cur() == '&') { advance(); tokens.push_back(Token(TokenType::ANDAND, "&&", sl, sc)); continue; }
+        if (c == '|' && cur() == '|') { advance(); tokens.push_back(Token(TokenType::OROR, "||", sl, sc)); continue; }
 
         switch (c) {
             case '{': tokens.push_back(Token(TokenType::LBRACE, "{", sl, sc)); break;
@@ -149,6 +196,7 @@ std::vector<Token> Lexer::tokenize() {
             case '.': tokens.push_back(Token(TokenType::DOT, ".", sl, sc)); break;
             case '[': tokens.push_back(Token(TokenType::LBRACKET, "[", sl, sc)); break;
             case ']': tokens.push_back(Token(TokenType::RBRACKET, "]", sl, sc)); break;
+            case '!': tokens.push_back(Token(TokenType::BANG, "!", sl, sc)); break;
             default:
                 throw std::runtime_error(std::string("Unexpected character '") + c +
                     "' at line " + std::to_string(sl) + ":" + std::to_string(sc));

@@ -1,0 +1,3 @@
+// helper file: circular import back into the entry file
+import "circ_main.vdx";
+fn fromA() { return 1; }

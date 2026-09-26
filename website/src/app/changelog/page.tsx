@@ -28,6 +28,13 @@ const codeLinks: Record<string, string> = {
   "%": "/docs/modulo",
   "++": "/docs/increment-decrement",
   "--": "/docs/increment-decrement",
+  "import": "/docs/import",
+  "fs": "/docs/fs",
+  "setRoot": "/docs/fs",
+  "input": "/docs/input",
+  "len": "/docs/len",
+  "type": "/docs/type",
+  "class": "/docs/classes",
 };
 
 // Replace code ticks with linked versions
@@ -42,6 +49,44 @@ function linkifyCode(text: string): string {
 }
 
 const changelog = [
+  {
+    version: "0.1.5",
+    date: "2026-09-26",
+    changes: [
+      "New logical operators `!`, `&&`, `||` with short-circuit evaluation — `if (!done && i < n)` works",
+      "Arrays and dicts now have reference semantics — `let b = a` shares storage, so `push(b, x)` also changes `a`",
+      "Generalized lvalues: `arr[i][j] = v`, `obj.field[i] = v`, `this.arr[i] = v`, `push(obj.items, x)`, `arr[i]++`, `obj.n--`",
+      "Dict key creation on assign — `d[\"newKey\"] = v` inserts the key; `for (k in d)` iterates keys in sorted order",
+      "String index assignment `s[i] = \"c\"`, string comparisons `<`/`>`/`<=`/`>=`, and `for-in` over string characters",
+      "New builtins: `int(v)`, `float(v)`, `str(v)` conversions and `split`, `substr`, `indexOf`, `upper`, `lower`, `trim`, `replace`, `join`",
+      "`wait()` accepts float durations — `wait(0.5)`; `wait`/`input` blocking time no longer counts against loop safety",
+      "New number literals: exponent `1e5` / `1.5e-3`, hex `0xFF`, trailing dot `1.`, leading dot `.5`",
+      "`for` update clause accepts any assignment/incdec — `for (...; obj.n++)`, `for (...; arr[i] = v)`",
+      "New CLI flags: `vdx --help` and `vdx --version`",
+      "`fs` module: `fs.append`, `fs.exists`, `fs.listDir`, and `fs.setRoot(dir)` — an opt-in path sandbox (unrestricted by default)",
+      "Fixed `this.field = value` inside methods being silently reverted — bare `x` and `this.x` are now the same storage",
+      "Fixed `let a: int[] = [1]` parse error — array type annotations documented since v0.0.12 finally parse",
+      "Fixed variables named `math`/`fs`/`graph` being bypassed by module dispatch — the variable now wins",
+      "Fixed circular imports through the entry file producing misleading duplicate-definition errors",
+      "Fixed `this` leaking into plain functions called from methods",
+      "Fixed `INT_MIN / -1` crashing the process — now a clean runtime error",
+      "Loop safety now catches `while(true) {}` — loops fail after 1,000,000 iterations (was per-iteration timing only)",
+      "Fixed `wait()`/`input()` inside loops falsely tripping the 2s/iteration protection",
+      "Fixed unguarded recursion segfaulting — call depth is now capped at 500 (Windows link stack raised to 16MB)",
+      "User-defined `fn` now shadows built-in names instead of being silently unreachable",
+      "Nested `fn` declarations inside `if`/loops/`fn` are now a parse error (were silently dropped); `break`/`continue` outside loops are validated at parse time",
+      "Fixed `math.fibonacci(n>=47)` signed-overflow UB, `math.abs(INT_MIN)` UB, and `math.sum`/`min`/`max` silent truncation — all now throw",
+      "Fixed `math.sort`/`math.sortDesc` treating non-numeric elements as 0 — now a type error",
+      "Fixed float `toString` appending `.0` to scientific notation/specials (`1e+20.0`, `inf.0`)",
+      "Errors inside imported files now show the imported file's source lines, not the main file's",
+      "Fixed `graph.color()` interpolating unvalidated text into SVG attributes — only `[a-zA-Z0-9#]` accepted",
+      "Fixed `graph.bar` category labels overlapping numeric tick labels",
+      "Fixed `graph.show()` leaking temp files — previous temp file is cleaned up on the next call",
+      "All `math`/`fs`/`graph` errors now carry the call-site line so source context is always shown",
+      "Restored: class bodies execute their statements again — the `class Main { <program> }` wrapper idiom had been silently dead since v0.1.0",
+      "Internal: shared `shared_ptr` storage for arrays/dicts (no more deep copies per access), `Value::typeName()` helper, `checkLoopSafety`/`callFunction`/`callModule` helpers",
+    ],
+  },
   {
     version: "0.1.4",
     date: "2026-07-02",

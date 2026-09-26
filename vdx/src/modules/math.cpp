@@ -67,6 +67,9 @@ Value abs_builtin(const std::vector<Value>& args, int line) {
     }
     checkNumeric(args[0], "abs");
     if (args[0].type == Value::INT) {
+        if (args[0].intVal == INT_MIN) {
+            throw std::runtime_error("[VDX] math.abs() of INT_MIN is out of int range");
+        }
         return Value::makeInt(std::abs(args[0].intVal));
     }
     return Value::makeFloat(std::abs(args[0].toDouble()));
@@ -158,6 +161,9 @@ Value min_builtin(const std::vector<Value>& args, int line) {
         if (v < min_val) min_val = v;
     }
     if (anyFloat) return Value::makeFloat(min_val);
+    if (min_val > static_cast<double>(INT_MAX) || min_val < static_cast<double>(INT_MIN)) {
+        throw std::runtime_error("[VDX] math.min() result out of int range");
+    }
     return Value::makeInt(static_cast<int>(min_val));
 }
 
@@ -175,6 +181,9 @@ Value max_builtin(const std::vector<Value>& args, int line) {
         if (v > max_val) max_val = v;
     }
     if (anyFloat) return Value::makeFloat(max_val);
+    if (max_val > static_cast<double>(INT_MAX) || max_val < static_cast<double>(INT_MIN)) {
+        throw std::runtime_error("[VDX] math.max() result out of int range");
+    }
     return Value::makeInt(static_cast<int>(max_val));
 }
 
@@ -427,6 +436,11 @@ Value fibonacci_builtin(const std::vector<Value>& args, int line) {
     if (n < 0) {
         throw std::runtime_error("[VDX] math.fibonacci() requires a non-negative integer");
     }
+    // Guard before computing: fib(47+) overflows int, and the fast-doubling
+    // intermediates would overflow long long for large n — undefined behavior.
+    if (n > 46) {
+        throw std::runtime_error("[VDX] math.fibonacci() result out of int range (max is fib(46))");
+    }
     // Fast doubling: O(log n) instead of O(n) iterative or O(2^n) naive recursive
     // Returns F(n) and F(n+1) as a pair
     // Base: F(0)=0, F(1)=1
@@ -529,11 +543,16 @@ Value sort_builtin(const std::vector<Value>& args, int line) {
     if (args[0].type != Value::ARRAY) {
         throw std::runtime_error("[VDX] math.sort() expects an array argument");
     }
-    std::vector<Value> result = args[0].arrVal;
+    for (const auto& v : *args[0].arrVal) {
+        if (!v.isNumeric()) {
+            throw std::runtime_error("[VDX] math.sort() array must contain only numeric values");
+        }
+    }
+    std::vector<Value> result = *args[0].arrVal;
     std::sort(result.begin(), result.end(), [](const Value& a, const Value& b) {
         return a.toDouble() < b.toDouble();
     });
-    return Value::makeArray(result);
+    return Value::makeArray(std::move(result));
 }
 
 Value sortDesc_builtin(const std::vector<Value>& args, int line) {
@@ -544,11 +563,16 @@ Value sortDesc_builtin(const std::vector<Value>& args, int line) {
     if (args[0].type != Value::ARRAY) {
         throw std::runtime_error("[VDX] math.sortDesc() expects an array argument");
     }
-    std::vector<Value> result = args[0].arrVal;
+    for (const auto& v : *args[0].arrVal) {
+        if (!v.isNumeric()) {
+            throw std::runtime_error("[VDX] math.sortDesc() array must contain only numeric values");
+        }
+    }
+    std::vector<Value> result = *args[0].arrVal;
     std::sort(result.begin(), result.end(), [](const Value& a, const Value& b) {
         return a.toDouble() > b.toDouble();
     });
-    return Value::makeArray(result);
+    return Value::makeArray(std::move(result));
 }
 
 Value count_builtin(const std::vector<Value>& args, int line) {
@@ -560,7 +584,7 @@ Value count_builtin(const std::vector<Value>& args, int line) {
         throw std::runtime_error("[VDX] math.count() expects an array as first argument");
     }
     int count = 0;
-    for (const auto& v : args[0].arrVal) {
+    for (const auto& v : *args[0].arrVal) {
         if (v.type == args[1].type) {
             if (v.type == Value::STRING && v.strVal == args[1].strVal) count++;
             else if (v.type == Value::INT && v.intVal == args[1].intVal) count++;
@@ -607,12 +631,15 @@ Value sum_builtin(const std::vector<Value>& args, int line) {
     }
     double total = 0.0;
     bool anyFloat = false;
-    for (const auto& v : args[0].arrVal) {
+    for (const auto& v : *args[0].arrVal) {
         checkNumeric(v, "sum");
         if (v.type == Value::FLOAT) anyFloat = true;
         total += v.toDouble();
     }
     if (anyFloat) return Value::makeFloat(total);
+    if (total > static_cast<double>(INT_MAX) || total < static_cast<double>(INT_MIN)) {
+        throw std::runtime_error("[VDX] math.sum() result out of int range");
+    }
     return Value::makeInt(static_cast<int>(total));
 }
 
@@ -624,15 +651,15 @@ Value mean_builtin(const std::vector<Value>& args, int line) {
     if (args[0].type != Value::ARRAY) {
         throw std::runtime_error("[VDX] math.mean() expects an array argument");
     }
-    if (args[0].arrVal.empty()) {
+    if (args[0].arrVal->empty()) {
         throw std::runtime_error("[VDX] math.mean() array must not be empty");
     }
     double total = 0.0;
-    for (const auto& v : args[0].arrVal) {
+    for (const auto& v : *args[0].arrVal) {
         checkNumeric(v, "mean");
         total += v.toDouble();
     }
-    return Value::makeFloat(total / static_cast<double>(args[0].arrVal.size()));
+    return Value::makeFloat(total / static_cast<double>(args[0].arrVal->size()));
 }
 
 Value comb_builtin(const std::vector<Value>& args, int line) {

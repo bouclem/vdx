@@ -8,8 +8,25 @@ $vdxDir = Join-Path $rootDir "vdx"
 $buildDir = Join-Path $vdxDir "build"
 $releasesDir = Join-Path $rootDir "releases"
 
+function Fail([string]$message, [array]$output) {
+    if ($output) {
+        $output | Select-Object -Last 40 | ForEach-Object { Write-Host $_ }
+    }
+    throw $message
+}
+
 Write-Host "=== VDX Release Build Script ===" -ForegroundColor Cyan
 Write-Host ""
+
+# Step 0: Check prerequisites
+Write-Host "[0/5] Checking prerequisites..." -ForegroundColor Yellow
+if (-not (Get-Command cmake -ErrorAction SilentlyContinue)) {
+    Fail "cmake not found on PATH" @()
+}
+if (-not (Get-Command wix -ErrorAction SilentlyContinue)) {
+    Fail "WiX 4 toolset ('wix') not found on PATH - required for MSI packaging" @()
+}
+Write-Host "      cmake and wix found" -ForegroundColor Green
 
 # Step 1: Clean and create build directory
 Write-Host "[1/5] Setting up build directory..." -ForegroundColor Yellow
@@ -21,37 +38,37 @@ Write-Host "      Build directory prepared" -ForegroundColor Green
 
 # Step 2: Configure with CMake
 Write-Host "[2/5] Configuring with CMake..." -ForegroundColor Yellow
-Set-Location $vdxDir
-$cmakeOutput = cmake -B build 2>&1
+$cmakeOutput = cmake -S $vdxDir -B $buildDir 2>&1
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "CMake configuration failed!"
-    exit 1
+    Fail "CMake configuration failed!" $cmakeOutput
 }
 Write-Host "      CMake configured successfully" -ForegroundColor Green
 
 # Step 3: Build the project
 Write-Host "[3/5] Building project..." -ForegroundColor Yellow
-$buildOutput = cmake --build build --config Release 2>&1
+$buildOutput = cmake --build $buildDir --config Release 2>&1
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Build failed!"
-    exit 1
+    Fail "Build failed!" $buildOutput
 }
 Write-Host "      Build completed successfully" -ForegroundColor Green
 
 # Step 4: Create MSI installer with CPack
 Write-Host "[4/5] Creating MSI installer..." -ForegroundColor Yellow
-Set-Location $buildDir
-$cpackOutput = cpack -C Release 2>&1
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "MSI creation failed!"
-    exit 1
+Push-Location $buildDir
+try {
+    $cpackOutput = cpack -C Release 2>&1
+    $cpackExit = $LASTEXITCODE
+} finally {
+    Pop-Location
+}
+if ($cpackExit -ne 0) {
+    Fail "MSI creation failed!" $cpackOutput
 }
 
 # Find the generated MSI file
 $msiFile = Get-ChildItem -Path $buildDir -Filter "*.msi" | Select-Object -First 1
 if (-not $msiFile) {
-    Write-Error "MSI file not found in build directory!"
-    exit 1
+    Fail "MSI file not found in build directory!" @()
 }
 Write-Host "      MSI created: $($msiFile.Name)" -ForegroundColor Green
 
@@ -76,6 +93,3 @@ Write-Host "  1. Test the installer: $destination" -ForegroundColor Gray
 Write-Host "  2. Create GitHub release at: https://github.com/bouclem/vdx/releases/new" -ForegroundColor Gray
 Write-Host "  3. Upload the MSI to the release" -ForegroundColor Gray
 Write-Host ""
-
-# Return to original directory
-Set-Location $rootDir

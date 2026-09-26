@@ -1,0 +1,7 @@
+class Leaker {
+    let x = 5;
+    fn go() { return spy(); }
+}
+fn spy() { return this.x; }
+let l = new Leaker();
+print(l.go());

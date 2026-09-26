@@ -25,9 +25,24 @@ const versions: {
   notes: string[];
 }[] = [
   {
+    version: "0.1.5",
+    date: "2026-09-26",
+    status: "current",
+    notes: [
+      "Logical operators !, &&, || with short-circuit evaluation",
+      "Reference semantics for arrays/dicts; generalized lvalues (arr[i][j]=v, obj.f[i]=v, push(obj.f,x), arr[i]++)",
+      "New builtins: int/float/str, split, substr, indexOf, upper, lower, trim, replace, join",
+      "for-in over strings and dicts; string index assign and string comparisons",
+      "fs.append/exists/listDir/setRoot sandbox; wait() accepts float",
+      "New number literals: 1e5, 0xFF, 1., .5; CLI --help/--version",
+      "Fixed this.field= silently reverting, int[] annotation, module-name hijack, INT_MIN/-1 crash",
+      "Loop safety catches while(true){} (1M-iteration cap); recursion capped at 500",
+    ],
+  },
+  {
     version: "0.1.4",
     date: "2026-07-02",
-    status: "current",
+    status: "old",
     notes: [
       "Optimized math.min() and math.max() to single-pass",
       "New math functions: isPrime, primes, primeCount, sort, sortDesc, count, lcm, sum, mean, comb, hypot, lerp, e, tau",

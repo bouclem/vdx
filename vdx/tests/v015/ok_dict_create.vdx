@@ -1,0 +1,9 @@
+// dict key creation via index-assign + for-in over object field array
+let d = {};
+d["k"] = 1;
+print(d["k"]);
+class Bag { let items = [1,2]; }
+let b2 = new Bag();
+let s = 0;
+for (it in b2.items) { s = s + it; }
+print(s);

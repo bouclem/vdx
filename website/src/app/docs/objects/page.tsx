@@ -25,9 +25,11 @@ class Main {
 }`}</code></pre>
       </div>
       <p>
-        When <code className="text-[#A78BFA]">new</code> is called, VDX runs the class body
-        to initialize fields (via <code className="text-[#A78BFA]">let</code>) and registers
-        methods (via <code className="text-[#A78BFA]">fn</code>).
+        When <code className="text-[#A78BFA]">new</code> is called, VDX runs the class&apos;s{" "}
+        <code className="text-[#A78BFA]">let</code> field initializers to build the object&apos;s
+        fields; methods (via <code className="text-[#A78BFA]">fn</code>) were registered when the
+        class was declared. Other class-body statements do <em>not</em> re-run at{" "}
+        <code className="text-[#A78BFA]">new</code> time.
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Accessing fields</h2>

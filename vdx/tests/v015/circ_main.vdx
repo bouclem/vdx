@@ -1,0 +1,8 @@
+// entry file that lib_a.vdx imports back — circular import must be skipped cleanly
+class MainThing {
+    fn v() { return 42; }
+}
+import "lib_a.vdx";
+let t = new MainThing();
+print(t.v());        // 42
+print(fromA());      // 1

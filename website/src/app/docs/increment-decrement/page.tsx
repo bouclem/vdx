@@ -51,7 +51,7 @@ print(c, d);      // Output: 6 5`}
 
       <h2 className="text-white font-medium mt-8 mb-3">In Loops</h2>
       <p className="text-[var(--vdx-muted)] text-sm mb-3">Commonly used in for loops:</p>
-      <pre className="bg-[var(--vdx-surface)] border border-[var(--var(--vdx-border))] rounded-md p-4 text-sm text-zinc-300 overflow-x-auto mb-4">
+      <pre className="bg-[var(--vdx-surface)] border border-[var(--vdx-border)] rounded-md p-4 text-sm text-zinc-300 overflow-x-auto mb-4">
 {`// Traditional C-style for loop with increment
 for (let i = 0; i < 5; i++) {
     print(i);     // Output: 0, 1, 2, 3, 4
@@ -100,11 +100,27 @@ fn collectBonus() {
 }`}
       </pre>
 
+      <h2 className="text-white font-medium mt-8 mb-3">Lvalue targets (v0.1.5+)</h2>
+      <p className="text-[var(--vdx-muted)] text-sm mb-3">
+        The operand can be any assignable location — not just a bare variable:
+      </p>
+      <pre className="bg-[var(--vdx-surface)] border border-[var(--vdx-border)] rounded-md p-4 text-sm text-zinc-300 overflow-x-auto mb-4">
+{`let arr = [1, 2, 3];
+arr[0]++;              // arr is now [2, 2, 3]
+
+class Counter {
+    let n = 0;
+}
+let c = new Counter();
+c.n++;                 // field increment works
+++c.n;                 // prefix form too`}
+      </pre>
+
       <h2 className="text-white font-medium mt-8 mb-3">Requirements</h2>
       <ul className="text-[var(--vdx-muted)] text-sm space-y-2 list-disc list-inside mb-6">
-        <li>The operand must be a variable (not a literal or expression)</li>
-        <li>The variable must be numeric (int or float)</li>
-        <li>Float variables are incremented by 1.0</li>
+        <li>The operand must be an lvalue — variable, index, or field (v0.1.5+)</li>
+        <li>The value must be numeric (int or float)</li>
+        <li>Float values are incremented by 1.0</li>
         <li>Cannot be used on const variables</li>
       </ul>
 
@@ -112,10 +128,10 @@ fn collectBonus() {
       <pre className="bg-[var(--vdx-surface)] border border-[var(--vdx-border)] rounded-md p-4 text-sm text-zinc-300 overflow-x-auto mb-4">
 {`// These will cause errors:
 let x = 5++;
-        // ^^ Error: expected semicolon
+        // ^^ Error: not an assignable target
 
 let y = (2 + 3)++;
-        // ^^ Error: expected variable name
+        // ^^ Error: not an assignable target
 
 const z = 10;
 z++;    // Error: cannot modify const variable`}

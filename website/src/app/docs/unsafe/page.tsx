@@ -20,9 +20,10 @@ export default function UnsafeDoc() {
         <a href="/docs/loop-protection" className="text-[#A78BFA] hover:underline">loop protection</a>.
       </p>
       <p>
-        Without <code className="text-[#A78BFA]">@unsafe</code>, any loop iteration that
-        takes more than 2 seconds is blocked. With{" "}
-        <code className="text-[#A78BFA]">@unsafe</code>, the loop runs with no speed checks.
+        Without <code className="text-[#A78BFA]">@unsafe</code>, a loop is halted when an
+        iteration takes more than 2 seconds of real work or the loop exceeds 1,000,000
+        iterations. With <code className="text-[#A78BFA]">@unsafe</code>, the loop runs
+        with no checks.
       </p>
 
       <h2 className="text-2xl font-semibold text-white mt-10 mb-4">Syntax</h2>
@@ -80,7 +81,12 @@ export default function UnsafeDoc() {
         </thead>
         <tbody>
           <tr className="border-t border-white/10">
-            <td className="p-3">Iteration speed check (&lt; 2s)</td>
+            <td className="p-3">Iteration work limit (2s, excluding wait/input)</td>
+            <td className="p-3 text-green-400">✓ Active</td>
+            <td className="p-3 text-red-400">✗ Disabled</td>
+          </tr>
+          <tr className="border-t border-white/10">
+            <td className="p-3">Max iteration count (1,000,000) — v0.1.5+</td>
             <td className="p-3 text-green-400">✓ Active</td>
             <td className="p-3 text-red-400">✗ Disabled</td>
           </tr>

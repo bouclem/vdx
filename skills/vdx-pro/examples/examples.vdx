@@ -98,15 +98,13 @@ class Config {
     }
 
     fn has(key) {
-        // No logical operators — use found flag
-        let found = 0;
-        let keys = ["timeout", "retries"];
-        for (k in keys) {
+        // v0.1.5+: for-in iterates dict keys directly (sorted order)
+        for (k in settings) {
             if (k == key) {
-                found = 1;
+                return true;
             }
         }
-        return found == 1;
+        return false;
     }
 
     fn printConfig() {
@@ -287,28 +285,23 @@ class Main {
     print("math.pi:", math.pi);
     print("math.random(100):", math.random(100));
 
-    // ── Nested logic without && / || ──
-    print("\n=== Nested Conditions ===");
+    // ── Logical operators (v0.1.5+) ──
+    print("\n=== Logical Operators ===");
     let x = 5;
     let y = 10;
-    // Instead of: if (x > 0 && y > 0)
-    if (x > 0) {
-        if (y > 0) {
-            print("Both positive");
-        }
+    if (x > 0 && y > 0) {
+        print("Both positive");
+    }
+    if (x > 100 || y > 5) {
+        print("At least one passes");
+    }
+    if (!(x == y)) {
+        print("x and y differ");
     }
 
-    // Instead of: if (x > 0 || y > 0)
-    let eitherPositive = 0;
-    if (x > 0) { eitherPositive = 1; }
-    if (y > 0) { eitherPositive = 1; }
-    if (eitherPositive == 1) {
-        print("At least one positive");
-    }
-
-    // ── Negative numbers (no unary minus) ──
+    // ── Negative numbers ──
     print("\n=== Negative Numbers ===");
-    let neg = 0 - 42;
+    let neg = -42;
     print("neg:", neg);
     print("abs(neg):", math.abs(neg));
 
@@ -317,6 +310,23 @@ class Main {
     print("Waiting 100ms...");
     wait(100);
     print("Done!");
+
+    // ── Import (utils.vdx) ──
+    // Imported class methods need an object — they are not global functions
+    print("\n=== Import ===");
+    let u = new Utils();
+    print("u.add(2, 3):", u.add(2, 3));
+    print("u.isEven(4):", u.isEven(4));
+    print("u.clamp(15, 0, 10):", u.clamp(15, 0, 10));
+    print("u.greet(\"VDX\"):", u.greet("VDX"));
+
+    // ── New builtins (v0.1.5+) ──
+    print("\n=== Builtins v0.1.5 ===");
+    print("int(\"42\"):", int("42"));
+    print("str(3.5):", str(3.5));
+    print("split:", split("a,b,c", ","));
+    print("upper:", upper("vdx"));
+    print("join:", join(["x", "y"], "-"));
 
     // ── Input (commented out for non-interactive) ──
     // let userName = input("Enter your name: ");
